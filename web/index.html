@@ -107,6 +107,11 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .spark text.tip { fill: var(--ink); font-weight: 700; font-size: 11px; }
 .spark .xh { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 2; }
 .spark-note { font-size: 12px; color: var(--ink-soft); margin: 4px 0 0; line-height: 1.4; }
+.seg { display: flex; gap: 4px; padding: 2px 6px; }
+.seg button { flex: 1; font: inherit; font-size: 12.5px; padding: 6px 4px; border-radius: 8px; border: 1px solid var(--line); background: transparent;
+  color: var(--ink); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--moss); border-color: var(--moss); color: var(--panel-solid); font-weight: 700; }
+.seg button:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
 .tool-btn small { display: block; font-weight: 400; font-size: 11.5px; opacity: .85; }
 .lbl.mon { pointer-events: auto; cursor: pointer; font-weight: 800; font-size: 13px; color: #6a3f12; font-variant: small-caps; letter-spacing: .06em; }
 .lbl.mon:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -264,6 +269,15 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
     <div class="spark" id="prov-spark" style="padding: 8px 6px 0"></div>
     <p class="spark-note" id="prov-note" style="padding: 0 6px"></p>
   </div>
+  <div id="pop-box" hidden>
+    <p class="group-title">Relieve de población</p>
+    <div class="slider"><div class="row"><label for="morph">Montañas ↔ población</label><output id="morph-o">Montañas</output></div>
+      <input type="range" id="morph" min="0" max="100" step="1" value="0"></div>
+    <div class="seg" role="group" aria-label="Escala de la altura"><button id="sc-sqrt" aria-pressed="true">Raíz cuadrada</button><button id="sc-lin" aria-pressed="false">Proporcional</button></div>
+    <div class="seg" role="group" aria-label="Color" style="margin-top: 4px"><button id="co-dens" aria-pressed="true">Densidad</button><button id="co-age" aria-pressed="false">Mayores de 64</button></div>
+    <div class="ramp" style="padding: 6px 6px 0"><div class="ramp-bar" id="pop-ramp"></div><div class="ramp-ends" id="pop-ends"></div></div>
+    <p class="spark-note" style="padding: 0 6px">Censo 2021 del INE en celdas de 1 km². La raíz cuadrada deja ver los pueblos pequeños; la escala proporcional es fiel a la densidad.</p>
+  </div>
   <div>
     <p class="group-title">Mirador</p>
     <button class="tool-btn" id="mirador-btn" aria-pressed="false">¿Qué se ve desde aquí?<small>Toca un punto del mapa o el nombre de una cumbre</small></button>
@@ -357,7 +371,7 @@ $("toggle-panel").onclick = () => {
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // ---------------------------------------------------------------- datos
-let data, H, W, R, destacadas = [];
+let data, H, W, R, destacadas = [], HE = null, HP = null, PD = null, PA = null;
 try {
   const [dest, json, png] = await Promise.all([
     fetch("data/destacados.json").then(r => r.ok ? r.json() : []).catch(() => []),
@@ -375,6 +389,19 @@ try {
   const px = cx.getImageData(0, 0, W, R).data;
   H = new Float32Array(W * R);
   for (let i = 0, j = 0; i < H.length; i++, j += 4) H[i] = ((px[j] * 65536 + px[j + 1] * 256 + px[j + 2]) / 10) - 10000;
+  // población del Censo 2021 en celdas de 1 km² (opcional)
+  try {
+    const rp = await fetch("data/poblacion.png");
+    if (rp.ok) {
+      const b2 = await createImageBitmap(await rp.blob(), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+      if (b2.width === W && b2.height === R) {
+        cx.clearRect(0, 0, W, R); cx.drawImage(b2, 0, 0);
+        const q = cx.getImageData(0, 0, W, R).data;
+        PD = new Float32Array(W * R); PA = new Float32Array(W * R);
+        for (let i = 0, j = 0; i < PD.length; i++, j += 4) { PD[i] = q[j] * 256 + q[j + 1]; PA[i] = q[j + 2] / 255; }
+      }
+    }
+  } catch (e) { PD = null; PA = null; }
 } catch (e) {
   $("loading").querySelector(".box").innerHTML = "No se pudieron cargar los datos del mapa.<small>Recarga la página. Si sigue fallando, el fichero " + e.message + " no se ha publicado.</small>";
   return;
@@ -382,6 +409,7 @@ try {
 for (const m of data.municipios) { m.ph = Array.isArray(m.ph) && m.ph.length ? m.ph : null; m.pmax = m.ph ? Math.max(...m.ph) : 0; m.abs = Array.isArray(m.abs) ? m.abs : typeof m.abs === "string" && m.abs ? [m.abs] : []; }
 for (const m of data.municipios) { if (typeof m.p !== "number") m.p = null; if (typeof m.cap !== "string" || m.cap === "NA") m.cap = null; if (typeof m.cm !== "string" || m.cm === "NA") m.cm = null; if (typeof m.ct !== "string" || m.ct === "NA") m.ct = null; }
 const M = data.meta;
+HE = H.slice(); HP = new Float32Array(W * R);   // HE: altura efectiva (relieve real mezclado con el de población)
 const KM_W = M.ancho / 1000, KM_D = M.alto / 1000;          // 196 × 135 km
 const CELL_KM = M.celda / 1000;
 $("f-pop").textContent = fmt.format(M.poblacion_total);
@@ -394,7 +422,7 @@ const sz = (my) => my / 1000 - KM_D / 2;
 function heightAt(mx, my) {            // bilinear, metros
   const fx = Math.min(Math.max(mx / M.celda - 0.5, 0), W - 1.001), fy = Math.min(Math.max(my / M.celda - 0.5, 0), R - 1.001);
   const x0 = fx | 0, y0 = fy | 0, tx = fx - x0, ty = fy - y0, i = y0 * W + x0;
-  return (H[i] * (1 - tx) + H[i + 1] * tx) * (1 - ty) + (H[i + W] * (1 - tx) + H[i + W + 1] * tx) * ty;
+  return (HE[i] * (1 - tx) + HE[i + 1] * tx) * (1 - ty) + (HE[i + W] * (1 - tx) + HE[i + W + 1] * tx) * ty;
 }
 
 // UTM 30N (ETRS89) -> lat/lon, para la lectura del cursor
@@ -610,8 +638,8 @@ function buildNormals() {
   const c = M.celda;
   for (let y = 0; y < R; y++) for (let x = 0; x < W; x++) {
     const i = y * W + x;
-    const dx = (H[y * W + Math.min(x + 1, W - 1)] - H[y * W + Math.max(x - 1, 0)]) / (2 * c);
-    const dz = (H[Math.min(y + 1, R - 1) * W + x] - H[Math.max(y - 1, 0) * W + x]) / (2 * c);
+    const dx = (HE[y * W + Math.min(x + 1, W - 1)] - HE[y * W + Math.max(x - 1, 0)]) / (2 * c);
+    const dz = (HE[Math.min(y + 1, R - 1) * W + x] - HE[Math.max(y - 1, 0) * W + x]) / (2 * c);
     let nx = -dx * exag, nz = -dz * exag, l = Math.hypot(nx, 1, nz);
     const s = 1 - 1 / Math.hypot(dx, 1, dz);
     slope1[i] = s;
@@ -631,13 +659,13 @@ drawOverlay();
 // malla del terreno
 const STEP = isPhone ? 3 : 2;
 const gw = Math.floor((W - 1) / STEP) + 1, gh = Math.floor((R - 1) / STEP) + 1;
-const pos = new Float32Array(gw * gh * 3), uv = new Float32Array(gw * gh * 2), hAttr = new Float32Array(gw * gh);
+const pos = new Float32Array(gw * gh * 3), uv = new Float32Array(gw * gh * 2), hAttr = new Float32Array(gw * gh), hpAttr = new Float32Array(gw * gh), vIdx = new Uint32Array(gw * gh);
 for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
   const k = j * gw + i, gx = i * STEP, gy = j * STEP;
   const mx = (gx + 0.5) * M.celda, my = (gy + 0.5) * M.celda;
   pos[k * 3] = sx(mx); pos[k * 3 + 1] = 0; pos[k * 3 + 2] = sz(my);
   uv[k * 2] = mx / M.ancho; uv[k * 2 + 1] = my / M.alto;
-  hAttr[k] = H[gy * W + gx];
+  hAttr[k] = H[gy * W + gx]; vIdx[k] = gy * W + gx;
 }
 const idx = new Uint32Array((gw - 1) * (gh - 1) * 6);
 for (let j = 0, p = 0; j < gh - 1; j++) for (let i = 0; i < gw - 1; i++) {
@@ -648,6 +676,7 @@ const geo = new THREE.BufferGeometry();
 geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
 geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
 geo.setAttribute("h", new THREE.BufferAttribute(hAttr, 1));
+geo.setAttribute("hp", new THREE.BufferAttribute(hpAttr, 1));
 geo.setIndex(new THREE.BufferAttribute(idx, 1));
 geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 3, 0), 130);
 
@@ -656,23 +685,23 @@ const U = {
   uSun: { value: new THREE.Vector3(0.5, 0.6, 0.3).normalize() }, uSunCol: { value: new THREE.Color("#fff1d6") },
   uShadeCol: { value: new THREE.Color("#5d6a9c") }, uFog: { value: new THREE.Color("#cfe3ee") },
   uEntorno: { value: 1 }, uCam: { value: camera.position }, uVis: { value: null }, uViewOn: { value: 0 },
-  uSnow: { value: 2300 }, uAutumn: { value: 0 }, uWinter: { value: 0 },
+  uSnow: { value: 2300 }, uAutumn: { value: 0 }, uWinter: { value: 0 }, uMorph: { value: 0 }, uPop: { value: null },
   uLow: { value: new THREE.Color(0.56, 0.75, 0.36) }, uMeadow: { value: new THREE.Color(0.47, 0.70, 0.33) }, uField: { value: new THREE.Color(0.86, 0.76, 0.46) },
   uForA: { value: new THREE.Color(0.24, 0.47, 0.28) }, uForB: { value: new THREE.Color(0.24, 0.47, 0.28) }, uAlpine: { value: new THREE.Color(0.62, 0.70, 0.40) }
 };
 const terrainMat = new THREE.ShaderMaterial({
   uniforms: U,
   vertexShader: `
-    attribute float h; uniform float uExag;
+    attribute float h; attribute float hp; uniform float uExag, uMorph;
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     void main() {
       vUv = uv; vH = h;
-      vec3 p = vec3(position.x, h * uExag, position.z);
+      vec3 p = vec3(position.x, mix(h, hp, uMorph) * uExag, position.z);
       vWorld = p;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
     }`,
   fragmentShader: `
-    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow;
+    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow, uMorph; uniform sampler2D uPop;
     uniform vec3 uLow, uMeadow, uField, uForA, uForB, uAlpine;
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -706,6 +735,8 @@ const terrainMat = new THREE.ShaderMaterial({
       // fuera de la provincia: más pálido y desaturado
       float outside = 1.0 - smoothstep(0.35, 0.65, mask);
       col = mix(col, mix(vec3(dot(col, vec3(0.33))), col, 0.35) * 0.82 + 0.2, outside * 0.8);
+      // relieve de población: color por densidad o envejecimiento
+      if (uMorph > 0.001) { vec4 pc = texture2D(uPop, vUv); vec3 pcol = pc.a > 0.5 ? pc.rgb : vec3(0.88, 0.87, 0.82); col = mix(col, pcol, smoothstep(0.0, 0.6, uMorph)); }
       // capas vectoriales
       vec4 ov = texture2D(uOv, vUv);
       col = mix(col, ov.rgb, ov.a);
@@ -747,6 +778,52 @@ scene.add(sky);
 // suelo de bruma bajo el diorama
 const ground = new THREE.Mesh(new THREE.CircleGeometry(900, 48), new THREE.MeshBasicMaterial({ color: U.uFog.value }));
 ground.rotation.x = -Math.PI / 2; ground.position.y = -0.3; scene.add(ground);
+
+// ---------------------------------------------------------------- relieve de población (Censo 2021, celdas de 1 km²)
+let morph = 0, popScale = "sqrt", popColor = "dens", DMAX = 1;
+const POP_TOP = 2600;   // altura (m) de la celda más densa: comparable a las cumbres más altas
+const popTex = new THREE.DataTexture(new Uint8Array(W * R * 4), W, R, THREE.RGBAFormat);
+popTex.magFilter = THREE.NearestFilter; popTex.minFilter = THREE.NearestFilter;
+U.uPop.value = popTex;
+const DENS_RAMP = [[0, [243, 230, 200]], [0.25, [230, 191, 120]], [0.5, [207, 138, 60]], [0.75, [163, 81, 31]], [1, [94, 36, 18]]];
+const AGE_RAMP = [[0, [238, 232, 244]], [0.25, [205, 187, 224]], [0.5, [162, 131, 198]], [0.75, [116, 81, 159]], [1, [69, 41, 111]]];
+function rampRGB(ramp, t) {
+  t = Math.max(0, Math.min(1, t)); let i = 1; while (i < ramp.length - 1 && t > ramp[i][0]) i++;
+  const [t0, c0] = ramp[i - 1], [t1, c1] = ramp[i], k = (t - t0) / (t1 - t0);
+  return c0.map((v, j) => Math.round(v + (c1[j] - v) * k));
+}
+function buildPopColors() {
+  if (!PD) return;
+  const d = popTex.image.data, ramp = popColor === "dens" ? DENS_RAMP : AGE_RAMP, lmax = Math.log10(1 + DMAX);
+  for (let i = 0; i < PD.length; i++) {
+    if (PD[i] > 0) { const c = rampRGB(ramp, popColor === "dens" ? Math.log10(1 + PD[i]) / lmax : PA[i] / 0.6); d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255; }
+    else d[i * 4 + 3] = 0;
+  }
+  popTex.needsUpdate = true;
+  $("pop-ramp").style.background = "linear-gradient(90deg, " + ramp.map(([t, c]) => `rgb(${c.join(",")}) ${t * 100}%`).join(", ") + ")";
+  $("pop-ends").innerHTML = popColor === "dens" ? `<span>1</span><span>100</span><span>${fmt.format(DMAX)} hab/km²</span>` : "<span>0 %</span><span>30 %</span><span>60 % o más</span>";
+}
+function buildPopHeights() {
+  if (!PD) return;
+  for (let i = 0; i < PD.length; i++) HP[i] = PD[i] > 0 ? POP_TOP * (popScale === "sqrt" ? Math.sqrt(PD[i] / DMAX) : PD[i] / DMAX) : 0;
+  for (let k = 0; k < vIdx.length; k++) hpAttr[k] = HP[vIdx[k]];
+  geo.attributes.hp.needsUpdate = true;
+}
+let morphTimer = null;
+function applyMorph(full) {
+  for (let i = 0; i < HE.length; i++) HE[i] = H[i] + (HP[i] - H[i]) * morph;
+  U.uMorph.value = morph;
+  treeMesh.visible = layers.arboles && morph < 0.5;
+  placeTrees(); placeTowns(); placeMonuments(); placeFavs();
+  clearTimeout(morphTimer);
+  morphTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, full ? 0 : 150);
+  $("morph-o").textContent = morph === 0 ? "Montañas" : morph === 1 ? "Población" : Math.round(morph * 100) + " % población";
+}
+if (PD) {
+  for (let i = 0; i < PD.length; i++) if (PD[i] > DMAX) DMAX = PD[i];
+  buildPopHeights(); buildPopColors();
+  $("pop-box").hidden = false;
+}
 
 // ---------------------------------------------------------------- arboleda ilustrativa
 function rnd(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
@@ -1458,7 +1535,10 @@ function doHover() {
     // entidad de población más cercana (< 900 m)
     let near = null, nd = 900;
     if (ip) for (const e of data.entidades.concat(data.capitales)) { const d = Math.hypot(e.xy[0] - p.mx, e.xy[1] - p.my); if (d < nd) { nd = d; near = e; } }
-    txt = `${lat.toFixed(3)}° N · ${Math.abs(lon).toFixed(3)}° O · <b>${fmt.format(Math.round(h))} m</b>` +
+    const ci = Math.min(R - 1, Math.max(0, (p.my / M.celda) | 0)) * W + Math.min(W - 1, Math.max(0, (p.mx / M.celda) | 0));
+    const hReal = H[ci];
+    const popTxt = PD && morph > 0 ? (PD[ci] > 0 ? ` · <b>${fmt.format(PD[ci])} hab/km²</b> · ${Math.round(PA[ci] * 100)} % con más de 64 años` : " · sin población") : "";
+    txt = `${lat.toFixed(3)}° N · ${Math.abs(lon).toFixed(3)}° O · <b>${fmt.format(Math.round(morph > 0 ? hReal : h))} m</b>` + popTxt +
       (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + (near ? ` · ${esc(near.n.split(" / ")[0])}` : "");
   }
   $("readout").innerHTML = txt;
@@ -1469,6 +1549,14 @@ function doHover() {
 const bind = (id, key, fn) => $(id).addEventListener("change", (e) => { layers[key] = e.target.checked; fn && fn(); });
 bind("l-mun", "mun", drawOverlay); bind("l-rios", "rios", drawOverlay); bind("l-aguas", "aguas", drawOverlay); bind("l-pob", "pob", drawOverlay);
 bind("l-picos", "picos");
+if (PD) {
+  $("morph").addEventListener("input", (e) => { morph = +e.target.value / 100; applyMorph(false); });
+  const seg = (on, off, fn) => $(on).addEventListener("click", () => { $(on).setAttribute("aria-pressed", "true"); $(off).setAttribute("aria-pressed", "false"); fn(); });
+  seg("sc-sqrt", "sc-lin", () => { popScale = "sqrt"; buildPopHeights(); applyMorph(true); });
+  seg("sc-lin", "sc-sqrt", () => { popScale = "lin"; buildPopHeights(); applyMorph(true); });
+  seg("co-dens", "co-age", () => { popColor = "dens"; buildPopColors(); });
+  seg("co-age", "co-dens", () => { popColor = "age"; buildPopColors(); });
+}
 bind("l-pueblos", "pueblos", () => { townGroup.visible = layers.pueblos; drawOverlay(); });
 bind("l-mon", "mon", () => { monGroup.visible = layers.mon; });
 bind("l-hist", "hist", drawOverlay);
@@ -1493,7 +1581,7 @@ bind("l-sierras", "sierras"); bind("l-valles", "valles"); bind("l-puertos", "pue
 bind("l-carr", "carr", drawOverlay); bind("l-comarcas", "comarcas", drawOverlay);
 bind("l-fav", "fav", () => { favGroup.visible = layers.fav; });
 bind("l-entorno", "entorno", () => { U.uEntorno.value = layers.entorno ? 1 : 0; });
-bind("l-arboles", "arboles", () => { treeMesh.visible = layers.arboles; });
+bind("l-arboles", "arboles", () => { treeMesh.visible = layers.arboles && morph < 0.5; });
 bind("l-nubes", "nubes", () => { clouds.visible = layers.nubes; });
 let exagTimer = null;
 $("exag").addEventListener("input", (e) => {

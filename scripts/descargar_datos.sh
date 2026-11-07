@@ -81,7 +81,11 @@ echo "Comarcas agrarias (MAPA, copia del shapefile oficial en rOpenSpain/mapSpai
 mkdir -p raw/comarcas_agrarias
 [ -s raw/comarcas_agrarias/comarcas_agrarias.gpkg ] || bajar "https://github.com/rOpenSpain/mapSpain/raw/sianedata/MITECO/dist/comarcas_agrarias.gpkg" raw/comarcas_agrarias/comarcas_agrarias.gpkg
 
+echo "Población del Censo 2021 en celdas de 1 km² (INE, rejilla europea)"
+mkdir -p raw/rejilla
+[ -s raw/rejilla/Poblacion_Rejilla_Europea.csv ] || bajar "https://www.ine.es/censos2021/Poblacion_Rejilla_Europea.csv" raw/rejilla/Poblacion_Rejilla_Europea.csv
+
 echo "9/9 Población histórica (INE, censos desde 1900; tarda unos minutos)"
 [ -s raw/historico/censos.json ] || python3 -I scripts/ine_censos.py raw/poblacion_ine_2025.csv raw/historico/censos.json
 
-echo "Hecho. Siguiente paso: Rscript R/03_admin.R && Rscript R/10_preparar_web.R"
+echo "Hecho. Siguiente paso: Rscript R/03_admin.R && Rscript R/10_preparar_web.R && Rscript R/11_rejilla_poblacion.R"
