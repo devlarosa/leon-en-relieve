@@ -147,7 +147,10 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
   #panel.collapsed { display: none; }
   #toggle-panel { display: block; position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     padding: 9px 14px; font: inherit; font-weight: 700; font-size: 14px; color: var(--ink); cursor: pointer; }
-  #info { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto; }
+  #info { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
+    max-height: 40%; overflow: auto; padding: 12px 14px; box-sizing: border-box; }
+  #info h2 { font-size: 21px; }
+  #info .altbar { margin-top: 8px; }
   #readout { left: auto; right: max(16px, env(safe-area-inset-right, 0px)); transform: none; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 140px); }
 }
@@ -815,9 +818,16 @@ function showInfo(m) {
   $("i-mk-min").style.left = pct(m.amin); $("i-mk-med").style.left = pct(m.amed); $("i-mk-max").style.left = pct(m.amax);
   $("i-amin").textContent = "mín. " + fmt.format(m.amin) + " m"; $("i-amed").textContent = "media " + fmt.format(m.amed) + " m"; $("i-amax").textContent = "máx. " + fmt.format(m.amax) + " m";
   const rank = [...data.municipios].filter(x => x.p != null).sort((a, b) => b.p - a.p).indexOf(m) + 1;
-  $("i-hint").textContent = rank ? "Puesto " + rank + " de 211 por población en la provincia." : "";
+  $("i-hint").textContent = (rank ? "Puesto " + rank + " de 211 por población en la provincia." : "") +
+    (comarcaSel ? " Pulsa × para volver a la comarca " + (comarcaSel.n === BIERZO_OFICIAL ? "El Bierzo" : comarcaSel.n) + "." : "");
 }
-$("info-close").onclick = () => { if (comarcaSel) { $("comarca").value = ""; showComarca(null); } else showInfo(null); };
+// cerrar la ficha de un municipio vuelve a la de la comarca seleccionada (si la hay)
+function closeMunicipio() { if (comarcaSel) showComarca(comarcaSel); else showInfo(null); }
+$("info-close").onclick = () => {
+  if (selected) closeMunicipio();
+  else if (comarcaSel) { $("comarca").value = ""; showComarca(null); }
+  else showInfo(null);
+};
 
 function showComarca(c) {
   comarcaSel = c; selected = null; drawOverlay();
@@ -873,9 +883,14 @@ let downAt = null, hoverPending = null;
 renderer.domElement.addEventListener("pointerdown", (e) => { downAt = [e.clientX, e.clientY]; fly = null; });
 renderer.domElement.addEventListener("pointerup", (e) => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  // en el móvil, con el panel abierto encima del mapa, un toque solo cierra el panel
+  if (matchMedia("(max-width: 720px)").matches && !$("panel").classList.contains("collapsed")) {
+    $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false");
+    return;
+  }
   const p = pickTerrain(e.clientX, e.clientY);
   const m = p && inProv(p.mx, p.my) ? munAt(p.mx, p.my) : null;
-  showInfo(m && m !== selected ? m : null);
+  if (m && m !== selected) showInfo(m); else closeMunicipio();
 });
 renderer.domElement.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") hoverPending = [e.clientX, e.clientY]; });
 renderer.domElement.addEventListener("pointerleave", () => { hoverPending = null; hovered = null; });
