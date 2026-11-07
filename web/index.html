@@ -272,8 +272,11 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
     <p class="group-title">Escena</p>
     <div class="slider"><div class="row"><label for="exag">Exageración vertical</label><output id="exag-o">×2,5</output></div>
       <input type="range" id="exag" min="1" max="5" step="0.5" value="2.5"></div>
-    <div class="slider"><div class="row"><label for="hora">Hora del sol</label><output id="hora-o">17:00</output></div>
-      <input type="range" id="hora" min="7" max="21" step="0.25" value="17"></div>
+    <div class="slider"><div class="row"><label for="mes">Mes</label><output id="mes-o"></output></div>
+      <input type="range" id="mes" min="0" max="11" step="1" value="10"></div>
+    <div class="slider"><div class="row"><label for="hora">Hora</label><output id="hora-o">17:00</output></div>
+      <input type="range" id="hora" min="6" max="23" step="0.25" value="17"></div>
+    <p class="spark-note" style="padding: 0 6px">Sol calculado para León según mes y hora. Nieve y colores orientativos según la climatología típica de cada mes.</p>
   </div>
   <p class="soon"><b>Próximamente:</b> comarcas agrarias (MAPA) y precipitación media (AEMET).</p>
   <details class="src">
@@ -652,7 +655,10 @@ const U = {
   uExag: { value: exag / 1000 }, uNrm: { value: nrmTex }, uOv: { value: ovTex }, uMask: { value: maskTex },
   uSun: { value: new THREE.Vector3(0.5, 0.6, 0.3).normalize() }, uSunCol: { value: new THREE.Color("#fff1d6") },
   uShadeCol: { value: new THREE.Color("#5d6a9c") }, uFog: { value: new THREE.Color("#cfe3ee") },
-  uEntorno: { value: 1 }, uCam: { value: camera.position }, uVis: { value: null }, uViewOn: { value: 0 }
+  uEntorno: { value: 1 }, uCam: { value: camera.position }, uVis: { value: null }, uViewOn: { value: 0 },
+  uSnow: { value: 2300 }, uAutumn: { value: 0 }, uWinter: { value: 0 },
+  uLow: { value: new THREE.Color(0.56, 0.75, 0.36) }, uMeadow: { value: new THREE.Color(0.47, 0.70, 0.33) }, uField: { value: new THREE.Color(0.86, 0.76, 0.46) },
+  uForA: { value: new THREE.Color(0.24, 0.47, 0.28) }, uForB: { value: new THREE.Color(0.24, 0.47, 0.28) }, uAlpine: { value: new THREE.Color(0.62, 0.70, 0.40) }
 };
 const terrainMat = new THREE.ShaderMaterial({
   uniforms: U,
@@ -666,7 +672,8 @@ const terrainMat = new THREE.ShaderMaterial({
       gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
     }`,
   fragmentShader: `
-    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn;
+    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow;
+    uniform vec3 uLow, uMeadow, uField, uForA, uForB, uAlpine;
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -683,8 +690,8 @@ const terrainMat = new THREE.ShaderMaterial({
       float nz = fbm(wp * 0.35), nz2 = fbm(wp * 1.7 + 7.0), brush = noise(vec2(wp.x * 2.2 + wp.y * 0.6, wp.y * 0.25));
       float e = vH + (nz - 0.5) * 140.0;
       // paleta pictórica por altitud y pendiente
-      vec3 lowGreen = vec3(0.56, 0.75, 0.36), wheat = vec3(0.86, 0.76, 0.46), meadow = vec3(0.47, 0.70, 0.33);
-      vec3 forest = vec3(0.24, 0.47, 0.28), alpine = vec3(0.62, 0.70, 0.40), rock = vec3(0.62, 0.62, 0.68), snow = vec3(0.96, 0.97, 1.0);
+      vec3 lowGreen = uLow, wheat = uField, meadow = uMeadow;
+      vec3 forest = mix(uForA, uForB, smoothstep(0.3, 0.7, noise(wp * 3.1 + 3.0))), alpine = uAlpine, rock = vec3(0.62, 0.62, 0.68), snow = vec3(0.96, 0.97, 1.0);
       float flatA = 1.0 - smoothstep(0.004, 0.02, slope);
       vec3 col = mix(lowGreen, meadow, smoothstep(500.0, 800.0, e));
       col = mix(col, wheat, flatA * smoothstep(720.0, 800.0, e) * (1.0 - smoothstep(960.0, 1040.0, e)) * smoothstep(0.35, 0.55, nz2 * 0.6 + nz * 0.6));
@@ -692,7 +699,9 @@ const terrainMat = new THREE.ShaderMaterial({
       col = mix(col, forest, forestAmt * smoothstep(0.38, 0.55, nz2));
       col = mix(col, alpine, smoothstep(1650.0, 1900.0, e) * (1.0 - smoothstep(0.15, 0.25, slope)));
       col = mix(col, rock, smoothstep(0.11, 0.2, slope + (nz2 - 0.5) * 0.06));
-      col = mix(col, snow, smoothstep(2180.0, 2320.0, e + nz2 * 120.0) * (1.0 - smoothstep(0.2, 0.3, slope)));
+      // nieve: cota del mes, más baja en laderas orientadas al norte (-z)
+      float es = e + nz2 * 150.0 + max(-n.z, 0.0) * 260.0;
+      col = mix(col, snow, smoothstep(uSnow - 40.0, uSnow + 160.0, es) * (1.0 - smoothstep(0.24, 0.36, slope)));
       col *= 0.92 + 0.16 * brush;
       // fuera de la provincia: más pálido y desaturado
       float outside = 1.0 - smoothstep(0.35, 0.65, mask);
@@ -751,13 +760,17 @@ const treeGeo = (() => {
   g.setAttribute("position", new THREE.BufferAttribute(p, 3)); g.computeVertexNormals(); return g;
 })();
 const treeMat = new THREE.ShaderMaterial({
-  uniforms: { uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam },
-  vertexShader: `attribute vec3 tint; varying vec3 vN; varying vec3 vC; varying vec3 vW;
-    void main(){ vC = tint; vN = normalize(mat3(instanceMatrix) * normal); vec4 w = modelMatrix * instanceMatrix * vec4(position,1.0); vW = w.xyz;
+  uniforms: { uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam, uAutumn: U.uAutumn, uWinter: U.uWinter, uSnow: U.uSnow },
+  vertexShader: `attribute vec3 tint; attribute float kd; attribute float hb; uniform float uAutumn, uWinter, uSnow;
+    varying vec3 vN; varying vec3 vC; varying vec3 vW; varying float vSnowy;
+    void main(){ vec3 tc = tint;
+      if (kd < 0.55) { vec3 aut = mix(vec3(0.86, 0.56, 0.16), vec3(0.72, 0.26, 0.12), kd / 0.55); tc = mix(tc, aut, uAutumn * 0.9); tc = mix(tc, vec3(0.42, 0.36, 0.30), uWinter * 0.75); }
+      vC = tc; vSnowy = step(uSnow - 80.0, hb); vN = normalize(mat3(instanceMatrix) * normal); vec4 w = modelMatrix * instanceMatrix * vec4(position,1.0); vW = w.xyz;
       gl_Position = projectionMatrix * viewMatrix * w; }`,
-  fragmentShader: `uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; varying vec3 vN; varying vec3 vC; varying vec3 vW;
+  fragmentShader: `uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; varying vec3 vN; varying vec3 vC; varying vec3 vW; varying float vSnowy;
     void main(){ float l = dot(normalize(vN), uSun); float b = smoothstep(0.0, 0.1, l) * 0.7 + smoothstep(0.5, 0.6, l) * 0.3;
-      vec3 c = vC * mix(uShadeCol * 0.9 + 0.1, uSunCol * 1.1, b);
+      vec3 base = mix(vC, vec3(0.95, 0.97, 1.0), vSnowy * smoothstep(0.1, 0.6, normalize(vN).y) * 0.85);
+      vec3 c = base * mix(uShadeCol * 0.9 + 0.1, uSunCol * 1.1, b);
       float d = length(vW - uCam); float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
       gl_FragColor = vec4(mix(c, uFog, fog), 1.0);
     }`
@@ -783,6 +796,9 @@ const treeMesh = new THREE.InstancedMesh(treeGeo, treeMat, trees.length);
   const tint = new Float32Array(trees.length * 3), palette = [[0.20, 0.42, 0.25], [0.27, 0.50, 0.28], [0.17, 0.36, 0.27], [0.36, 0.55, 0.30]];
   trees.forEach((t, k) => { const c = palette[(t[3] * palette.length) | 0]; tint.set(c, k * 3); });
   treeGeo.setAttribute("tint", new THREE.InstancedBufferAttribute(tint, 3));
+  const kd = new Float32Array(trees.length), hb = new Float32Array(trees.length), rk = rnd(99);
+  trees.forEach((t, k) => { kd[k] = rk(); hb[k] = heightAt(t[0], t[1]); });
+  treeGeo.setAttribute("kd", new THREE.InstancedBufferAttribute(kd, 1)); treeGeo.setAttribute("hb", new THREE.InstancedBufferAttribute(hb, 1));
 }
 function placeTrees() {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
@@ -800,27 +816,28 @@ function toonMat(color) {
   const key = color || "inst";
   if (toonCache.has(key)) return toonCache.get(key);
   const m = new THREE.ShaderMaterial({
-    uniforms: { uColor: { value: new THREE.Color(color || "#ffffff") }, uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam },
+    uniforms: { uColor: { value: new THREE.Color(color || "#ffffff") }, uSnow: U.uSnow, uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam },
     vertexShader: `
       #ifdef USE_INSTANCING
-      attribute vec3 tint;
+      attribute vec3 tint; attribute float hb;
       #endif
-      uniform vec3 uColor; varying vec3 vN; varying vec3 vC; varying vec3 vW;
+      uniform vec3 uColor; varying vec3 vN; varying vec3 vC; varying vec3 vW; varying float vHb;
       void main() {
         #ifdef USE_INSTANCING
-        vC = tint; mat4 im = instanceMatrix;
+        vC = tint; vHb = hb; mat4 im = instanceMatrix;
         #else
-        vC = uColor; mat4 im = mat4(1.0);
+        vC = uColor; vHb = -10000.0; mat4 im = mat4(1.0);
         #endif
         vN = normalize(mat3(modelMatrix) * mat3(im) * normal);
         vec4 w = modelMatrix * im * vec4(position, 1.0); vW = w.xyz;
         gl_Position = projectionMatrix * viewMatrix * w;
       }`,
-    fragmentShader: `uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; varying vec3 vN; varying vec3 vC; varying vec3 vW;
+    fragmentShader: `uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uSnow; varying vec3 vN; varying vec3 vC; varying vec3 vW; varying float vHb;
       void main() {
         vec3 n = normalize(vN); float l = dot(n, uSun);
+        vec3 base = mix(vC, vec3(0.95, 0.97, 1.0), step(uSnow - 60.0, vHb) * smoothstep(0.35, 0.7, n.y) * 0.9);
         float b = smoothstep(-0.02, 0.08, l) * 0.6 + smoothstep(0.45, 0.55, l) * 0.4;
-        vec3 c = vC * mix(uShadeCol * 0.85 + 0.15, uSunCol * 1.1, b) + pow(1.0 - abs(n.y), 3.0) * 0.04;
+        vec3 c = base * mix(uShadeCol * 0.85 + 0.15, uSunCol * 1.1, b) + pow(1.0 - abs(n.y), 3.0) * 0.04;
         float d = length(vW - uCam); float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
         gl_FragColor = vec4(mix(c, uFog, fog), 1.0);
       }`
@@ -1022,8 +1039,9 @@ const townGroup = new THREE.Group(); scene.add(townGroup);
 for (const [k, geoName] of [["walls", "box"], ["roofs", "prism"], ["tower", "box"], ["spire", "pyr"]]) {
   const list = SETS[k]; if (!list.length) continue;
   const geo = G[geoName].clone(), tint = new Float32Array(list.length * 3);
-  list.forEach((it, i) => tint.set([it[7], it[8], it[9]], i * 3));
-  geo.setAttribute("tint", new THREE.InstancedBufferAttribute(tint, 3));
+  const hbA = new Float32Array(list.length);
+  list.forEach((it, i) => { tint.set([it[7], it[8], it[9]], i * 3); hbA[i] = heightAt(it[0], it[1]); });
+  geo.setAttribute("tint", new THREE.InstancedBufferAttribute(tint, 3)); geo.setAttribute("hb", new THREE.InstancedBufferAttribute(hbA, 1));
   const im = new THREE.InstancedMesh(geo, toonMat(null), list.length);
   im.frustumCulled = false; townMeshes[k] = im; townGroup.add(im);
 }
@@ -1062,23 +1080,63 @@ const clouds = new THREE.Group(); scene.add(clouds);
 }
 
 // ---------------------------------------------------------------- sol y hora
-function setHour(hh) {
-  const t = (hh - 7) / 14;                         // 0 = 7:00, 1 = 21:00
-  const az = (-80 + t * 200) * Math.PI / 180;      // del este al oeste pasando por el sur
-  const el = Math.sin(Math.PI * Math.min(Math.max((hh - 6.2) / 15.2, 0), 1)) * 62 * Math.PI / 180 + 0.04;
-  U.uSun.value.set(-Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).normalize();
-  const golden = 1 - Math.min(1, Math.max(0, (el - 0.12) / 0.5));
-  U.uSunCol.value.set("#fff6e4").lerp(new THREE.Color("#ffc58a"), golden);
-  U.uShadeCol.value.set("#6a7aa6").lerp(new THREE.Color("#7a5f9e"), golden * 0.8);
-  skyMat.uniforms.uTop.value.set("#78b4de").lerp(new THREE.Color("#8d8fc9"), golden * 0.6);
-  skyMat.uniforms.uHorizon.value.set("#e9f1ee").lerp(new THREE.Color("#ffd3a8"), golden);
-  U.uFog.value.set("#d6e6ee").lerp(new THREE.Color("#f2d6c2"), golden * 0.85);
-  ground.material.color.copy(U.uFog.value);
-  clouds.children.forEach(s => s.material.color.set("#ffffff").lerp(new THREE.Color("#ffd9c4"), golden * 0.7));
-  const hhh = Math.floor(hh), mm = Math.round((hh - hhh) * 60);
-  $("hora-o").textContent = hhh + ":" + String(mm).padStart(2, "0");
+// estaciones: valores orientativos por mes (enero = 0) para la Cordillera Cantábrica y la meseta leonesa
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const estacion = (m) => m === 11 || m < 2 ? "invierno" : m < 5 ? "primavera" : m < 8 ? "verano" : "otoño";
+const SEASON = {
+  snow:   [1150, 1150, 1350, 1650, 1950, 2300, 2700, 2800, 2600, 2100, 1500, 1200],   // cota de nieve (m)
+  dry:    [0, 0, 0, 0.05, 0.1, 0.4, 0.85, 1, 0.7, 0.2, 0, 0],                        // agostamiento
+  aut:    [0, 0, 0, 0, 0, 0, 0, 0, 0.25, 0.9, 0.7, 0.1],                             // color otoñal del bosque
+  win:    [1, 0.9, 0.5, 0.1, 0, 0, 0, 0, 0, 0, 0.3, 0.8],                            // invierno: prados apagados, árboles desnudos
+  clouds: [16, 15, 14, 13, 11, 8, 5, 5, 8, 12, 15, 16],
+  field: [[.62, .68, .45], [.62, .68, .45], [.55, .72, .38], [.50, .76, .32], [.58, .78, .30], [.82, .78, .40],
+          [.88, .76, .42], [.86, .78, .56], [.70, .58, .42], [.62, .48, .34], [.58, .55, .38], [.60, .62, .42]]   // cereal: verde, dorado, rastrojo, arado
+};
+let month = new Date().getMonth(), hour = 17;
+const mixc = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
+function applySeason() {
+  const m = month, dry = SEASON.dry[m], aut = SEASON.aut[m], win = SEASON.win[m];
+  let low = [0.56, 0.75, 0.36], mea = [0.47, 0.70, 0.33], alp = [0.62, 0.70, 0.40];
+  const fb = [0.24, 0.47, 0.28];
+  low = mixc(mixc(low, [0.82, 0.72, 0.42], dry), [0.58, 0.62, 0.44], win);
+  mea = mixc(mixc(mea, [0.70, 0.68, 0.40], dry * 0.8), [0.52, 0.58, 0.42], win);
+  alp = mixc(mixc(alp, [0.72, 0.68, 0.44], dry * 0.7), [0.60, 0.60, 0.50], win);
+  const fA = mixc(mixc(fb, [0.80, 0.50, 0.18], aut * 0.85), [0.42, 0.38, 0.33], win * 0.5);
+  const fB = mixc(mixc(fb, [0.66, 0.28, 0.14], aut * 0.7), [0.28, 0.38, 0.30], win * 0.3);
+  U.uLow.value.setRGB(...low); U.uMeadow.value.setRGB(...mea); U.uAlpine.value.setRGB(...alp);
+  U.uForA.value.setRGB(...fA); U.uForB.value.setRGB(...fB); U.uField.value.setRGB(...SEASON.field[m]);
+  U.uSnow.value = SEASON.snow[m]; U.uAutumn.value = aut; U.uWinter.value = win;
+  clouds.children.forEach((c, i) => { c.visible = i < SEASON.clouds[m]; });
+  $("mes").value = String(m);
+  $("mes-o").textContent = MESES[m] + " · " + estacion(m);
+  updateSky();
 }
-setHour(17);
+// posición real del sol en León (42,6° N, 5,57° O) para el día 15 del mes y la hora oficial
+function updateSky() {
+  const m = month, hh = hour, phi = 42.6 * Math.PI / 180;
+  const doy = 15 + m * 30.42, dec = 23.44 * Math.sin(2 * Math.PI * (doy - 81) / 365) * Math.PI / 180;
+  const tz = m >= 3 && m <= 9 ? 2 : 1;                      // horario de verano (abril–octubre)
+  const H = ((hh - tz - 0.371) - 12) * 15 * Math.PI / 180;  // ángulo horario (hora solar = UTC − 5,57°/15)
+  const el = Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
+  const az = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi));   // desde el sur, + hacia el oeste
+  const night = Math.min(1, Math.max(0, (0.02 - el) / 0.14));
+  const elL = Math.max(el, 0.06);
+  U.uSun.value.set(-Math.sin(az) * Math.cos(elL), Math.sin(elL), Math.cos(az) * Math.cos(elL)).normalize();
+  if (night > 0) U.uSun.value.lerp(new THREE.Vector3(Math.sin(az) * 0.6, 0.75, -Math.cos(az) * 0.6).normalize(), night).normalize();
+  const golden = (1 - Math.min(1, Math.max(0, (el - 0.10) / 0.45))) * (1 - night);
+  const win = SEASON.win[m], dry = SEASON.dry[m];
+  const C = (h) => new THREE.Color(h);
+  U.uSunCol.value.set("#fff6e4").lerp(C("#eef2ff"), win * 0.4).lerp(C("#ffc58a"), golden).lerp(C("#6f80b4"), night);
+  U.uShadeCol.value.set("#6a7aa6").lerp(C("#7a5f9e"), golden * 0.8).lerp(C("#252c52"), night);
+  skyMat.uniforms.uTop.value.set("#78b4de").lerp(C("#9cbfdc"), win * 0.5).lerp(C("#8d8fc9"), golden * 0.6).lerp(C("#121a38"), night);
+  skyMat.uniforms.uHorizon.value.set("#e9f1ee").lerp(C("#efe6cf"), dry * 0.5).lerp(C("#ffd3a8"), golden).lerp(C("#363a68"), night);
+  U.uFog.value.set("#d6e6ee").lerp(C("#e8e0cc"), dry * 0.5).lerp(C("#dfe7ef"), win * 0.4).lerp(C("#f2d6c2"), golden * 0.85).lerp(C("#2a3456"), night);
+  ground.material.color.copy(U.uFog.value);
+  clouds.children.forEach(c => c.material.color.set("#ffffff").lerp(C("#d9dde6"), win * 0.6).lerp(C("#ffd9c4"), golden * 0.7).lerp(C("#565e7c"), night));
+  const hh0 = Math.floor(hh), mm = Math.round((hh - hh0) * 60);
+  $("hora-o").textContent = hh0 + ":" + String(mm).padStart(2, "0") + (night > 0.6 ? " · noche" : "");
+}
+applySeason();
 
 // ---------------------------------------------------------------- rótulos
 const labelHost = $("labels");
@@ -1443,7 +1501,8 @@ $("exag").addEventListener("input", (e) => {
   placeTrees(); placeFavs(); placeTowns(); placeMonuments(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
   clearTimeout(exagTimer); exagTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, 120);
 });
-$("hora").addEventListener("input", (e) => setHour(+e.target.value));
+$("hora").addEventListener("input", (e) => { hour = +e.target.value; updateSky(); });
+$("mes").addEventListener("input", (e) => { month = +e.target.value; applySeason(); });
 
 addEventListener("resize", () => {
   camera.aspect = host.clientWidth / host.clientHeight; camera.updateProjectionMatrix();
