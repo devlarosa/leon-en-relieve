@@ -224,7 +224,7 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
     <datalist id="munlist"></datalist>
   </div>
   <div>
-    <label class="group-title" for="comarca">Comarca</label>
+    <label class="group-title" for="comarca">Comarca agraria</label>
     <select id="comarca"><option value="">Toda la provincia</option></select>
   </div>
   <div id="favs-box" hidden>
@@ -236,7 +236,7 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
     <div class="layers">
       <label class="layer" id="l-fav-row" hidden><input type="checkbox" id="l-fav" checked><span class="sw"></span><span class="name">Lugares destacados</span><span class="key" style="background:#f2b53a"></span></label>
       <label class="layer"><input type="checkbox" id="l-mun" checked><span class="sw"></span><span class="name">Límites municipales</span><span class="key" style="background:#fff7df;box-shadow:0 0 0 1px #8a7a52"></span></label>
-      <label class="layer"><input type="checkbox" id="l-comarcas"><span class="sw"></span><span class="name">Límites de comarca<span class="note">Tradicionales, no oficiales</span></span><span class="key" style="background:#7a4d8c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-comarcas"><span class="sw"></span><span class="name">Comarcas agrarias<span class="note">Oficiales del MAPA</span></span><span class="key" style="background:#7a4d8c"></span></label>
       <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
       <label class="layer"><input type="checkbox" id="l-rios" checked><span class="sw"></span><span class="name">Ríos</span><span class="key" style="background:#3fa9c9"></span></label>
       <label class="layer"><input type="checkbox" id="l-aguas" checked><span class="sw"></span><span class="name">Embalses y lagos</span><span class="key" style="background:#7fd0d8"></span></label>
@@ -380,7 +380,7 @@ try {
   return;
 }
 for (const m of data.municipios) { m.ph = Array.isArray(m.ph) && m.ph.length ? m.ph : null; m.pmax = m.ph ? Math.max(...m.ph) : 0; m.abs = Array.isArray(m.abs) ? m.abs : typeof m.abs === "string" && m.abs ? [m.abs] : []; }
-for (const m of data.municipios) { if (typeof m.p !== "number") m.p = null; if (typeof m.cap !== "string" || m.cap === "NA") m.cap = null; if (typeof m.cm !== "string" || m.cm === "NA") m.cm = null; }
+for (const m of data.municipios) { if (typeof m.p !== "number") m.p = null; if (typeof m.cap !== "string" || m.cap === "NA") m.cap = null; if (typeof m.cm !== "string" || m.cm === "NA") m.cm = null; if (typeof m.ct !== "string" || m.ct === "NA") m.ct = null; }
 const M = data.meta;
 const KM_W = M.ancho / 1000, KM_D = M.alto / 1000;          // 196 × 135 km
 const CELL_KM = M.celda / 1000;
@@ -1360,7 +1360,8 @@ function showInfo(m) {
   $("i-l4").textContent = "Código INE"; $("i-code").textContent = m.c;
   $("i-histbox").hidden = !m.ph;
   if (m.ph) { sparkline($("i-spark"), m.ph, yearIdx); $("i-histnote").textContent = histNote(m.ph, m.abs.length ? " Incluye municipios que absorbió: " + m.abs.join(", ") + "." : ""); }
-  $("i-com").textContent = m.cm ? "Comarca: " + m.cm + (m.bz && m.cm !== "El Bierzo" ? " · El Bierzo" : "") : "";
+  $("i-com").textContent = (m.cm ? "Comarca agraria: " + m.cm : "") + (m.bz && m.cm !== "El Bierzo" ? " · El Bierzo (Ley 1/1991)" : "") +
+    (m.ct && m.ct !== m.cm ? " · Tradicional: " + m.ct : "");
   const lo = 200, hi = 2650, pct = (v) => ((v - lo) / (hi - lo) * 100).toFixed(1) + "%";
   $("i-mk-min").style.left = pct(m.amin); $("i-mk-med").style.left = pct(m.amed); $("i-mk-max").style.left = pct(m.amax);
   $("i-amin").textContent = "mín. " + fmt.format(m.amin) + " m"; $("i-amed").textContent = "media " + fmt.format(m.amed) + " m"; $("i-amax").textContent = "máx. " + fmt.format(m.amax) + " m";
@@ -1382,7 +1383,7 @@ function showComarca(c) {
   const muns = c.muns, area = muns.reduce((s, m) => s + m.a, 0);
   $("info").hidden = false;
   $("i-name").textContent = c.n === BIERZO_OFICIAL ? "El Bierzo" : c.n;
-  $("i-cap").textContent = c.n === BIERZO_OFICIAL ? "Comarca oficial (Ley 1/1991 de Castilla y León)" : "Comarca tradicional" + (c.bz ? " de El Bierzo" : "");
+  $("i-cap").textContent = c.n === BIERZO_OFICIAL ? "Comarca oficial (Ley 1/1991 de Castilla y León)" : "Comarca agraria del Ministerio de Agricultura (MAPA)";
   $("i-com").textContent = "";
   $("i-pop").textContent = fmt.format(c.p) + " hab.";
   $("i-area").textContent = fmt1.format(area) + " km²";

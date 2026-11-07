@@ -147,6 +147,18 @@ for (i in which(mun$tipo == "condominio")) {
 }
 sin <- mun$nombre[is.na(mun$comarca)]
 cat("Unidades sin comarca:", length(sin), paste(sin, collapse = ", "), "\n")
+# Comarcas agrarias oficiales del MAPA (ComarcasAgrarias.shp de la IDE del MAPA, copia distribuida por rOpenSpain/mapSpain).
+# Cada municipio va a la comarca con la que comparte más superficie.
+NOMBRES_AGR <- c("BIERZO" = "El Bierzo", "LA MONTAÑA DE LUNA" = "La Montaña de Luna", "LA MONTAÑA DE RIAÑO" = "La Montaña de Riaño",
+  "LA CABRERA" = "La Cabrera", "ASTORGA" = "Astorga", "TIERRAS DE LEON" = "Tierras de León", "LA BAÑEZA" = "La Bañeza",
+  "EL PARAMO" = "El Páramo", "ESLA-CAMPOS" = "Esla-Campos", "SAHAGUN" = "Sahagún")
+cag <- st_read("raw/comarcas_agrarias/comarcas_agrarias.gpkg", quiet = TRUE) %>% filter(cpro == "24") %>%
+  st_transform(25830) %>% select(CO_COMARCA, DS_COMARCA)
+ixa <- suppressWarnings(st_intersection(mun[, "code"], cag)); ixa$a <- as.numeric(st_area(ixa))
+best <- ixa %>% st_drop_geometry() %>% group_by(code) %>% slice_max(a, n = 1, with_ties = FALSE) %>% ungroup()
+mun$tradicional <- mun$comarca
+mun$comarca <- unname(NOMBRES_AGR[best$DS_COMARCA[match(mun$code, best$code)]])
+cat("Comarcas agrarias: sin asignar", sum(is.na(mun$comarca)), "\n"); print(table(mun$comarca))
 grp <- mun %>% filter(!is.na(comarca)) %>% group_by(nombre = comarca) %>%
   summarise(n = n(), pob = sum(pob2025, na.rm = TRUE), bierzo = all(bierzo), .groups = "drop")
 grp <- rbind(grp, mun %>% filter(bierzo) %>% summarise(nombre = "El Bierzo (comarca oficial)", n = n(), pob = sum(pob2025, na.rm = TRUE), bierzo = TRUE))
@@ -188,11 +200,12 @@ out <- list(
                 carreteras = "IGN · Red de transporte, clase funcional (api-features.idee.es, roadlink)",
                 historico = "INE · Alteraciones de los municipios en los Censos de Población desde 1842 (población de derecho; se suman los municipios absorbidos)",
                 orografia = "IGN · Nomenclátor Geográfico Básico (cumbres, alineaciones montañosas, depresiones y pasos); altitudes del MDT25",
-                comarcas = "Comarcas tradicionales: ficha de cada municipio en es.wikipedia.org (no oficiales); El Bierzo: Ley 1/1991 de Castilla y León")),
+                comarcas = "MAPA · Comarcas agrarias (ComarcasAgrarias.shp de la IDE del MAPA, vía rOpenSpain/mapSpain); El Bierzo oficial: Ley 1/1991 de Castilla y León",
+                comarcas_tradicionales = "Comarca tradicional de cada municipio según su ficha en es.wikipedia.org (no oficial)")),
   provincia = poly_coords(provS)[[1]],
   municipios = lapply(seq_len(nrow(munS)), function(i) list(
     c = munS$code[i], n = munS$nombre[i], t = munS$tipo[i], p = munS$pob2025[i], a = munS$area_km2[i],
-    cap = munS$capital[i], cm = munS$comarca[i], bz = munS$bierzo[i], ph = serie(munS$code[i]), abs = absorbidos(munS$code[i]), amin = munS$alt_min[i], amax = munS$alt_max[i], amed = munS$alt_med[i],
+    cap = munS$capital[i], cm = munS$comarca[i], ct = munS$tradicional[i], bz = munS$bierzo[i], ph = serie(munS$code[i]), abs = absorbidos(munS$code[i]), amin = munS$alt_min[i], amax = munS$alt_max[i], amed = munS$alt_med[i],
     g = poly_coords(munS[i, ])[[1]])),
   rios = lapply(seq_len(nrow(rios)), function(i) list(n = rios$nombre[i], k = rios$long_km[i],
     w = rios$ancho[i], g = line_coords(rios[i, ])[[1]])),

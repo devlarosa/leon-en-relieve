@@ -77,6 +77,10 @@ echo "7/9 Población (INE, Padrón municipal)"
 echo "8/9 Comarcas tradicionales (Wikidata + Wikipedia, no oficiales)"
 [ -s raw/comarcas/comarca_wikipedia.json ] || python3 -I scripts/comarcas_wikipedia.py raw/comarcas/comarca_wikipedia.json
 
+echo "Comarcas agrarias (MAPA, copia del shapefile oficial en rOpenSpain/mapSpain)"
+mkdir -p raw/comarcas_agrarias
+[ -s raw/comarcas_agrarias/comarcas_agrarias.gpkg ] || bajar "https://github.com/rOpenSpain/mapSpain/raw/sianedata/MITECO/dist/comarcas_agrarias.gpkg" raw/comarcas_agrarias/comarcas_agrarias.gpkg
+
 echo "9/9 Población histórica (INE, censos desde 1900; tarda unos minutos)"
 [ -s raw/historico/censos.json ] || python3 -I scripts/ine_censos.py raw/poblacion_ine_2025.csv raw/historico/censos.json
 
