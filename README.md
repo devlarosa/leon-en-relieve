@@ -2,7 +2,7 @@
 
 Mapa 3D interactivo de la provincia de León con su orografía real, pintado con un estilo ilustrado y acogedor. Funciona en el navegador (HTML + [three.js](https://threejs.org/)), sin servidor de mapas ni teselas externas.
 
-**Capas**: relieve (MDT25), límites municipales, comarcas, ríos, embalses y lagos, carreteras, poblaciones, cumbres, sierras, valles y puertos de montaña. Cada municipio tiene una ficha con su población (INE), superficie, altitudes y comarca. Se puede filtrar por comarca, cambiar la exageración vertical y la hora del sol.
+**Capas**: relieve (MDT25), límites municipales, comarcas, ríos, embalses y lagos, carreteras, poblaciones, cumbres, sierras, valles y puertos de montaña. Cada municipio tiene una ficha con su población (INE), superficie, altitudes y comarca. Se puede filtrar por comarca, cambiar la exageración vertical y la hora del sol, ver la evolución de la población de 1900 a 2025 y usar un mirador que calcula todo lo que se ve desde cualquier punto.
 
 ## Fuentes
 
@@ -16,6 +16,7 @@ Todos los datos geográficos proceden de servicios oficiales de la Administraci�
 | Embalses y lagos, carreteras | IGN · OGC API Features `api-features.idee.es` (`standingwater`, `roadlink`) |
 | Poblaciones, cumbres, sierras, valles, puertos | IGN · Nomenclátor Geográfico Básico de España, WFS `www.ign.es/wfs-inspire/ngbe` |
 | Población | INE · Padrón municipal a 1 de enero (tabla 2877) |
+| Población histórica | INE · Alteraciones de los municipios en los Censos de Población desde 1842 (población de derecho 1900–2021; a cada municipio actual se le suman los que absorbió) |
 | El Bierzo | Ley 1/1991 de Castilla y León (38 municipios) |
 | Comarcas tradicionales | Ficha de cada municipio en es.wikipedia.org, vía Wikidata (código INE P772). **No son oficiales**: León no tiene comarcalización oficial salvo El Bierzo |
 
@@ -51,6 +52,7 @@ scripts/descargar_datos.sh   descarga de todas las fuentes
 scripts/fetch_ogcapi.py      cliente paginado de la OGC API Features de la IDEE
 scripts/ine_poblacion.py     padrón del INE
 scripts/comarcas_wikipedia.py comarca tradicional de cada municipio
+scripts/ine_censos.py        población histórica por municipio (censos del INE)
 R/03_admin.R                 límites administrativos
 R/10_preparar_web.R          rejilla de alturas, recortes, simplificación y JSON para la web
 web/index.html               visor 3D

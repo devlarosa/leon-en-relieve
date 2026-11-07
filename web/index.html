@@ -16,6 +16,7 @@
   --river: #2f8fae;
   --peak: #6a5a8c;
   --sky: #cfe3ee;
+  --hist: #b0651c;          /* serie de población: ámbar */
   --font-display: "Alegreya", "Iowan Old Style", Georgia, serif;
   --font-ui: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --shadow: 0 10px 30px rgba(40, 60, 70, 0.18), 0 2px 6px rgba(40, 60, 70, 0.10);
@@ -24,13 +25,13 @@
   :root:not([data-theme="light"]) {
     --ink: #eef2e6; --ink-soft: #b5c2b4; --panel: rgba(28, 38, 40, 0.84); --panel-solid: #1c2628;
     --line: rgba(238, 242, 230, 0.14); --moss: #9cc98f; --moss-soft: #2c3d33; --river: #7cc6e0; --peak: #c4b5ec;
-    --sky: #1d2b33; color-scheme: dark;
+    --sky: #1d2b33; --hist: #e9a24f; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --ink: #eef2e6; --ink-soft: #b5c2b4; --panel: rgba(28, 38, 40, 0.84); --panel-solid: #1c2628;
   --line: rgba(238, 242, 230, 0.14); --moss: #9cc98f; --moss-soft: #2c3d33; --river: #7cc6e0; --peak: #c4b5ec;
-  --sky: #1d2b33; color-scheme: dark;
+  --sky: #1d2b33; --hist: #e9a24f; color-scheme: dark;
 }
 html, body { height: 100%; }
 body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); overflow: hidden; }
@@ -67,6 +68,46 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .lbl.puerto .notch { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border: 2px solid #5a4632; border-top: 0; border-right: 0;
   transform: rotate(-45deg) translate(1px, -2px); }
 .lbl.peak.top { font-size: 14.5px; }
+.lbl.peak { pointer-events: auto; cursor: pointer; }
+.lbl.peak:hover { text-decoration: underline; text-underline-offset: 3px; }
+#mirador { position: fixed; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: 280px; padding: 16px; }
+#mirador h2 { margin: 0 0 2px; font-family: var(--font-display); font-size: 23px; font-weight: 800; line-height: 1.05; padding-right: 26px; text-wrap: balance; }
+#mirador .cap { margin: 0 0 10px; font-size: 12.5px; color: var(--ink-soft); }
+#mirador .big { font-family: var(--font-display); font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+#mirador .big small { font-family: var(--font-ui); font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-left: 4px; }
+#mirador dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 12px 0 0; font-size: 13.5px; }
+#mirador dt { color: var(--ink-soft); }
+#mirador dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+#mirador ul { margin: 6px 0 0; padding: 0; list-style: none; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+#mirador li { display: flex; justify-content: space-between; gap: 8px; }
+#mirador li span:last-child { color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+#mirador button.x { position: absolute; top: 10px; right: 10px; border: 0; background: transparent; color: var(--ink-soft); font-size: 20px; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 8px; }
+#mirador button.x:hover { background: var(--moss-soft); }
+#mirador .hint { margin: 10px 0 0; font-size: 11.5px; color: var(--ink-soft); }
+.tool-btn { width: 100%; font: inherit; font-size: 14px; font-weight: 700; padding: 9px 10px; border-radius: 10px; cursor: pointer;
+  border: 1.5px solid #2f8fae; background: transparent; color: var(--ink); text-align: left; }
+.tool-btn:hover, .tool-btn[aria-pressed="true"] { background: #2f8fae; color: #fff; }
+.tool-btn:focus-visible { outline: 2px solid var(--moss); outline-offset: 2px; }
+.hist-row { display: flex; align-items: center; gap: 10px; padding: 2px 6px; }
+.play { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--hist); background: transparent; color: var(--ink);
+  font-size: 13px; cursor: pointer; }
+.play:hover, .play[aria-pressed="true"] { background: var(--hist); color: #fff; }
+.play:focus-visible { outline: 2px solid var(--moss); outline-offset: 2px; }
+.ramp { flex: 1; min-width: 0; }
+.ramp-bar { height: 10px; border-radius: 5px; background: linear-gradient(90deg, #f6efe2, #f0d9a8 25%, #e6b665 50%, #d38f2e 75%, #a8611a); border: 1px solid var(--line); }
+.ramp-ends { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--ink-soft); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.spark svg { display: block; width: 100%; height: auto; overflow: visible; }
+.spark .ln { fill: none; stroke: var(--hist); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.spark .ar { fill: var(--hist); opacity: .12; }
+.spark .base { stroke: var(--line); stroke-width: 1; }
+.spark .mk { fill: var(--hist); stroke: var(--panel-solid); stroke-width: 2; }
+.spark .cur { fill: var(--panel-solid); stroke: var(--ink); stroke-width: 2; }
+.spark text { font-family: var(--font-ui); font-size: 10.5px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.spark text.tip { fill: var(--ink); font-weight: 700; font-size: 11px; }
+.spark .xh { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 2; }
+.spark-note { font-size: 12px; color: var(--ink-soft); margin: 4px 0 0; line-height: 1.4; }
+.tool-btn small { display: block; font-weight: 400; font-size: 11.5px; opacity: .85; }
 .lbl.river { font-style: italic; font-weight: 500; font-size: 13.5px; color: #1d6f8c; letter-spacing: .04em; }
 .lbl.lake { font-style: italic; font-weight: 500; font-size: 12.5px; color: #1d6f8c; }
 .lbl .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #fffdf4; border: 2px solid #263a32;
@@ -150,6 +191,8 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
   #info { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
     max-height: 40%; overflow: auto; padding: 12px 14px; box-sizing: border-box; }
   #info h2 { font-size: 21px; }
+  #mirador { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
+    max-height: 40%; overflow: auto; padding: 12px 14px; box-sizing: border-box; }
   #info .altbar { margin-top: 8px; }
   #readout { left: auto; right: max(16px, env(safe-area-inset-right, 0px)); transform: none; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 140px); }
@@ -204,6 +247,22 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
       <label class="layer"><input type="checkbox" id="l-nubes" checked><span class="sw"></span><span class="name">Nubes</span></label>
     </div>
   </div>
+  <div id="hist-box">
+    <p class="group-title">Población en el tiempo</p>
+    <label class="layer"><input type="checkbox" id="l-hist"><span class="sw"></span><span class="name">Colorear municipios<span class="note">Población del año respecto a su máximo histórico</span></span></label>
+    <div class="slider"><div class="row"><label for="anio">Año</label><output id="anio-o">2025</output></div>
+      <input type="range" id="anio" min="0" max="13" step="1" value="13"></div>
+    <div class="hist-row">
+      <button class="play" id="play" aria-pressed="false" aria-label="Reproducir de 1900 a 2025">▶</button>
+      <div class="ramp"><div class="ramp-bar"></div><div class="ramp-ends"><span>0 %</span><span>50 %</span><span>100 % del máx.</span></div></div>
+    </div>
+    <div class="spark" id="prov-spark" style="padding: 8px 6px 0"></div>
+    <p class="spark-note" id="prov-note" style="padding: 0 6px"></p>
+  </div>
+  <div>
+    <p class="group-title">Mirador</p>
+    <button class="tool-btn" id="mirador-btn" aria-pressed="false">¿Qué se ve desde aquí?<small>Toca un punto del mapa o el nombre de una cumbre</small></button>
+  </div>
   <div>
     <p class="group-title">Escena</p>
     <div class="slider"><div class="row"><label for="exag">Exageración vertical</label><output id="exag-o">×2,5</output></div>
@@ -235,7 +294,27 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
     <div class="track"><div class="mk" id="i-mk-min"></div><div class="mk" id="i-mk-med"></div><div class="mk" id="i-mk-max"></div></div>
     <div class="ends"><span id="i-amin"></span><span id="i-amed"></span><span id="i-amax"></span></div>
   </div>
+  <div id="i-histbox" style="margin-top: 12px">
+    <p class="group-title" style="margin:0 0 2px">Población 1900–2025 (INE)</p>
+    <div class="spark" id="i-spark"></div>
+    <p class="spark-note" id="i-histnote"></p>
+  </div>
   <p class="hint" id="i-hint"></p>
+</section>
+
+<section id="mirador" class="card" hidden aria-live="polite">
+  <button class="x" id="mirador-close" aria-label="Cerrar mirador">×</button>
+  <h2 id="v-name"></h2>
+  <p class="cap" id="v-cap"></p>
+  <div class="big" id="v-area"></div>
+  <dl>
+    <dt>De la provincia</dt><dd id="v-pct"></dd>
+    <dt>Horizonte más lejano</dt><dd id="v-far"></dd>
+    <dt>Pueblos a la vista</dt><dd id="v-pue"></dd>
+  </dl>
+  <p class="group-title" style="margin:14px 0 0">Cumbres a la vista</p>
+  <ul id="v-picos"></ul>
+  <p class="hint">Cálculo sobre el MDT del IGN a 100 m, con curvatura terrestre y refracción, para un observador de 1,7 m. No tiene en cuenta árboles ni edificios.</p>
 </section>
 
 <div id="readout" class="card">Pasa el cursor por el mapa</div>
@@ -292,6 +371,7 @@ try {
   $("loading").querySelector(".box").innerHTML = "No se pudieron cargar los datos del mapa.<small>Recarga la página. Si sigue fallando, el fichero " + e.message + " no se ha publicado.</small>";
   return;
 }
+for (const m of data.municipios) { m.ph = Array.isArray(m.ph) && m.ph.length ? m.ph : null; m.pmax = m.ph ? Math.max(...m.ph) : 0; m.abs = Array.isArray(m.abs) ? m.abs : typeof m.abs === "string" && m.abs ? [m.abs] : []; }
 for (const m of data.municipios) { if (typeof m.p !== "number") m.p = null; if (typeof m.cap !== "string" || m.cap === "NA") m.cap = null; if (typeof m.cm !== "string" || m.cm === "NA") m.cm = null; }
 const M = data.meta;
 const KM_W = M.ancho / 1000, KM_D = M.alto / 1000;          // 196 × 135 km
@@ -354,8 +434,8 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
-const layers = { sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: true, arboles: true, nubes: true };
-let selected = null, hovered = null, comarcaSel = null;
+const layers = { hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: true, arboles: true, nubes: true };
+let selected = null, hovered = null, comarcaSel = null, yearIdx = 13;
 const px1 = TW / 6144;
 const BIERZO_OFICIAL = "El Bierzo (comarca oficial)";
 for (const c of data.comarcas) {
@@ -374,6 +454,12 @@ for (const c of data.comarcas) {
 function drawOverlay() {
   ov.clearRect(0, 0, TW, TH);
   ov.lineJoin = "round"; ov.lineCap = "round";
+  if (layers.hist) {
+    for (const m of data.municipios) {
+      if (!m.ph) continue;
+      ringPath(ov, m.g); ov.fillStyle = rampColor(m.ph[yearIdx] / m.pmax, 0.74); ov.fill("evenodd");
+    }
+  }
   if (selected) { ringPath(ov, selected.g); ov.fillStyle = "rgba(255, 226, 150, 0.42)"; ov.fill("evenodd"); }
   if (layers.aguas) {
     for (const a of data.aguas) {
@@ -433,6 +519,61 @@ function drawOverlay() {
     for (const e of data.entidades) { ov.beginPath(); ov.arc(e.xy[0] * TS, e.xy[1] * TS, 3.2 * px1, 0, 7); ov.fillStyle = "#fffaf0"; ov.fill(); ov.lineWidth = 1.6 * px1; ov.strokeStyle = "#5a4a35"; ov.stroke(); }
   }
   ovTex && (ovTex.needsUpdate = true);
+}
+
+// ---------------------------------------------------------------- población histórica
+const RAMP = [[0, [246, 239, 226]], [0.25, [240, 217, 168]], [0.5, [230, 182, 101]], [0.75, [211, 143, 46]], [1, [168, 97, 26]]];
+function rampColor(t, a) {
+  t = Math.max(0, Math.min(1, t || 0));
+  let i = 1; while (i < RAMP.length - 1 && t > RAMP[i][0]) i++;
+  const [t0, c0] = RAMP[i - 1], [t1, c1] = RAMP[i], k = (t - t0) / (t1 - t0);
+  return `rgba(${c0.map((v, j) => Math.round(v + (c1[j] - v) * k)).join(",")},${a})`;
+}
+const ANIOS = (M.anios || []).slice();
+function sparkline(host, vals, cur) {
+  if (!vals || !ANIOS.length) { host.innerHTML = ""; return; }
+  const w = 240, h = 74, pl = 2, pr = 6, pt = 16, pb = 16;
+  const x0 = ANIOS[0], x1 = ANIOS[ANIOS.length - 1], max = Math.max(...vals) * 1.08 || 1;
+  const X = (y) => pl + (y - x0) / (x1 - x0) * (w - pl - pr), Y = (v) => pt + (1 - v / max) * (h - pt - pb);
+  const pts = vals.map((v, i) => [X(ANIOS[i]), Y(v)]);
+  const line = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const ip = vals.indexOf(Math.max(...vals));
+  const fmtY = (i) => fmt.format(Math.round(vals[i]));
+  host.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Población de ${ANIOS[0]} a ${x1}: de ${fmtY(0)} a ${fmtY(vals.length - 1)} habitantes; máximo ${fmtY(ip)} en ${ANIOS[ip]}">
+    <line class="base" x1="${pl}" x2="${w - pr}" y1="${h - pb}" y2="${h - pb}"/>
+    <path class="ar" d="${line} L${pts[pts.length - 1][0].toFixed(1)} ${h - pb} L${pts[0][0].toFixed(1)} ${h - pb} Z"/>
+    <path class="ln" d="${line}"/>
+    <circle class="mk" cx="${pts[ip][0]}" cy="${pts[ip][1]}" r="4"/>
+    <circle class="cur" cx="${pts[cur][0]}" cy="${pts[cur][1]}" r="4"/>
+    <text x="${pl}" y="${h - 3}">${x0}</text><text x="${w - pr}" y="${h - 3}" text-anchor="end">${x1}</text>
+    <line class="xh" y1="${pt - 4}" y2="${h - pb}" visibility="hidden"/>
+    <text class="tip" y="10" visibility="hidden"></text>
+    <rect x="0" y="0" width="${w}" height="${h}" fill="transparent"/>
+  </svg>`;
+  const svg = host.querySelector("svg"), xh = svg.querySelector(".xh"), tip = svg.querySelector(".tip");
+  const show = (ev) => {
+    const r = svg.getBoundingClientRect(), xx = (ev.clientX - r.left) / r.width * w;
+    let i = 0; for (let k = 1; k < pts.length; k++) if (Math.abs(pts[k][0] - xx) < Math.abs(pts[i][0] - xx)) i = k;
+    xh.setAttribute("x1", pts[i][0]); xh.setAttribute("x2", pts[i][0]); xh.setAttribute("visibility", "visible");
+    tip.textContent = ANIOS[i] + " · " + fmtY(i) + " hab.";
+    tip.setAttribute("x", Math.min(Math.max(pts[i][0], 50), w - 50)); tip.setAttribute("text-anchor", "middle"); tip.setAttribute("visibility", "visible");
+  };
+  svg.addEventListener("pointermove", show); svg.addEventListener("pointerdown", show);
+  svg.addEventListener("pointerleave", () => { xh.setAttribute("visibility", "hidden"); tip.setAttribute("visibility", "hidden"); });
+}
+function histNote(vals, extra) {
+  const ip = vals.indexOf(Math.max(...vals)), last = vals[vals.length - 1], d = (last / vals[ip] - 1) * 100;
+  return `Máximo: ${fmt.format(vals[ip])} hab. en ${ANIOS[ip]}. En ${ANIOS[ANIOS.length - 1]}: ${fmt.format(last)} hab.` +
+    (ip !== vals.length - 1 ? ` (${fmt1.format(d)} %).` : " (es su máximo).") + (extra || "");
+}
+const sumSeries = (ms) => { const v = ANIOS.map(() => 0); for (const m of ms) if (m.ph) m.ph.forEach((x, i) => v[i] += x); return v; };
+const provSeries = sumSeries(data.municipios);
+function updateHistPanel() {
+  $("anio-o").textContent = ANIOS[yearIdx] || "";
+  sparkline($("prov-spark"), provSeries, yearIdx);
+  const lost = data.municipios.filter(m => m.ph && m.ph[yearIdx] < m.pmax * 0.5).length;
+  $("prov-note").textContent = `Provincia en ${ANIOS[yearIdx]}: ${fmt.format(provSeries[yearIdx])} hab. ` +
+    `${lost} municipios tenían menos de la mitad de su máximo.`;
 }
 
 // ---------------------------------------------------------------- three.js
@@ -506,7 +647,7 @@ const U = {
   uExag: { value: exag / 1000 }, uNrm: { value: nrmTex }, uOv: { value: ovTex }, uMask: { value: maskTex },
   uSun: { value: new THREE.Vector3(0.5, 0.6, 0.3).normalize() }, uSunCol: { value: new THREE.Color("#fff1d6") },
   uShadeCol: { value: new THREE.Color("#5d6a9c") }, uFog: { value: new THREE.Color("#cfe3ee") },
-  uEntorno: { value: 1 }, uCam: { value: camera.position }
+  uEntorno: { value: 1 }, uCam: { value: camera.position }, uVis: { value: null }, uViewOn: { value: 0 }
 };
 const terrainMat = new THREE.ShaderMaterial({
   uniforms: U,
@@ -520,7 +661,7 @@ const terrainMat = new THREE.ShaderMaterial({
       gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
     }`,
   fragmentShader: `
-    uniform sampler2D uNrm, uOv, uMask; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno;
+    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn;
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -560,6 +701,12 @@ const terrainMat = new THREE.ShaderMaterial({
       vec3 lit = col * mix(uShadeCol * 0.9 + 0.12, uSunCol * 1.08, band);
       float rim = pow(1.0 - max(n.y, 0.0), 2.0) * 0.12;
       lit += rim * uSunCol;
+      // mirador: lo visible brilla, lo oculto queda en penumbra
+      if (uViewOn > 0.5) {
+        float v = texture2D(uVis, vUv).r;
+        vec3 dim = mix(vec3(dot(lit, vec3(0.3, 0.59, 0.11))), lit, 0.3) * vec3(0.5, 0.55, 0.72);
+        lit = mix(dim, lit * 1.06 + vec3(0.07, 0.05, 0.0), smoothstep(0.2, 0.8, v));
+      }
       // bruma atmosférica
       float d = length(vWorld - uCam);
       float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
@@ -752,6 +899,92 @@ $("favs").addEventListener("click", (e) => {
   flyToPoint(f.mx, f.my, 10); if (f.mun) showInfo(f.mun);
   if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
 });
+
+// ---------------------------------------------------------------- mirador (cuenca visual)
+const visData = new Uint8Array(W * R);
+const visTex = new THREE.DataTexture(visData, W, R, THREE.RedFormat, THREE.UnsignedByteType);
+visTex.magFilter = THREE.LinearFilter; visTex.minFilter = THREE.LinearFilter; visTex.needsUpdate = true;
+U.uVis.value = visTex;
+const provCell = new Uint8Array(W * R);
+for (let y = 0; y < R; y++) for (let x = 0; x < W; x++) provCell[y * W + x] = inProv((x + 0.5) * M.celda, (y + 0.5) * M.celda) ? 1 : 0;
+const provCells = provCell.reduce((a, b) => a + b, 0);
+const OBS = 1.7, K_CURV = (1 - 0.13) / (2 * 6371000), MAX_D = 110000;
+function viewshed(ox, oy, hObs) {
+  visData.fill(0);
+  const c = M.celda, gx0 = ox / c - 0.5, gy0 = oy / c - 0.5, steps = Math.floor(MAX_D / c);
+  const h0 = hObs + OBS, NR = 7200;
+  let far = 0;
+  const i0 = Math.round(gy0) * W + Math.round(gx0); if (i0 >= 0 && i0 < visData.length) visData[i0] = 255;
+  for (let r = 0; r < NR; r++) {
+    const a = r / NR * Math.PI * 2, dx = Math.cos(a), dy = Math.sin(a);
+    let maxS = -Infinity;
+    for (let s = 1; s <= steps; s++) {
+      const x = Math.round(gx0 + dx * s), y = Math.round(gy0 + dy * s);
+      if (x < 0 || y < 0 || x >= W || y >= R) break;
+      const d = s * c, i = y * W + x;
+      const sl = (H[i] - d * d * K_CURV - h0) / d;
+      if (sl >= maxS) { visData[i] = 255; maxS = sl; if (d > far) far = d; }
+    }
+  }
+  visTex.needsUpdate = true;
+  let n = 0; for (let i = 0; i < visData.length; i++) if (visData[i] && provCell[i]) n++;
+  return { km2: n * (c / 1000) ** 2, pct: n / provCells * 100, far };
+}
+const seen = (mx, my) => {
+  const x = Math.round(mx / M.celda - 0.5), y = Math.round(my / M.celda - 0.5);
+  for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { const xx = x + i, yy = y + j; if (xx >= 0 && yy >= 0 && xx < W && yy < R && visData[yy * W + xx]) return true; }
+  return false;
+};
+const eyeGroup = new THREE.Group(); eyeGroup.visible = false; scene.add(eyeGroup);
+{
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.0, 8, 1, true), new THREE.MeshBasicMaterial({ color: 0x8fe3ff, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending }));
+  beam.position.y = 1.0;
+  const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.32), new THREE.MeshBasicMaterial({ color: 0x3fb6d9 }));
+  gem.position.y = 2.25; gem.add(new THREE.LineSegments(new THREE.EdgesGeometry(gem.geometry), new THREE.LineBasicMaterial({ color: 0x135a70 })));
+  eyeGroup.add(beam, gem); eyeGroup.userData.gem = gem;
+}
+let mirador = null, miradorArmed = false;
+function setArmed(on) {
+  miradorArmed = on; $("mirador-btn").setAttribute("aria-pressed", String(on));
+  if (on) $("readout").textContent = "Toca un punto del mapa o el nombre de una cumbre para mirar desde ahí";
+}
+function openMirador(mx, my, name, hKnown) {
+  const hT = heightAt(mx, my), h = Math.max(hT, hKnown || 0);
+  $("readout").textContent = "Calculando lo que se ve…";
+  const r = viewshed(mx, my, h);
+  mirador = { mx, my, h };
+  U.uViewOn.value = 1; eyeGroup.visible = true;
+  eyeGroup.position.set(sx(mx), Math.max(hT, h) * ZS(), sz(my));
+  const pk = data.picos.filter(p => Math.hypot(p.xy[0] - mx, p.xy[1] - my) > 300 && seen(p.xy[0], p.xy[1]))
+    .map(p => ({ n: p.n.split(" / ")[0], e: p.e, d: Math.hypot(p.xy[0] - mx, p.xy[1] - my) / 1000 })).sort((a, b) => b.e - a.e);
+  const pueblos = data.entidades.concat(data.capitales).filter(e => inProv(e.xy[0], e.xy[1]) && seen(e.xy[0], e.xy[1])).length;
+  const m = inProv(mx, my) ? munAt(mx, my) : null;
+  $("v-name").textContent = name || (m ? "Desde " + m.n : "Mirador");
+  $("v-cap").textContent = fmt.format(Math.round(h)) + " m de altitud" + (m ? " · " + m.n + (m.cm ? " (" + m.cm + ")" : "") : "");
+  $("v-area").innerHTML = fmt.format(Math.round(r.km2)) + "<small>km² visibles en la provincia</small>";
+  $("v-pct").textContent = fmt1.format(r.pct) + " %";
+  $("v-far").textContent = fmt1.format(r.far / 1000) + " km";
+  $("v-pue").textContent = fmt.format(pueblos);
+  $("v-picos").innerHTML = pk.length ? pk.slice(0, 8).map(p => `<li><span>${esc(p.n)}</span><span>${fmt.format(p.e)} m · ${fmt1.format(p.d)} km</span></li>`).join("") +
+    (pk.length > 8 ? `<li><span>y ${pk.length - 8} más</span><span></span></li>` : "") : "<li><span>Ninguna de las principales</span><span></span></li>";
+  $("info").hidden = true; selected = null; drawOverlay();
+  $("mirador").hidden = false;
+  $("readout").textContent = "Mirador activo: toca otro punto para cambiarlo";
+}
+function closeMirador() {
+  mirador = null; U.uViewOn.value = 0; eyeGroup.visible = false; $("mirador").hidden = true; setArmed(false);
+  $("readout").textContent = "Pasa el cursor por el mapa";
+}
+$("mirador-close").onclick = closeMirador;
+$("mirador-btn").onclick = () => {
+  setArmed(!miradorArmed);
+  if (miradorArmed && matchMedia("(max-width: 720px)").matches) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+};
+labels.forEach(L => {
+  if (!L.kind.startsWith("peak")) return;
+  const p = data.picos.find(q => q.xy[0] === L.mx && q.xy[1] === L.my);
+  L.el.addEventListener("click", () => { setArmed(true); openMirador(L.mx, L.my, p ? p.n.split(" / ")[0] : null, p ? p.e : 0); });
+});
 const tmpV = new THREE.Vector3();
 function updateLabels() {
   const cw = host.clientWidth, ch = host.clientHeight, placed = [];
@@ -813,6 +1046,8 @@ function showInfo(m) {
   $("i-area").textContent = fmt1.format(m.a) + " km²";
   $("i-dens").textContent = m.p != null ? fmt1.format(m.p / m.a) + " hab./km²" : "–";
   $("i-l4").textContent = "Código INE"; $("i-code").textContent = m.c;
+  $("i-histbox").hidden = !m.ph;
+  if (m.ph) { sparkline($("i-spark"), m.ph, yearIdx); $("i-histnote").textContent = histNote(m.ph, m.abs.length ? " Incluye municipios que absorbió: " + m.abs.join(", ") + "." : ""); }
   $("i-com").textContent = m.cm ? "Comarca: " + m.cm + (m.bz && m.cm !== "El Bierzo" ? " · El Bierzo" : "") : "";
   const lo = 200, hi = 2650, pct = (v) => ((v - lo) / (hi - lo) * 100).toFixed(1) + "%";
   $("i-mk-min").style.left = pct(m.amin); $("i-mk-med").style.left = pct(m.amed); $("i-mk-max").style.left = pct(m.amax);
@@ -841,6 +1076,8 @@ function showComarca(c) {
   $("i-area").textContent = fmt1.format(area) + " km²";
   $("i-dens").textContent = fmt1.format(c.p / area) + " hab./km²";
   $("i-l4").textContent = "Municipios"; $("i-code").textContent = muns.length;
+  const cs = sumSeries(muns); $("i-histbox").hidden = !cs[0];
+  if (cs[0]) { sparkline($("i-spark"), cs, yearIdx); $("i-histnote").textContent = histNote(cs); }
   const amin = Math.min(...muns.map(m => m.amin)), amax = Math.max(...muns.map(m => m.amax)), amed = Math.round(muns.reduce((s, m) => s + m.amed * m.a, 0) / area);
   const lo = 200, hi = 2650, pct = (v) => ((v - lo) / (hi - lo) * 100).toFixed(1) + "%";
   $("i-mk-min").style.left = pct(amin); $("i-mk-med").style.left = pct(amed); $("i-mk-max").style.left = pct(amax);
@@ -889,13 +1126,14 @@ renderer.domElement.addEventListener("pointerup", (e) => {
     return;
   }
   const p = pickTerrain(e.clientX, e.clientY);
+  if (miradorArmed || mirador) { if (p) { setArmed(true); openMirador(p.mx, p.my, null, 0); } return; }
   const m = p && inProv(p.mx, p.my) ? munAt(p.mx, p.my) : null;
   if (m && m !== selected) showInfo(m); else closeMunicipio();
 });
 renderer.domElement.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") hoverPending = [e.clientX, e.clientY]; });
 renderer.domElement.addEventListener("pointerleave", () => { hoverPending = null; hovered = null; });
 function doHover() {
-  if (!hoverPending) return;
+  if (!hoverPending || (miradorArmed && !mirador)) return;
   const [x, y] = hoverPending; hoverPending = null;
   const p = pickTerrain(x, y);
   let m = null, txt = "Fuera del mapa";
@@ -918,6 +1156,24 @@ function doHover() {
 const bind = (id, key, fn) => $(id).addEventListener("change", (e) => { layers[key] = e.target.checked; fn && fn(); });
 bind("l-mun", "mun", drawOverlay); bind("l-rios", "rios", drawOverlay); bind("l-aguas", "aguas", drawOverlay); bind("l-pob", "pob", drawOverlay);
 bind("l-picos", "picos");
+bind("l-hist", "hist", drawOverlay);
+function setYear(i) {
+  yearIdx = i; $("anio").value = i; updateHistPanel(); if (layers.hist) drawOverlay();
+  if (!$("info").hidden && (selected || comarcaSel)) { if (selected) showInfo(selected); else showComarca(comarcaSel); }
+}
+$("anio").max = String(ANIOS.length - 1); $("anio").value = String(yearIdx);
+$("anio").addEventListener("input", (e) => setYear(+e.target.value));
+let playTimer = null;
+function stopPlay() { clearInterval(playTimer); playTimer = null; $("play").setAttribute("aria-pressed", "false"); $("play").textContent = "▶"; }
+$("play").onclick = () => {
+  if (playTimer) return stopPlay();
+  if (!layers.hist) { layers.hist = true; $("l-hist").checked = true; }
+  $("play").setAttribute("aria-pressed", "true"); $("play").textContent = "❚❚";
+  setYear(yearIdx >= ANIOS.length - 1 ? 0 : yearIdx);
+  playTimer = setInterval(() => { if (yearIdx >= ANIOS.length - 1) return stopPlay(); setYear(yearIdx + 1); }, reduceMotion ? 1600 : 900);
+};
+$("hist-box").hidden = !ANIOS.length || !provSeries[0];
+if (ANIOS.length) updateHistPanel();
 bind("l-sierras", "sierras"); bind("l-valles", "valles"); bind("l-puertos", "puertos");
 bind("l-carr", "carr", drawOverlay); bind("l-comarcas", "comarcas", drawOverlay);
 bind("l-fav", "fav", () => { favGroup.visible = layers.fav; });
@@ -928,7 +1184,7 @@ let exagTimer = null;
 $("exag").addEventListener("input", (e) => {
   exag = +e.target.value; U.uExag.value = exag / 1000;
   $("exag-o").textContent = "×" + String(exag).replace(".", ",");
-  placeTrees(); placeFavs();
+  placeTrees(); placeFavs(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
   clearTimeout(exagTimer); exagTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, 120);
 });
 $("hora").addEventListener("input", (e) => setHour(+e.target.value));
@@ -950,6 +1206,7 @@ function frame(now) {
   controls.update();
   U.uCam.value = camera.position;
   if (layers.nubes && !reduceMotion) for (const c of clouds.children) { c.position.x += c.userData.v * dt; if (c.position.x > 140) c.position.x = -140; }
+  if (!reduceMotion && eyeGroup.visible) { eyeGroup.userData.gem.rotation.y += dt * 1.2; }
   if (!reduceMotion) favs.forEach((f, i) => { f.gem.rotation.y += dt * 1.2; f.gem.position.y = 2.25 + Math.sin(now / 650 + i) * 0.12; });
   if ((hoverTick = (hoverTick + 1) % 3) === 0) doHover();
   renderer.render(scene, camera);

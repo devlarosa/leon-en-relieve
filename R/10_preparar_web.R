@@ -166,11 +166,18 @@ line_coords <- function(g) {
 }
 pt <- function(p) { xy <- loc(st_coordinates(p)); lapply(seq_len(nrow(xy)), function(i) xy[i,]) }
 
+# ---------- Población histórica (INE, censos 1900-2021 + Padrón 2025, sumando municipios absorbidos) ----------
+ANIOS <- c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1981, 1991, 2001, 2011, 2021, 2025)
+hist <- if (file.exists("raw/historico/censos.json")) jsonlite::fromJSON("raw/historico/censos.json", simplifyVector = FALSE) else list()
+serie <- function(k) if (is.null(hist[[k]])) NULL else vapply(as.character(ANIOS), function(a) as.numeric(hist[[k]]$pob[[a]]), 0)
+absorbidos <- function(k) if (is.null(hist[[k]])) character(0) else vapply(hist[[k]]$absorbidos, function(x) sub("^\\d+ ", "", x), "")
+cat("Series históricas:", sum(vapply(mun$code, function(k) !is.null(hist[[k]]), TRUE)), "\n")
 munS <- st_simplify(mun, dTolerance = 18, preserveTopology = TRUE)
 provS <- st_simplify(prov, dTolerance = 18)
 out <- list(
   meta = list(x0 = X0, y1 = Y1, ancho = X1 - X0, alto = Y1 - Y0, celda = CELL,
               cols = ncol(dem), filas = nrow(dem), crs = "EPSG:25830",
+              anios = ANIOS,
               poblacion_total = sum(mun$pob2025, na.rm = TRUE), area_km2 = round(as.numeric(st_area(prov))/1e6),
               fuentes = list(
                 relieve = "IGN · MDT25 (WCS servicios.idee.es/wcs-inspire/mdt)",
@@ -179,12 +186,13 @@ out <- list(
                 toponimia = "IGN · Nomenclátor Geográfico Básico de España (www.ign.es/wfs-inspire/ngbe)",
                 poblacion = "INE · Padrón municipal a 1 de enero de 2025 (tabla 2877)",
                 carreteras = "IGN · Red de transporte, clase funcional (api-features.idee.es, roadlink)",
+                historico = "INE · Alteraciones de los municipios en los Censos de Población desde 1842 (población de derecho; se suman los municipios absorbidos)",
                 orografia = "IGN · Nomenclátor Geográfico Básico (cumbres, alineaciones montañosas, depresiones y pasos); altitudes del MDT25",
                 comarcas = "Comarcas tradicionales: ficha de cada municipio en es.wikipedia.org (no oficiales); El Bierzo: Ley 1/1991 de Castilla y León")),
   provincia = poly_coords(provS)[[1]],
   municipios = lapply(seq_len(nrow(munS)), function(i) list(
     c = munS$code[i], n = munS$nombre[i], t = munS$tipo[i], p = munS$pob2025[i], a = munS$area_km2[i],
-    cap = munS$capital[i], cm = munS$comarca[i], bz = munS$bierzo[i], amin = munS$alt_min[i], amax = munS$alt_max[i], amed = munS$alt_med[i],
+    cap = munS$capital[i], cm = munS$comarca[i], bz = munS$bierzo[i], ph = serie(munS$code[i]), abs = absorbidos(munS$code[i]), amin = munS$alt_min[i], amax = munS$alt_max[i], amed = munS$alt_med[i],
     g = poly_coords(munS[i, ])[[1]])),
   rios = lapply(seq_len(nrow(rios)), function(i) list(n = rios$nombre[i], k = rios$long_km[i],
     w = rios$ancho[i], g = line_coords(rios[i, ])[[1]])),
