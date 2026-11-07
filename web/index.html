@@ -108,6 +108,9 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .spark .xh { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 2; }
 .spark-note { font-size: 12px; color: var(--ink-soft); margin: 4px 0 0; line-height: 1.4; }
 .tool-btn small { display: block; font-weight: 400; font-size: 11.5px; opacity: .85; }
+.lbl.mon { pointer-events: auto; cursor: pointer; font-weight: 800; font-size: 13px; color: #6a3f12; font-variant: small-caps; letter-spacing: .06em; }
+.lbl.mon:hover { text-decoration: underline; text-underline-offset: 3px; }
+.lbl.mon .ic { display: inline-block; width: 8px; height: 8px; background: #c9862b; transform: rotate(45deg); margin-right: 6px; vertical-align: 1px; border: 1.5px solid #fff6e0; }
 .lbl.river { font-style: italic; font-weight: 500; font-size: 13.5px; color: #1d6f8c; letter-spacing: .04em; }
 .lbl.lake { font-style: italic; font-weight: 500; font-size: 12.5px; color: #1d6f8c; }
 .lbl .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #fffdf4; border: 2px solid #263a32;
@@ -237,6 +240,8 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
       <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
       <label class="layer"><input type="checkbox" id="l-rios" checked><span class="sw"></span><span class="name">Ríos</span><span class="key" style="background:#3fa9c9"></span></label>
       <label class="layer"><input type="checkbox" id="l-aguas" checked><span class="sw"></span><span class="name">Embalses y lagos</span><span class="key" style="background:#7fd0d8"></span></label>
+      <label class="layer"><input type="checkbox" id="l-pueblos" checked><span class="sw"></span><span class="name">Pueblos ilustrados<span class="note">Casas orientativas, no reales</span></span><span class="key" style="background:#b8643d"></span></label>
+      <label class="layer"><input type="checkbox" id="l-mon" checked><span class="sw"></span><span class="name">Monumentos</span><span class="key" style="background:#c9862b"></span></label>
       <label class="layer"><input type="checkbox" id="l-pob" checked><span class="sw"></span><span class="name">Poblaciones</span><span class="key" style="background:#e9b44c"></span></label>
       <label class="layer"><input type="checkbox" id="l-picos" checked><span class="sw"></span><span class="name">Cumbres</span><span class="key" style="background:#6a5a8c"></span></label>
       <label class="layer"><input type="checkbox" id="l-sierras" checked><span class="sw"></span><span class="name">Sierras y montes</span><span class="key" style="background:#6b4a2b"></span></label>
@@ -434,7 +439,7 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
-const layers = { hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: true, arboles: true, nubes: true };
+const layers = { pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: true, arboles: true, nubes: true };
 let selected = null, hovered = null, comarcaSel = null, yearIdx = 13;
 const px1 = TW / 6144;
 const BIERZO_OFICIAL = "El Bierzo (comarca oficial)";
@@ -515,7 +520,7 @@ function drawOverlay() {
   ringPath(ov, data.provincia);
   ov.strokeStyle = "rgba(255, 250, 235, 0.95)"; ov.lineWidth = 10 * px1; ov.stroke();
   ov.strokeStyle = "#5b4a2e"; ov.lineWidth = 3.2 * px1; ov.stroke();
-  if (layers.pob) {
+  if (layers.pob && !layers.pueblos) {
     for (const e of data.entidades) { ov.beginPath(); ov.arc(e.xy[0] * TS, e.xy[1] * TS, 3.2 * px1, 0, 7); ov.fillStyle = "#fffaf0"; ov.fill(); ov.lineWidth = 1.6 * px1; ov.strokeStyle = "#5a4a35"; ov.stroke(); }
   }
   ovTex && (ovTex.needsUpdate = true);
@@ -787,6 +792,253 @@ function placeTrees() {
 placeTrees();
 scene.add(treeMesh);
 
+// ---------------------------------------------------------------- pueblos ilustrados y monumentos
+// Casitas orientativas (no son edificios reales): su número depende de la población del municipio.
+// Tejado de pizarra en montaña y El Bierzo, de teja en el llano; muros de adobe en Tierra de Campos y Los Oteros.
+const toonCache = new Map();
+function toonMat(color) {
+  const key = color || "inst";
+  if (toonCache.has(key)) return toonCache.get(key);
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color(color || "#ffffff") }, uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam },
+    vertexShader: `
+      #ifdef USE_INSTANCING
+      attribute vec3 tint;
+      #endif
+      uniform vec3 uColor; varying vec3 vN; varying vec3 vC; varying vec3 vW;
+      void main() {
+        #ifdef USE_INSTANCING
+        vC = tint; mat4 im = instanceMatrix;
+        #else
+        vC = uColor; mat4 im = mat4(1.0);
+        #endif
+        vN = normalize(mat3(modelMatrix) * mat3(im) * normal);
+        vec4 w = modelMatrix * im * vec4(position, 1.0); vW = w.xyz;
+        gl_Position = projectionMatrix * viewMatrix * w;
+      }`,
+    fragmentShader: `uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; varying vec3 vN; varying vec3 vC; varying vec3 vW;
+      void main() {
+        vec3 n = normalize(vN); float l = dot(n, uSun);
+        float b = smoothstep(-0.02, 0.08, l) * 0.6 + smoothstep(0.45, 0.55, l) * 0.4;
+        vec3 c = vC * mix(uShadeCol * 0.85 + 0.15, uSunCol * 1.1, b) + pow(1.0 - abs(n.y), 3.0) * 0.04;
+        float d = length(vW - uCam); float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
+        gl_FragColor = vec4(mix(c, uFog, fog), 1.0);
+      }`
+  });
+  toonCache.set(key, m); return m;
+}
+const G = {
+  box: new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0),
+  prism: (() => {
+    const v = [-.5,0,.5, .5,0,.5, .5,1,0,  -.5,0,.5, .5,1,0, -.5,1,0,  .5,0,-.5, -.5,0,-.5, -.5,1,0,  .5,0,-.5, -.5,1,0, .5,1,0,
+               -.5,0,-.5, -.5,0,.5, -.5,1,0,  .5,0,.5, .5,0,-.5, .5,1,0];
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(v, 3)); g.computeVertexNormals(); return g;
+  })(),
+  pyr: new THREE.ConeGeometry(0.7071, 1, 4, 1).rotateY(Math.PI / 4).translate(0, 0.5, 0).toNonIndexed(),
+  cone: new THREE.ConeGeometry(0.5, 1, 8, 1).translate(0, 0.5, 0).toNonIndexed(),
+  cone6: new THREE.ConeGeometry(0.5, 1, 6, 1).translate(0, 0.5, 0).toNonIndexed(),
+  cyl: new THREE.CylinderGeometry(0.5, 0.5, 1, 14, 1).translate(0, 0.5, 0),
+  cyl5: new THREE.CylinderGeometry(0.5, 0.5, 1, 5, 1).translate(0, 0.5, 0).toNonIndexed(),
+  ico: new THREE.IcosahedronGeometry(0.5, 0),
+  disc: new THREE.CircleGeometry(0.5, 20)
+};
+for (const k of ["pyr", "cone", "cone6", "cyl5"]) G[k].computeVertexNormals();
+
+function hashStr(t) { let h = 2166136261; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); return h >>> 0; }
+const ADOBE = new Set(["Tierra de Campos", "Los Oteros", "Valmadrigal", "Las Matas", "Tierra de Cea", "Tierra de Sahagún", "Valderas", "Vega de Toral", "Valencia de Don Juan"]);
+const SETS = { walls: [], roofs: [], tower: [], spire: [] };
+const MON_ANCHORS = [];   // se rellenan con los monumentos para no poner casas encima
+function addInst(set, mx, my, yOff, sxv, syv, szv, rot, col) { SETS[set].push([mx, my, yOff, sxv, syv, szv, rot, col[0], col[1], col[2]]); }
+function village(name, mx, my, n, radius, opts) {
+  const r = rnd(hashStr(name) + (mx | 0));
+  const hg = heightAt(mx, my), m = inProv(mx, my) ? munAt(mx, my) : null;
+  const slate = hg > 950 || (m && m.bz), adobe = !slate && m && ADOBE.has(m.cm);
+  const walls = adobe ? [[.80, .64, .45], [.75, .57, .39], [.85, .70, .52]] : slate ? [[.80, .78, .73], [.70, .68, .63], [.86, .83, .76]] : [[.94, .90, .81], [.89, .82, .69], [.96, .93, .86]];
+  const roofs = slate ? [[.30, .32, .38], [.37, .39, .45], [.26, .28, .33]] : [[.74, .37, .24], [.66, .31, .20], [.80, .46, .29]];
+  const pick = (a) => a[(r() * a.length) | 0];
+  const near = (x, y) => MON_ANCHORS.some(a => Math.hypot(a[0] - x, a[1] - y) < a[2]);
+  if (!opts.noChurch && !near(mx, my)) {   // iglesia con torre o espadaña
+    const rot = r() * Math.PI, cx = mx + Math.cos(rot + 1.6) * 60, cy = my + Math.sin(rot + 1.6) * 60;
+    const wc = adobe ? [.78, .62, .44] : slate ? [.74, .72, .66] : [.90, .84, .70];
+    addInst("walls", cx, cy, -0.03, 0.2, 0.13, 0.11, rot, wc);
+    addInst("roofs", cx, cy, 0.1, 0.22, 0.06, 0.13, rot, pick(roofs));
+    const tx = cx + Math.cos(-rot) * 0.11 * 1000, ty = cy + Math.sin(-rot) * 0.11 * 1000;
+    addInst("tower", tx, ty, -0.03, 0.065, 0.25, 0.065, rot, wc);
+    addInst("spire", tx, ty, 0.22, 0.075, 0.07, 0.075, rot, pick(roofs));
+  }
+  for (let i = 0; i < n; i++) {
+    const a = i * 2.39996 + r() * 0.6, d = radius * Math.sqrt((i + 0.6) / n) * (0.8 + 0.4 * r());
+    const x = mx + Math.cos(a) * d * 1000, y = my + Math.sin(a) * d * 1000;
+    const gx = Math.min(W - 1, Math.max(0, (x / M.celda) | 0)), gy = Math.min(R - 1, Math.max(0, (y / M.celda) | 0));
+    if (slope1[gy * W + gx] > 0.22 || near(x, y)) continue;
+    const big = opts.city && d < radius * 0.55;
+    const w = 0.1 + 0.05 * r(), dp = 0.075 + 0.035 * r(), h = big ? 0.11 + 0.17 * r() : 0.065 + 0.03 * r();
+    const rot = -a + Math.PI / 2 + (r() - 0.5) * 0.5;
+    addInst("walls", x, y, -0.03, w, h + 0.03, dp, rot, pick(walls));
+    addInst("roofs", x, y, h - 0.004, w * 1.12, (big ? 0.035 : 0.045) + 0.02 * r(), dp * 1.18, rot, pick(roofs));
+  }
+}
+
+// monumentos: cada uno es un grupo de piezas en unidades de escena (1 = 1 km), con el eje x hacia el este
+function part(g, geo, color, x, y, z, a, b, c, ry) {
+  const mesh = new THREE.Mesh(G[geo], toonMat(color)); mesh.position.set(x, y, z); mesh.scale.set(a, b, c); if (ry) mesh.rotation.y = ry; g.add(mesh); return mesh;
+}
+function wall(g, color, x1, z1, x2, z2, h, t, merlon) {
+  const L = Math.hypot(x2 - x1, z2 - z1), ang = -Math.atan2(z2 - z1, x2 - x1);
+  part(g, "box", color, (x1 + x2) / 2, -0.15, (z1 + z2) / 2, L, h + 0.15, t, ang);
+  if (merlon) for (let s = 0.03; s < L - 0.02; s += 0.07) { const k = s / L; part(g, "box", color, x1 + (x2 - x1) * k, h, z1 + (z2 - z1) * k, 0.035, 0.04, t * 1.05, ang); }
+}
+function towerSq(g, color, x, z, w, h, merlon) {
+  part(g, "box", color, x, -0.15, z, w, h + 0.15, w);
+  if (merlon) for (const [dx, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1], [0, -1], [1, 0], [0, 1], [-1, 0]]) part(g, "box", color, x + dx * w * 0.4, h, z + dz * w * 0.4, w * 0.18, 0.04, w * 0.18);
+}
+function towerRound(g, color, x, z, r, h, roofColor, roofH) {
+  part(g, "cyl", color, x, -0.15, z, r * 2, h + 0.15, r * 2);
+  if (roofColor) part(g, "cone", roofColor, x, h, z, r * 2.4, roofH, r * 2.4);
+  else for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; part(g, "box", color, x + Math.cos(a) * r * 0.85, h, z + Math.sin(a) * r * 0.85, r * 0.35, 0.04, r * 0.35, -a); }
+}
+const MONS = [
+  { n: "Catedral de León", xy: [125410, 70479], build(g) {
+      const S = "#ecdfc4", Rf = "#7f8796";
+      part(g, "box", S, 0, -0.15, 0, 1.0, 0.57, 0.3); part(g, "prism", Rf, 0, 0.42, 0, 1.0, 0.2, 0.32);
+      part(g, "box", S, 0.12, -0.15, 0, 0.24, 0.53, 0.74); part(g, "prism", Rf, 0.12, 0.38, 0, 0.74, 0.19, 0.26, Math.PI / 2);
+      part(g, "cyl", S, 0.5, -0.15, 0, 0.3, 0.51, 0.3); part(g, "cone", Rf, 0.5, 0.36, 0, 0.32, 0.16, 0.32);
+      for (const z of [-0.13, 0.13]) {
+        part(g, "box", S, -0.56, -0.15, z, 0.15, 0.87, 0.15); part(g, "cone", S, -0.56, 0.72, z, 0.13, 0.34, 0.13);
+        for (const [dx, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) part(g, "cone", S, -0.56 + dx * 0.06, 0.72, z + dz * 0.06, 0.03, 0.1, 0.03);
+      }
+      for (let i = 0; i < 6; i++) for (const z of [-0.2, 0.2]) {
+        const x = -0.4 + i * 0.15; if (Math.abs(x - 0.12) < 0.1) continue;
+        part(g, "box", S, x, -0.15, z, 0.045, 0.45, 0.07); part(g, "cone", S, x, 0.3, z, 0.045, 0.13, 0.045);
+      }
+      const rose = part(g, "disc", "#5d80bd", -0.636, 0.37, 0, 0.16, 0.16, 1, -Math.PI / 2);
+      part(g, "box", "#5c4a38", -0.64, 0, 0, 0.02, 0.17, 0.12);
+      return 0.2;
+  } },
+  { n: "San Marcos", xy: [124110, 69958], build(g) {
+      const S = "#e6d5b2", Rf = "#8b5a3c";
+      part(g, "box", S, 0, -0.15, 0, 0.9, 0.38, 0.14, 0.35); part(g, "prism", Rf, 0, 0.23, 0, 0.9, 0.08, 0.16, 0.35);
+      const t = part(g, "box", S, 0.47, -0.15, -0.17, 0.13, 0.55, 0.13, 0.35); part(g, "pyr", Rf, 0.47, 0.4, -0.17, 0.15, 0.1, 0.15, 0.35);
+      return 0.12;
+  } },
+  { n: "Castillo de los Templarios", xy: [40930, 73657], build(g) {
+      const W = "#c9b18a", D = "#3d342b";
+      const pts = [[-0.55, -0.32], [0.5, -0.38], [0.6, 0.28], [-0.48, 0.36]];
+      for (let i = 0; i < 4; i++) { const [a, b] = [pts[i], pts[(i + 1) % 4]]; wall(g, W, a[0], a[1], b[0], b[1], 0.2, 0.05, true); }
+      for (const [x, z] of pts) towerSq(g, W, x, z, 0.13, 0.3, true);
+      towerRound(g, W, -0.09, -0.37, 0.075, 0.34); towerRound(g, W, 0.09, -0.38, 0.075, 0.34);
+      part(g, "box", D, 0, 0, -0.39, 0.09, 0.15, 0.03);
+      towerSq(g, W, 0.25, 0.08, 0.24, 0.46, true);
+      towerSq(g, W, -0.22, 0.12, 0.16, 0.36, true);
+      return 0.2;
+  } },
+  { n: "Palacio de Gaudí", xy: [84679, 84888], build(g) {
+      const W = "#eeeef0", Sl = "#4f5866";
+      part(g, "box", W, 0, -0.15, 0, 0.4, 0.57, 0.34); part(g, "pyr", Sl, 0, 0.42, 0, 0.5, 0.28, 0.42);
+      for (const [x, z] of [[-0.2, -0.17], [0.2, -0.17], [0.2, 0.17], [-0.2, 0.17]]) towerRound(g, W, x, z, 0.075, 0.5, Sl, 0.24);
+      part(g, "box", W, 0, -0.15, -0.21, 0.18, 0.3, 0.1);
+      for (const x of [-0.05, 0, 0.05]) part(g, "box", "#3e3b38", x, 0, -0.262, 0.03, 0.1, 0.01);
+      return 0.15;
+  } },
+  { n: "Catedral de Astorga", xy: [85334, 84951], build(g) {
+      const S = "#d9a68f", Rf = "#7d6a64";
+      part(g, "box", S, 0, -0.15, 0, 0.75, 0.5, 0.26); part(g, "prism", Rf, 0, 0.35, 0, 0.75, 0.14, 0.28);
+      part(g, "cyl", S, 0.38, -0.15, 0, 0.24, 0.45, 0.24);
+      for (const z of [-0.11, 0.11]) { part(g, "box", S, -0.42, -0.15, z, 0.13, 0.77, 0.13); part(g, "pyr", S, -0.42, 0.62, z, 0.13, 0.14, 0.13); }
+      return 0.15;
+  } },
+  { n: "Las Médulas", xy: [26002, 82202], build(g, r) {
+      const reds = ["#d8743a", "#c9602c", "#e08a4a", "#bf5326"];
+      for (let i = 0; i < 34; i++) {
+        const a = r() * Math.PI * 2, d = Math.sqrt(r()) * 0.95, w = 0.08 + r() * 0.12, h = 0.25 + r() * 0.5;
+        part(g, "cone6", reds[i % 4], Math.cos(a) * d, -0.15, Math.sin(a) * d, w, h + 0.15, w * (0.8 + r() * 0.4), r() * 3);
+      }
+      for (let i = 0; i < 40; i++) {
+        const a = r() * Math.PI * 2, d = 0.3 + Math.sqrt(r()) * 1.0, s = 0.08 + r() * 0.06;
+        part(g, "box", "#5a4330", Math.cos(a) * d, -0.05, Math.sin(a) * d, 0.02, 0.1, 0.02);
+        part(g, "ico", ["#4f7d3a", "#5d8c44", "#3f6b33"][i % 3], Math.cos(a) * d, 0.05 + s / 2, Math.sin(a) * d, s, s * 0.9, s);
+      }
+      return 0.6;
+  } },
+  { n: "Puente de Hospital de Órbigo", xy: [99257, 84705], build(g) {
+      const S = "#bba37f";
+      part(g, "box", S, 0, 0.1, 0, 1.3, 0.05, 0.11); part(g, "box", S, 0, 0.15, -0.05, 1.3, 0.03, 0.012); part(g, "box", S, 0, 0.15, 0.05, 1.3, 0.03, 0.012);
+      for (let x = -0.6; x <= 0.61; x += 0.12) part(g, "box", S, x, -0.2, 0, 0.045, 0.3, 0.11);
+      part(g, "box", "#7ec5d0", 0, -0.02, 0, 0.18, 0.02, 1.2);
+      return 0.12;
+  } },
+  { n: "Castillo de Coyanza", xy: [128491, 104376], build(g) {
+      const W = "#cfb48e";
+      const pts = [[-0.25, -0.2], [0.25, -0.22], [0.28, 0.2], [-0.22, 0.24]];
+      for (let i = 0; i < 4; i++) { const [a, b] = [pts[i], pts[(i + 1) % 4]]; wall(g, W, a[0], a[1], b[0], b[1], 0.22, 0.05, true); }
+      for (const [x, z] of pts) { part(g, "cyl5", W, x, -0.15, z, 0.12, 0.6, 0.12); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; part(g, "box", W, x + Math.cos(a) * 0.05, 0.45, z + Math.sin(a) * 0.05, 0.025, 0.04, 0.025); } }
+      part(g, "cyl5", W, 0.02, -0.15, 0.02, 0.14, 0.7, 0.14);
+      return 0.15;
+  } },
+  { n: "San Tirso de Sahagún", xy: [168874, 97002], build(g) {
+      const B = "#b8643d", Rf = "#8a3a22", D = "#4a2a1c";
+      part(g, "box", B, 0, -0.15, 0, 0.42, 0.33, 0.2); part(g, "prism", Rf, 0, 0.18, 0, 0.42, 0.08, 0.22);
+      part(g, "cyl", B, 0.22, -0.15, 0, 0.18, 0.31, 0.18);
+      part(g, "box", B, 0.08, -0.15, 0, 0.13, 0.58, 0.13); part(g, "pyr", Rf, 0.08, 0.43, 0, 0.15, 0.06, 0.15);
+      for (const y of [0.22, 0.3, 0.37]) for (const [dx, dz, rw] of [[0, -0.066, 0], [0, 0.066, 0], [-0.066, 0, 1], [0.066, 0, 1]])
+        part(g, "box", D, 0.08 + dx, y, dz, rw ? 0.005 : 0.07, 0.05, rw ? 0.07 : 0.005);
+      return 0.1;
+  } },
+  { n: "Castillo de Villafranca", xy: [23516, 65855], build(g) {
+      const W = "#a98f6b", Sl = "#4f5866";
+      const pts = [[-0.22, -0.22], [0.22, -0.22], [0.22, 0.22], [-0.22, 0.22]];
+      for (let i = 0; i < 4; i++) { const [a, b] = [pts[i], pts[(i + 1) % 4]]; wall(g, W, a[0], a[1], b[0], b[1], 0.22, 0.05, false); }
+      for (const [x, z] of pts) towerRound(g, W, x, z, 0.08, 0.32, Sl, 0.16);
+      part(g, "box", W, 0, -0.15, 0, 0.36, 0.33, 0.36); part(g, "pyr", Sl, 0, 0.18, 0, 0.4, 0.1, 0.4);
+      return 0.12;
+  } }
+];
+const monGroup = new THREE.Group(); scene.add(monGroup);
+for (const mo of MONS) {
+  const g = new THREE.Group(); const extra = mo.build(g, rnd(hashStr(mo.n)));
+  mo.group = g; monGroup.add(g);
+  let rad = 0; g.traverse(o => { if (o.isMesh) rad = Math.max(rad, Math.hypot(o.position.x, o.position.z) + Math.max(o.scale.x, o.scale.z) / 2); });
+  MON_ANCHORS.push([mo.xy[0], mo.xy[1], (rad + Math.min(extra || 0.05, 0.6) * 0.25) * 1000]);
+}
+function placeMonuments() { for (const mo of MONS) mo.group.position.set(sx(mo.xy[0]), heightAt(mo.xy[0], mo.xy[1]) * ZS(), sz(mo.xy[1])); }
+placeMonuments();
+
+// pueblos: capitales según la población del municipio; resto de entidades, 3–6 casas
+{
+  const popC = Object.fromEntries(data.municipios.map(m => [m.c, m.p || 0]));
+  for (const c of data.capitales) {
+    const p = popC[c.c] || 0;
+    const n = p < 300 ? 6 : p < 1000 ? 9 : p < 3000 ? 13 : p < 8000 ? 20 : Math.min(150, Math.round(25 + p / 1300));
+    village(c.n, c.xy[0], c.xy[1], isPhone ? Math.ceil(n * 0.6) : n, 0.1 + 0.105 * Math.sqrt(n), { city: p >= 8000 });
+  }
+  for (const e of data.entidades) {
+    const r = rnd(hashStr(e.n));
+    const n = 3 + ((r() * 4) | 0);
+    village(e.n, e.xy[0], e.xy[1], isPhone ? Math.max(2, n - 2) : n, 0.1 + 0.1 * Math.sqrt(n), {});
+  }
+}
+const townMeshes = {};
+const townGroup = new THREE.Group(); scene.add(townGroup);
+for (const [k, geoName] of [["walls", "box"], ["roofs", "prism"], ["tower", "box"], ["spire", "pyr"]]) {
+  const list = SETS[k]; if (!list.length) continue;
+  const geo = G[geoName].clone(), tint = new Float32Array(list.length * 3);
+  list.forEach((it, i) => tint.set([it[7], it[8], it[9]], i * 3));
+  geo.setAttribute("tint", new THREE.InstancedBufferAttribute(tint, 3));
+  const im = new THREE.InstancedMesh(geo, toonMat(null), list.length);
+  im.frustumCulled = false; townMeshes[k] = im; townGroup.add(im);
+}
+function placeTowns() {
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+  for (const [k, im] of Object.entries(townMeshes)) {
+    SETS[k].forEach((it, i) => {
+      ps.set(sx(it[0]), heightAt(it[0], it[1]) * ZS() + it[2], sz(it[1])); q.setFromAxisAngle(up, it[6]); sc.set(it[3], it[4], it[5]);
+      m4.compose(ps, q, sc); im.setMatrixAt(i, m4);
+    });
+    im.instanceMatrix.needsUpdate = true;
+  }
+}
+placeTowns();
+
 // ---------------------------------------------------------------- nubes
 function cloudTexture(seed) {
   const c = document.createElement("canvas"); c.width = 256; c.height = 128; const g = c.getContext("2d"), r = rnd(seed);
@@ -866,6 +1118,7 @@ for (const r of data.rios.slice(0, 18)) {
   const k = Math.floor(best.length / 4) * 2;
   addLabel("river", esc(r.n), best[k], best[k + 1], 200 + r.k, r.k > 60 ? 0 : 110);
 }
+for (const mo of MONS) { addLabel("mon", '<span class="ic"></span>' + esc(mo.n), mo.xy[0], mo.xy[1], 900, 170); labels[labels.length - 1].lift = 0.95; labels[labels.length - 1].mon = mo; }
 for (const c of data.comarcas) if (c.n !== BIERZO_OFICIAL && c.ctr) addLabel("comarca", esc(c.n), c.ctr[0], c.ctr[1], 420 + c.m, 0);
 for (const a of data.aguas) if (a.n && a.t === "Embalse") {
   const r = a.g[0]; let x = 0, y = 0; for (let i = 0; i < r.length; i += 2) { x += r[i]; y += r[i + 1]; }
@@ -980,6 +1233,7 @@ $("mirador-btn").onclick = () => {
   setArmed(!miradorArmed);
   if (miradorArmed && matchMedia("(max-width: 720px)").matches) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
 };
+labels.forEach(L => { if (L.mon) L.el.addEventListener("click", () => flyToPoint(L.mx, L.my, 5)); });
 labels.forEach(L => {
   if (!L.kind.startsWith("peak")) return;
   const p = data.picos.find(q => q.xy[0] === L.mx && q.xy[1] === L.my);
@@ -991,7 +1245,7 @@ function updateLabels() {
   const camDist = camera.position.distanceTo(controls.target);
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
-    let show = k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
+    let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
       L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (show && L.minDist && camDist > L.minDist) show = false;
     if (show && !layers.entorno && !inProv(L.mx, L.my)) show = false;
@@ -1156,6 +1410,8 @@ function doHover() {
 const bind = (id, key, fn) => $(id).addEventListener("change", (e) => { layers[key] = e.target.checked; fn && fn(); });
 bind("l-mun", "mun", drawOverlay); bind("l-rios", "rios", drawOverlay); bind("l-aguas", "aguas", drawOverlay); bind("l-pob", "pob", drawOverlay);
 bind("l-picos", "picos");
+bind("l-pueblos", "pueblos", () => { townGroup.visible = layers.pueblos; drawOverlay(); });
+bind("l-mon", "mon", () => { monGroup.visible = layers.mon; });
 bind("l-hist", "hist", drawOverlay);
 function setYear(i) {
   yearIdx = i; $("anio").value = i; updateHistPanel(); if (layers.hist) drawOverlay();
@@ -1184,7 +1440,7 @@ let exagTimer = null;
 $("exag").addEventListener("input", (e) => {
   exag = +e.target.value; U.uExag.value = exag / 1000;
   $("exag-o").textContent = "×" + String(exag).replace(".", ",");
-  placeTrees(); placeFavs(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
+  placeTrees(); placeFavs(); placeTowns(); placeMonuments(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
   clearTimeout(exagTimer); exagTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, 120);
 });
 $("hora").addEventListener("input", (e) => setHour(+e.target.value));
