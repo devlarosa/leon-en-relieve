@@ -1,0 +1,947 @@
+<title>León en relieve</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;0,800;1,500&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap">
+<style>
+/* Layout: escena 3D a pantalla completa; panel de capas flotante a la izquierda, ficha del municipio a la derecha, barra de lectura abajo. */
+:root {
+  --ink: #23352f;          /* texto principal: verde musgo muy oscuro */
+  --ink-soft: #55665e;
+  --panel: rgba(250, 252, 246, 0.86);
+  --panel-solid: #f7f9f2;
+  --line: rgba(35, 53, 47, 0.14);
+  --moss: #4f7d4a;          /* acento: verde de pradera */
+  --moss-soft: #e3eedb;
+  --river: #2f8fae;
+  --peak: #6a5a8c;
+  --sky: #cfe3ee;
+  --font-display: "Alegreya", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow: 0 10px 30px rgba(40, 60, 70, 0.18), 0 2px 6px rgba(40, 60, 70, 0.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #eef2e6; --ink-soft: #b5c2b4; --panel: rgba(28, 38, 40, 0.84); --panel-solid: #1c2628;
+    --line: rgba(238, 242, 230, 0.14); --moss: #9cc98f; --moss-soft: #2c3d33; --river: #7cc6e0; --peak: #c4b5ec;
+    --sky: #1d2b33; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #eef2e6; --ink-soft: #b5c2b4; --panel: rgba(28, 38, 40, 0.84); --panel-solid: #1c2628;
+  --line: rgba(238, 242, 230, 0.14); --moss: #9cc98f; --moss-soft: #2c3d33; --river: #7cc6e0; --peak: #c4b5ec;
+  --sky: #1d2b33; color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); overflow: hidden; }
+#scene { position: fixed; inset: 0; }
+#scene canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+#labels { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.lbl { position: absolute; left: 0; top: 0; white-space: nowrap; font-family: var(--font-display); color: #263a32;
+  text-shadow: 0 0 3px #fffdf4, 0 0 3px #fffdf4, 0 0 6px rgba(255,253,244,.9); will-change: transform; }
+.lbl.city { font-weight: 800; font-size: 17px; letter-spacing: .02em; }
+.lbl.town { font-weight: 700; font-size: 14px; }
+.lbl.vil  { font-weight: 500; font-size: 12.5px; color: #34463d; }
+.lbl.peak { font-weight: 700; font-size: 13px; color: #4b3f6b; }
+.lbl.peak small { font-family: var(--font-ui); font-weight: 600; font-size: 10.5px; color: #6c6290; margin-left: 3px; }
+.lbl.fav { font-weight: 800; font-size: 15px; color: #3b2a10; background: #ffe7a8; padding: 3px 10px 3px 8px; border-radius: 999px;
+  border: 1.5px solid #b07a1e; box-shadow: 0 3px 10px rgba(80, 50, 0, .28); text-shadow: none; }
+.lbl.fav .star { color: #c47f12; margin-right: 4px; }
+.favs { display: flex; flex-direction: column; gap: 2px; }
+.fav-btn { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; width: 100%; text-align: left; font: inherit; font-size: 14px;
+  padding: 6px 8px; border: 0; border-radius: 9px; background: transparent; color: var(--ink); cursor: pointer; }
+.fav-btn:hover { background: var(--moss-soft); }
+.fav-btn:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+.fav-btn .pin { color: #c47f12; margin-right: 6px; }
+.fav-btn small { color: var(--ink-soft); font-size: 11.5px; text-align: right; }
+.lbl.comarca { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .16em; color: #6b3f7d; }
+#comarca { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--panel-solid); color: var(--ink); }
+#comarca:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+.lbl.sierra { font-style: italic; font-weight: 700; font-size: 13.5px; letter-spacing: .14em; color: #6b4a2b; }
+.lbl.sierra.big { font-size: 16px; letter-spacing: .2em; }
+.lbl.valle { font-style: italic; font-weight: 500; font-size: 12.5px; letter-spacing: .05em; color: #2f5f3c; }
+.lbl.puerto { font-weight: 700; font-size: 12px; color: #5a4632; }
+.lbl.puerto small { font-family: var(--font-ui); font-weight: 600; font-size: 10.5px; color: #7d6a55; margin-left: 3px; }
+.lbl.puerto .notch { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border: 2px solid #5a4632; border-top: 0; border-right: 0;
+  transform: rotate(-45deg) translate(1px, -2px); }
+.lbl.peak.top { font-size: 14.5px; }
+.lbl.river { font-style: italic; font-weight: 500; font-size: 13.5px; color: #1d6f8c; letter-spacing: .04em; }
+.lbl.lake { font-style: italic; font-weight: 500; font-size: 12.5px; color: #1d6f8c; }
+.lbl .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #fffdf4; border: 2px solid #263a32;
+  margin-right: 5px; vertical-align: 1px; }
+.lbl.city .dot { width: 10px; height: 10px; background: #e9b44c; }
+.lbl.peak .tri { display: inline-block; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-bottom: 8px solid #4b3f6b; margin-right: 4px; vertical-align: 0; }
+
+.card { background: var(--panel); backdrop-filter: blur(10px) saturate(1.2); -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+
+#panel { position: fixed; top: calc(14px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px));
+  width: 268px; max-height: calc(100% - 28px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow: auto; padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 14px; }
+#panel h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 28px; line-height: 1; letter-spacing: .01em; text-wrap: balance; }
+#panel .sub { margin: 4px 0 0; font-size: 12.5px; color: var(--ink-soft); line-height: 1.4; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.fact { background: var(--moss-soft); border-radius: 10px; padding: 7px 8px; }
+.fact b { display: block; font-family: var(--font-display); font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 10.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .06em; }
+.group-title { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); margin: 0 0 6px; font-weight: 700; }
+.layers { display: flex; flex-direction: column; gap: 2px; }
+.layer { display: flex; align-items: center; gap: 10px; padding: 6px 6px; border-radius: 9px; cursor: pointer; font-size: 14px; user-select: none; }
+.layer:hover { background: var(--moss-soft); }
+.layer input { position: absolute; opacity: 0; pointer-events: none; }
+.sw { width: 30px; height: 18px; border-radius: 9px; background: var(--line); position: relative; flex: none; transition: background .2s; }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--panel-solid);
+  box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .2s; }
+.layer input:checked + .sw { background: var(--moss); }
+.layer input:checked + .sw::after { transform: translateX(12px); }
+.layer input:focus-visible + .sw { outline: 2px solid var(--moss); outline-offset: 2px; }
+.layer .name { flex: 1; }
+.layer .key { width: 16px; height: 4px; border-radius: 2px; flex: none; }
+.layer .note { font-size: 10.5px; color: var(--ink-soft); display: block; line-height: 1.2; }
+.soon { font-size: 12px; color: var(--ink-soft); padding: 2px 6px; line-height: 1.45; }
+.slider { display: flex; flex-direction: column; gap: 4px; padding: 2px 6px; font-size: 13px; }
+.slider .row { display: flex; justify-content: space-between; }
+.slider output { font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+input[type=range] { width: 100%; accent-color: var(--moss); }
+#search { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--panel-solid); color: var(--ink); }
+#search:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+details.src { font-size: 11.5px; color: var(--ink-soft); line-height: 1.45; }
+details.src summary { cursor: pointer; font-weight: 700; }
+details.src ul { margin: 6px 0 0; padding-left: 16px; }
+
+#info { position: fixed; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  width: 270px; padding: 16px; }
+#info h2 { margin: 0 0 2px; font-family: var(--font-display); font-size: 25px; font-weight: 800; line-height: 1.05; text-wrap: balance; padding-right: 26px; }
+#info .com { margin: -8px 0 12px; font-size: 12.5px; color: #7a4d8c; font-weight: 700; }
+#info .cap { margin: 0 0 12px; font-size: 12.5px; color: var(--ink-soft); }
+#info dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 13.5px; }
+#info dt { color: var(--ink-soft); }
+#info dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+#info .altbar { margin-top: 12px; }
+#info .altbar .track { position: relative; height: 8px; border-radius: 4px;
+  background: linear-gradient(90deg, #d9c27a, #8fbf5a 25%, #4f8a4b 50%, #a59f8f 75%, #f3f4f8); }
+#info .altbar .mk { position: absolute; top: -3px; width: 3px; height: 14px; background: var(--ink); border-radius: 2px; }
+#info .altbar .ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-soft); margin-top: 4px; font-variant-numeric: tabular-nums; }
+#info button.x { position: absolute; top: 10px; right: 10px; border: 0; background: transparent; color: var(--ink-soft); font-size: 20px; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 8px; }
+#info button.x:hover { background: var(--moss-soft); }
+#info .hint { margin-top: 12px; font-size: 11.5px; color: var(--ink-soft); }
+
+#readout { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  padding: 7px 14px; font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; }
+#readout b { font-weight: 700; }
+
+#loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--sky); z-index: 5; transition: opacity .6s; }
+#loading .box { text-align: center; font-family: var(--font-display); font-size: 22px; color: var(--ink); }
+#loading .box small { display: block; font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
+#loading.done { opacity: 0; pointer-events: none; }
+
+#toggle-panel { display: none; }
+@media (max-width: 720px) {
+  #panel { width: auto; right: max(16px, env(safe-area-inset-right, 0px)); top: auto; bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    max-height: 52%; }
+  #panel.collapsed { display: none; }
+  #toggle-panel { display: block; position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: 9px 14px; font: inherit; font-weight: 700; font-size: 14px; color: var(--ink); cursor: pointer; }
+  #info { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto; }
+  #readout { left: auto; right: max(16px, env(safe-area-inset-right, 0px)); transform: none; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100% - 140px); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div id="scene"></div>
+<div id="labels"></div>
+
+<div id="loading"><div class="box">Levantando las montañas…<small id="loading-msg">Cargando el MDT25 del IGN</small></div></div>
+
+<aside id="panel" class="card collapsed" aria-label="Capas del mapa">
+  <div>
+    <h1>León en relieve</h1>
+    <p class="sub">La provincia con su orografía real (MDT25 del IGN), sus 211 municipios, ríos, embalses y cumbres.</p>
+  </div>
+  <div class="facts">
+    <div class="fact"><b id="f-pop">–</b><span>habitantes</span></div>
+    <div class="fact"><b id="f-area">–</b><span>km²</span></div>
+    <div class="fact"><b>211</b><span>municipios</span></div>
+  </div>
+  <div>
+    <label class="group-title" for="search">Buscar municipio</label>
+    <input id="search" list="munlist" placeholder="Ej.: Riaño, Astorga…" autocomplete="off">
+    <datalist id="munlist"></datalist>
+  </div>
+  <div>
+    <label class="group-title" for="comarca">Comarca</label>
+    <select id="comarca"><option value="">Toda la provincia</option></select>
+  </div>
+  <div id="favs-box" hidden>
+    <p class="group-title">Lugares destacados</p>
+    <div class="favs" id="favs"></div>
+  </div>
+  <div>
+    <p class="group-title">Capas</p>
+    <div class="layers">
+      <label class="layer" id="l-fav-row" hidden><input type="checkbox" id="l-fav" checked><span class="sw"></span><span class="name">Lugares destacados</span><span class="key" style="background:#f2b53a"></span></label>
+      <label class="layer"><input type="checkbox" id="l-mun" checked><span class="sw"></span><span class="name">Límites municipales</span><span class="key" style="background:#fff7df;box-shadow:0 0 0 1px #8a7a52"></span></label>
+      <label class="layer"><input type="checkbox" id="l-comarcas"><span class="sw"></span><span class="name">Límites de comarca<span class="note">Tradicionales, no oficiales</span></span><span class="key" style="background:#7a4d8c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
+      <label class="layer"><input type="checkbox" id="l-rios" checked><span class="sw"></span><span class="name">Ríos</span><span class="key" style="background:#3fa9c9"></span></label>
+      <label class="layer"><input type="checkbox" id="l-aguas" checked><span class="sw"></span><span class="name">Embalses y lagos</span><span class="key" style="background:#7fd0d8"></span></label>
+      <label class="layer"><input type="checkbox" id="l-pob" checked><span class="sw"></span><span class="name">Poblaciones</span><span class="key" style="background:#e9b44c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-picos" checked><span class="sw"></span><span class="name">Cumbres</span><span class="key" style="background:#6a5a8c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-sierras" checked><span class="sw"></span><span class="name">Sierras y montes</span><span class="key" style="background:#6b4a2b"></span></label>
+      <label class="layer"><input type="checkbox" id="l-valles" checked><span class="sw"></span><span class="name">Valles</span><span class="key" style="background:#2f5f3c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-puertos" checked><span class="sw"></span><span class="name">Puertos de montaña</span><span class="key" style="background:#5a4632"></span></label>
+      <label class="layer"><input type="checkbox" id="l-entorno" checked><span class="sw"></span><span class="name">Provincias vecinas</span></label>
+      <label class="layer"><input type="checkbox" id="l-arboles" checked><span class="sw"></span><span class="name">Arboleda<span class="note">Ilustrativa, no son datos</span></span></label>
+      <label class="layer"><input type="checkbox" id="l-nubes" checked><span class="sw"></span><span class="name">Nubes</span></label>
+    </div>
+  </div>
+  <div>
+    <p class="group-title">Escena</p>
+    <div class="slider"><div class="row"><label for="exag">Exageración vertical</label><output id="exag-o">×2,5</output></div>
+      <input type="range" id="exag" min="1" max="5" step="0.5" value="2.5"></div>
+    <div class="slider"><div class="row"><label for="hora">Hora del sol</label><output id="hora-o">17:00</output></div>
+      <input type="range" id="hora" min="7" max="21" step="0.25" value="17"></div>
+  </div>
+  <p class="soon"><b>Próximamente:</b> comarcas agrarias (MAPA) y precipitación media (AEMET).</p>
+  <details class="src">
+    <summary>Fuentes oficiales</summary>
+    <ul id="src-list"></ul>
+  </details>
+</aside>
+<button id="toggle-panel" class="card" aria-controls="panel" aria-expanded="false">Capas</button>
+
+<section id="info" class="card" hidden aria-live="polite">
+  <button class="x" id="info-close" aria-label="Cerrar ficha">×</button>
+  <h2 id="i-name"></h2>
+  <p class="cap" id="i-cap"></p>
+  <p class="com" id="i-com"></p>
+  <dl>
+    <dt>Población (2025)</dt><dd id="i-pop"></dd>
+    <dt>Superficie</dt><dd id="i-area"></dd>
+    <dt>Densidad</dt><dd id="i-dens"></dd>
+    <dt id="i-l4">Código INE</dt><dd id="i-code"></dd>
+  </dl>
+  <div class="altbar">
+    <p class="group-title" style="margin-top:4px">Altitud (MDT25)</p>
+    <div class="track"><div class="mk" id="i-mk-min"></div><div class="mk" id="i-mk-med"></div><div class="mk" id="i-mk-max"></div></div>
+    <div class="ends"><span id="i-amin"></span><span id="i-amed"></span><span id="i-amax"></span></div>
+  </div>
+  <p class="hint" id="i-hint"></p>
+</section>
+
+<div id="readout" class="card">Pasa el cursor por el mapa</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+function showFatal(err) {
+  const box = document.querySelector("#loading .box");
+  if (!box) return;
+  document.getElementById("loading").classList.remove("done");
+  box.innerHTML = "El mapa no ha podido arrancar.<small></small>";
+  box.querySelector("small").textContent = "Detalle técnico: " + (err && err.message ? err.message : String(err)) + ". Recarga la página; si se repite, copia este texto.";
+}
+addEventListener("error", (e) => showFatal(e.error || e.message));
+addEventListener("unhandledrejection", (e) => showFatal(e.reason));
+if (!window.THREE || !THREE.OrbitControls) showFatal(new Error("no se pudo cargar la librería Three.js"));
+</script>
+<script>
+(async function () {
+"use strict";
+const $ = (id) => document.getElementById(id);
+const fmt = new Intl.NumberFormat("es-ES");
+const fmt1 = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 });
+const msg = (t) => { $("loading-msg").textContent = t; };
+const isPhone = matchMedia("(max-width: 720px)").matches;
+if (!isPhone) $("panel").classList.remove("collapsed");
+$("toggle-panel").onclick = () => {
+  const c = $("panel").classList.toggle("collapsed");
+  $("toggle-panel").setAttribute("aria-expanded", String(!c));
+};
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ---------------------------------------------------------------- datos
+let data, H, W, R, destacadas = [];
+try {
+  const [dest, json, png] = await Promise.all([
+    fetch("data/destacados.json").then(r => r.ok ? r.json() : []).catch(() => []),
+    fetch("data/leon.json").then(r => { if (!r.ok) throw new Error("leon.json"); return r.json(); }),
+    fetch("data/relieve.png").then(r => { if (!r.ok) throw new Error("relieve.png"); return r.blob(); })
+  ]);
+  data = json; destacadas = dest;
+  msg("Decodificando alturas");
+  let bmp;
+  try { bmp = await createImageBitmap(png, { colorSpaceConversion: "none", premultiplyAlpha: "none" }); }
+  catch (e) { bmp = await createImageBitmap(png); }
+  W = bmp.width; R = bmp.height;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = R;
+  const cx = cv.getContext("2d", { willReadFrequently: true }); cx.drawImage(bmp, 0, 0);
+  const px = cx.getImageData(0, 0, W, R).data;
+  H = new Float32Array(W * R);
+  for (let i = 0, j = 0; i < H.length; i++, j += 4) H[i] = ((px[j] * 65536 + px[j + 1] * 256 + px[j + 2]) / 10) - 10000;
+} catch (e) {
+  $("loading").querySelector(".box").innerHTML = "No se pudieron cargar los datos del mapa.<small>Recarga la página. Si sigue fallando, el fichero " + e.message + " no se ha publicado.</small>";
+  return;
+}
+for (const m of data.municipios) { if (typeof m.p !== "number") m.p = null; if (typeof m.cap !== "string" || m.cap === "NA") m.cap = null; if (typeof m.cm !== "string" || m.cm === "NA") m.cm = null; }
+const M = data.meta;
+const KM_W = M.ancho / 1000, KM_D = M.alto / 1000;          // 196 × 135 km
+const CELL_KM = M.celda / 1000;
+$("f-pop").textContent = fmt.format(M.poblacion_total);
+$("f-area").textContent = fmt.format(M.area_km2);
+$("src-list").innerHTML = Object.values(M.fuentes).map(s => "<li>" + s.replace(/&/g, "&amp;").replace(/</g, "&lt;") + "</li>").join("");
+
+// metros locales (x desde oeste, y desde norte) -> escena (km, centrada)
+const sx = (mx) => mx / 1000 - KM_W / 2;
+const sz = (my) => my / 1000 - KM_D / 2;
+function heightAt(mx, my) {            // bilinear, metros
+  const fx = Math.min(Math.max(mx / M.celda - 0.5, 0), W - 1.001), fy = Math.min(Math.max(my / M.celda - 0.5, 0), R - 1.001);
+  const x0 = fx | 0, y0 = fy | 0, tx = fx - x0, ty = fy - y0, i = y0 * W + x0;
+  return (H[i] * (1 - tx) + H[i + 1] * tx) * (1 - ty) + (H[i + W] * (1 - tx) + H[i + W + 1] * tx) * ty;
+}
+
+// UTM 30N (ETRS89) -> lat/lon, para la lectura del cursor
+function utmToLatLon(E, N) {
+  const a = 6378137, f = 1 / 298.257222101, k0 = 0.9996, e2 = f * (2 - f), ep2 = e2 / (1 - e2);
+  const x = E - 500000, m = N / k0, mu = m / (a * (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 ** 3 / 256));
+  const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
+  const p1 = mu + (3 * e1 / 2 - 27 * e1 ** 3 / 32) * Math.sin(2 * mu) + (21 * e1 * e1 / 16 - 55 * e1 ** 4 / 32) * Math.sin(4 * mu)
+    + (151 * e1 ** 3 / 96) * Math.sin(6 * mu) + (1097 * e1 ** 4 / 512) * Math.sin(8 * mu);
+  const C1 = ep2 * Math.cos(p1) ** 2, T1 = Math.tan(p1) ** 2, N1 = a / Math.sqrt(1 - e2 * Math.sin(p1) ** 2);
+  const R1 = a * (1 - e2) / (1 - e2 * Math.sin(p1) ** 2) ** 1.5, D = x / (N1 * k0);
+  const lat = p1 - (N1 * Math.tan(p1) / R1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * D ** 4 / 24
+    + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * D ** 6 / 720);
+  const lon = (D - (1 + 2 * T1 + C1) * D ** 3 / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) * D ** 5 / 120) / Math.cos(p1);
+  return [lat * 180 / Math.PI, -3 + lon * 180 / Math.PI];
+}
+
+// ---------------------------------------------------------------- lienzos 2D (máscara y capas vectoriales)
+msg("Dibujando municipios y ríos");
+const maxTex = (() => { try { const g = document.createElement("canvas").getContext("webgl"); return g ? g.getParameter(g.MAX_TEXTURE_SIZE) : 4096; } catch (e) { return 4096; } })();
+const TW = Math.min(isPhone ? 4096 : 6144, maxTex), TH = Math.round(TW * KM_D / KM_W), TS = TW / M.ancho;
+function ringPath(ctx, rings) {
+  ctx.beginPath();
+  for (const r of rings) { ctx.moveTo(r[0] * TS, r[1] * TS); for (let i = 2; i < r.length; i += 2) ctx.lineTo(r[i] * TS, r[i + 1] * TS); ctx.closePath(); }
+}
+const maskCv = document.createElement("canvas"); maskCv.width = TW; maskCv.height = TH;
+{ const c = maskCv.getContext("2d"); c.fillStyle = "#000"; c.fillRect(0, 0, TW, TH); c.fillStyle = "#fff"; ringPath(c, data.provincia); c.fill("evenodd"); }
+const maskPx = maskCv.getContext("2d").getImageData(0, 0, TW, TH).data;
+const inProv = (mx, my) => { const x = Math.round(mx * TS), y = Math.round(my * TS); return x >= 0 && y >= 0 && x < TW && y < TH && maskPx[(y * TW + x) * 4] > 127; };
+
+for (const m of data.municipios) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const r of m.g) for (let i = 0; i < r.length; i += 2) { x0 = Math.min(x0, r[i]); x1 = Math.max(x1, r[i]); y0 = Math.min(y0, r[i + 1]); y1 = Math.max(y1, r[i + 1]); }
+  m.bb = [x0, y0, x1, y1];
+}
+function pointInRings(x, y, rings) {
+  let inside = false;
+  for (const r of rings) for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) {
+    const xi = r[i], yi = r[i + 1], xj = r[j], yj = r[j + 1];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] && y >= m.bb[1] && y <= m.bb[3] && pointInRings(x, y, m.g));
+
+const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
+const ov = ovCv.getContext("2d");
+const layers = { sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: true, arboles: true, nubes: true };
+let selected = null, hovered = null, comarcaSel = null;
+const px1 = TW / 6144;
+const BIERZO_OFICIAL = "El Bierzo (comarca oficial)";
+for (const c of data.comarcas) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, best = null, ba = 0;
+  for (const r of c.g) {
+    let a = 0, cx = 0, cy = 0;
+    for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) {
+      x0 = Math.min(x0, r[i]); x1 = Math.max(x1, r[i]); y0 = Math.min(y0, r[i + 1]); y1 = Math.max(y1, r[i + 1]);
+      const f = r[j] * r[i + 1] - r[i] * r[j + 1]; a += f; cx += (r[j] + r[i]) * f; cy += (r[j + 1] + r[i + 1]) * f;
+    }
+    if (Math.abs(a) > ba) { ba = Math.abs(a); best = [cx / (3 * a), cy / (3 * a)]; }
+  }
+  c.bb = [x0, y0, x1, y1]; c.ctr = best;
+  c.muns = data.municipios.filter(m => c.n === BIERZO_OFICIAL ? m.bz : m.cm === c.n);
+}
+function drawOverlay() {
+  ov.clearRect(0, 0, TW, TH);
+  ov.lineJoin = "round"; ov.lineCap = "round";
+  if (selected) { ringPath(ov, selected.g); ov.fillStyle = "rgba(255, 226, 150, 0.42)"; ov.fill("evenodd"); }
+  if (layers.aguas) {
+    for (const a of data.aguas) {
+      ringPath(ov, a.g); ov.fillStyle = "#6cc6cf"; ov.fill("evenodd");
+      ov.strokeStyle = "rgba(240, 255, 250, 0.9)"; ov.lineWidth = 2.2 * px1; ov.stroke();
+    }
+  }
+  if (layers.rios) {
+    for (const r of data.rios) {
+      const w = (r.k > 60 ? 7 : r.k > 25 ? 4.8 : r.k > 10 ? 3.2 : 2.1) * px1;
+      ov.beginPath();
+      for (const p of r.g) { ov.moveTo(p[0] * TS, p[1] * TS); for (let i = 2; i < p.length; i += 2) ov.lineTo(p[i] * TS, p[i + 1] * TS); }
+      ov.strokeStyle = "rgba(236, 252, 255, 0.85)"; ov.lineWidth = w + 3 * px1; ov.stroke();
+      ov.strokeStyle = "#3fa9c9"; ov.lineWidth = w; ov.stroke();
+    }
+  }
+  if (layers.carr) {
+    const style = { 1: ["#fff3dc", 7.5, "#d9653b", 4.4], 2: ["#fff3dc", 5.6, "#e6a23c", 3.0], 3: ["rgba(90, 70, 50, 0.55)", 3.0, "#fbf0d2", 1.7] };
+    for (const pass of [0, 1]) for (const c of [...data.carreteras].sort((a, b) => b.c - a.c)) {
+      const st = style[c.c];
+      ov.beginPath();
+      for (const p of c.g) { ov.moveTo(p[0] * TS, p[1] * TS); for (let i = 2; i < p.length; i += 2) ov.lineTo(p[i] * TS, p[i + 1] * TS); }
+      ov.strokeStyle = pass ? st[2] : st[0]; ov.lineWidth = (pass ? st[3] : st[1]) * px1; ov.stroke();
+    }
+  }
+  if (layers.mun) {
+    for (const m of data.municipios) {
+      ringPath(ov, m.g);
+      if (m.t === "condominio") { ov.fillStyle = "rgba(160, 120, 200, 0.18)"; ov.fill("evenodd"); }
+      ov.setLineDash([]); ov.strokeStyle = "rgba(255, 249, 228, 0.95)"; ov.lineWidth = 3.4 * px1; ov.stroke();
+      ov.setLineDash([7 * px1, 5 * px1]); ov.strokeStyle = "rgba(120, 98, 60, 0.75)"; ov.lineWidth = 1.5 * px1; ov.stroke();
+    }
+    ov.setLineDash([]);
+  }
+  if (layers.comarcas) {
+    for (const c of data.comarcas) {
+      if (c.n === BIERZO_OFICIAL) continue;
+      ringPath(ov, c.g);
+      ov.strokeStyle = "rgba(255, 248, 236, 0.9)"; ov.lineWidth = 7 * px1; ov.stroke();
+      ov.strokeStyle = "#7a4d8c"; ov.lineWidth = 3 * px1; ov.stroke();
+    }
+  }
+  if (comarcaSel) {
+    ov.beginPath(); ov.rect(0, 0, TW, TH);
+    for (const r of comarcaSel.g) { ov.moveTo(r[0] * TS, r[1] * TS); for (let i = 2; i < r.length; i += 2) ov.lineTo(r[i] * TS, r[i + 1] * TS); ov.closePath(); }
+    ov.fillStyle = "rgba(244, 240, 232, 0.62)"; ov.fill("evenodd");
+    ringPath(ov, comarcaSel.g);
+    ov.strokeStyle = "rgba(255, 248, 236, 0.95)"; ov.lineWidth = 12 * px1; ov.stroke();
+    ov.strokeStyle = "#7a4d8c"; ov.lineWidth = 5 * px1; ov.stroke();
+  }
+  if (selected) { ringPath(ov, selected.g); ov.strokeStyle = "#c9862b"; ov.lineWidth = 6 * px1; ov.stroke(); }
+  // límite provincial: cinta clara + línea oscura
+  ringPath(ov, data.provincia);
+  ov.strokeStyle = "rgba(255, 250, 235, 0.95)"; ov.lineWidth = 10 * px1; ov.stroke();
+  ov.strokeStyle = "#5b4a2e"; ov.lineWidth = 3.2 * px1; ov.stroke();
+  if (layers.pob) {
+    for (const e of data.entidades) { ov.beginPath(); ov.arc(e.xy[0] * TS, e.xy[1] * TS, 3.2 * px1, 0, 7); ov.fillStyle = "#fffaf0"; ov.fill(); ov.lineWidth = 1.6 * px1; ov.strokeStyle = "#5a4a35"; ov.stroke(); }
+  }
+  ovTex && (ovTex.needsUpdate = true);
+}
+
+// ---------------------------------------------------------------- three.js
+msg("Preparando la escena");
+const host = $("scene");
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(host.clientWidth, host.clientHeight);
+host.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, host.clientWidth / host.clientHeight, 0.1, 2000);
+camera.position.set(-30, 120, 150);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 2, 4);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = 1.38; controls.minDistance = 4; controls.maxDistance = 360;
+controls.screenSpacePanning = false;
+
+let exag = 2.5;
+const ZS = () => exag / 1000;   // metros -> km de escena con exageración
+
+// mapa de normales (xz con exageración, b = pendiente real)
+const nrmData = new Uint8Array(W * R * 4);
+const slope1 = new Float32Array(W * R);
+function buildNormals() {
+  const c = M.celda;
+  for (let y = 0; y < R; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    const dx = (H[y * W + Math.min(x + 1, W - 1)] - H[y * W + Math.max(x - 1, 0)]) / (2 * c);
+    const dz = (H[Math.min(y + 1, R - 1) * W + x] - H[Math.max(y - 1, 0) * W + x]) / (2 * c);
+    let nx = -dx * exag, nz = -dz * exag, l = Math.hypot(nx, 1, nz);
+    const s = 1 - 1 / Math.hypot(dx, 1, dz);
+    slope1[i] = s;
+    nrmData[i * 4] = (nx / l * 0.5 + 0.5) * 255; nrmData[i * 4 + 1] = (nz / l * 0.5 + 0.5) * 255;
+    nrmData[i * 4 + 2] = Math.min(255, s * 600); nrmData[i * 4 + 3] = 255;
+  }
+}
+buildNormals();
+const nrmTex = new THREE.DataTexture(nrmData, W, R, THREE.RGBAFormat);
+nrmTex.magFilter = THREE.LinearFilter; nrmTex.minFilter = THREE.LinearFilter; nrmTex.needsUpdate = true;
+
+const ovTex = new THREE.CanvasTexture(ovCv);
+ovTex.anisotropy = renderer.capabilities.getMaxAnisotropy(); ovTex.flipY = false;
+const maskTex = new THREE.CanvasTexture(maskCv); maskTex.flipY = false;
+drawOverlay();
+
+// malla del terreno
+const STEP = isPhone ? 3 : 2;
+const gw = Math.floor((W - 1) / STEP) + 1, gh = Math.floor((R - 1) / STEP) + 1;
+const pos = new Float32Array(gw * gh * 3), uv = new Float32Array(gw * gh * 2), hAttr = new Float32Array(gw * gh);
+for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
+  const k = j * gw + i, gx = i * STEP, gy = j * STEP;
+  const mx = (gx + 0.5) * M.celda, my = (gy + 0.5) * M.celda;
+  pos[k * 3] = sx(mx); pos[k * 3 + 1] = 0; pos[k * 3 + 2] = sz(my);
+  uv[k * 2] = mx / M.ancho; uv[k * 2 + 1] = my / M.alto;
+  hAttr[k] = H[gy * W + gx];
+}
+const idx = new Uint32Array((gw - 1) * (gh - 1) * 6);
+for (let j = 0, p = 0; j < gh - 1; j++) for (let i = 0; i < gw - 1; i++) {
+  const a = j * gw + i, b = a + 1, c = a + gw, d = c + 1;
+  idx[p++] = a; idx[p++] = c; idx[p++] = b; idx[p++] = b; idx[p++] = c; idx[p++] = d;
+}
+const geo = new THREE.BufferGeometry();
+geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+geo.setAttribute("h", new THREE.BufferAttribute(hAttr, 1));
+geo.setIndex(new THREE.BufferAttribute(idx, 1));
+geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 3, 0), 130);
+
+const U = {
+  uExag: { value: exag / 1000 }, uNrm: { value: nrmTex }, uOv: { value: ovTex }, uMask: { value: maskTex },
+  uSun: { value: new THREE.Vector3(0.5, 0.6, 0.3).normalize() }, uSunCol: { value: new THREE.Color("#fff1d6") },
+  uShadeCol: { value: new THREE.Color("#5d6a9c") }, uFog: { value: new THREE.Color("#cfe3ee") },
+  uEntorno: { value: 1 }, uCam: { value: camera.position }
+};
+const terrainMat = new THREE.ShaderMaterial({
+  uniforms: U,
+  vertexShader: `
+    attribute float h; uniform float uExag;
+    varying vec2 vUv; varying float vH; varying vec3 vWorld;
+    void main() {
+      vUv = uv; vH = h;
+      vec3 p = vec3(position.x, h * uExag, position.z);
+      vWorld = p;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    }`,
+  fragmentShader: `
+    uniform sampler2D uNrm, uOv, uMask; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno;
+    varying vec2 vUv; varying float vH; varying vec3 vWorld;
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }
+    float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * noise(p); p *= 2.03; a *= 0.5; } return s; }
+    void main() {
+      float mask = texture2D(uMask, vUv).r;
+      if (uEntorno < 0.5 && mask < 0.5) discard;
+      vec4 nt = texture2D(uNrm, vUv);
+      vec2 nxz = nt.rg * 2.0 - 1.0;
+      vec3 n = normalize(vec3(nxz.x, sqrt(max(0.0, 1.0 - dot(nxz, nxz))), nxz.y));
+      float slope = nt.b * 255.0 / 600.0;
+      vec2 wp = vWorld.xz;
+      float nz = fbm(wp * 0.35), nz2 = fbm(wp * 1.7 + 7.0), brush = noise(vec2(wp.x * 2.2 + wp.y * 0.6, wp.y * 0.25));
+      float e = vH + (nz - 0.5) * 140.0;
+      // paleta pictórica por altitud y pendiente
+      vec3 lowGreen = vec3(0.56, 0.75, 0.36), wheat = vec3(0.86, 0.76, 0.46), meadow = vec3(0.47, 0.70, 0.33);
+      vec3 forest = vec3(0.24, 0.47, 0.28), alpine = vec3(0.62, 0.70, 0.40), rock = vec3(0.62, 0.62, 0.68), snow = vec3(0.96, 0.97, 1.0);
+      float flatA = 1.0 - smoothstep(0.004, 0.02, slope);
+      vec3 col = mix(lowGreen, meadow, smoothstep(500.0, 800.0, e));
+      col = mix(col, wheat, flatA * smoothstep(720.0, 800.0, e) * (1.0 - smoothstep(960.0, 1040.0, e)) * smoothstep(0.35, 0.55, nz2 * 0.6 + nz * 0.6));
+      float forestAmt = smoothstep(0.012, 0.045, slope) * smoothstep(850.0, 1000.0, e) * (1.0 - smoothstep(1650.0, 1850.0, e));
+      col = mix(col, forest, forestAmt * smoothstep(0.38, 0.55, nz2));
+      col = mix(col, alpine, smoothstep(1650.0, 1900.0, e) * (1.0 - smoothstep(0.15, 0.25, slope)));
+      col = mix(col, rock, smoothstep(0.11, 0.2, slope + (nz2 - 0.5) * 0.06));
+      col = mix(col, snow, smoothstep(2180.0, 2320.0, e + nz2 * 120.0) * (1.0 - smoothstep(0.2, 0.3, slope)));
+      col *= 0.92 + 0.16 * brush;
+      // fuera de la provincia: más pálido y desaturado
+      float outside = 1.0 - smoothstep(0.35, 0.65, mask);
+      col = mix(col, mix(vec3(dot(col, vec3(0.33))), col, 0.35) * 0.82 + 0.2, outside * 0.8);
+      // capas vectoriales
+      vec4 ov = texture2D(uOv, vUv);
+      col = mix(col, ov.rgb, ov.a);
+      // luz por bandas suaves (cel shading con sombras teñidas)
+      float l = dot(n, uSun);
+      float band = smoothstep(-0.02, 0.06, l) * 0.55 + smoothstep(0.38, 0.48, l) * 0.3 + smoothstep(0.75, 0.82, l) * 0.15;
+      vec3 lit = col * mix(uShadeCol * 0.9 + 0.12, uSunCol * 1.08, band);
+      float rim = pow(1.0 - max(n.y, 0.0), 2.0) * 0.12;
+      lit += rim * uSunCol;
+      // bruma atmosférica
+      float d = length(vWorld - uCam);
+      float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
+      fog = max(fog, outside * 0.25);
+      gl_FragColor = vec4(mix(lit, uFog, fog), 1.0);
+    }`,
+});
+const terrain = new THREE.Mesh(geo, terrainMat);
+scene.add(terrain);
+
+// cielo degradado
+const skyMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false,
+  uniforms: { uTop: { value: new THREE.Color("#7fb6dd") }, uHorizon: { value: new THREE.Color("#f6e3c8") }, uSunDir: U.uSun, uSunCol: U.uSunCol },
+  vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform vec3 uTop, uHorizon, uSunDir, uSunCol; varying vec3 vDir;
+    void main(){ float t = smoothstep(-0.05, 0.55, vDir.y); vec3 c = mix(uHorizon, uTop, t);
+      float s = max(dot(normalize(vDir), normalize(uSunDir)), 0.0); c += uSunCol * (pow(s, 64.0) * 0.6 + pow(s, 6.0) * 0.18);
+      gl_FragColor = vec4(c, 1.0);
+    }`
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(900, 32, 16), skyMat);
+scene.add(sky);
+// suelo de bruma bajo el diorama
+const ground = new THREE.Mesh(new THREE.CircleGeometry(900, 48), new THREE.MeshBasicMaterial({ color: U.uFog.value }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -0.3; scene.add(ground);
+
+// ---------------------------------------------------------------- arboleda ilustrativa
+function rnd(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+const treeGeo = (() => {
+  const cone = new THREE.ConeGeometry(0.11, 0.34, 6); cone.translate(0, 0.24, 0);
+  const cone2 = new THREE.ConeGeometry(0.08, 0.24, 6); cone2.translate(0, 0.40, 0);
+  const g = new THREE.BufferGeometry();
+  const a = cone.toNonIndexed(), b = cone2.toNonIndexed();
+  const p = new Float32Array(a.attributes.position.array.length + b.attributes.position.array.length);
+  p.set(a.attributes.position.array); p.set(b.attributes.position.array, a.attributes.position.array.length);
+  g.setAttribute("position", new THREE.BufferAttribute(p, 3)); g.computeVertexNormals(); return g;
+})();
+const treeMat = new THREE.ShaderMaterial({
+  uniforms: { uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam },
+  vertexShader: `attribute vec3 tint; varying vec3 vN; varying vec3 vC; varying vec3 vW;
+    void main(){ vC = tint; vN = normalize(mat3(instanceMatrix) * normal); vec4 w = modelMatrix * instanceMatrix * vec4(position,1.0); vW = w.xyz;
+      gl_Position = projectionMatrix * viewMatrix * w; }`,
+  fragmentShader: `uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; varying vec3 vN; varying vec3 vC; varying vec3 vW;
+    void main(){ float l = dot(normalize(vN), uSun); float b = smoothstep(0.0, 0.1, l) * 0.7 + smoothstep(0.5, 0.6, l) * 0.3;
+      vec3 c = vC * mix(uShadeCol * 0.9 + 0.1, uSunCol * 1.1, b);
+      float d = length(vW - uCam); float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
+      gl_FragColor = vec4(mix(c, uFog, fog), 1.0);
+    }`
+});
+const trees = [];
+{
+  const rand = rnd(24089), N = isPhone ? 9000 : 22000;
+  let tries = 0;
+  while (trees.length < N && tries < N * 30) {
+    tries++;
+    const mx = rand() * M.ancho, my = rand() * M.alto;
+    const gx = Math.min(W - 1, (mx / M.celda) | 0), gy = Math.min(R - 1, (my / M.celda) | 0), i = gy * W + gx;
+    const h = H[i], s = slope1[i];
+    if (h < 850 || h > 1750 || s < 0.012 || s > 0.2) continue;
+    const patch = Math.sin(mx * 0.00031 + Math.sin(my * 0.00023) * 2.0) * Math.cos(my * 0.00027 - mx * 0.00009) + Math.sin(mx * 0.0011) * 0.35;
+    if (patch < 0.15) continue;
+    if (!inProv(mx, my) && rand() > 0.35) continue;
+    trees.push([mx, my, 0.75 + rand() * 0.7, rand()]);
+  }
+}
+const treeMesh = new THREE.InstancedMesh(treeGeo, treeMat, trees.length);
+{
+  const tint = new Float32Array(trees.length * 3), palette = [[0.20, 0.42, 0.25], [0.27, 0.50, 0.28], [0.17, 0.36, 0.27], [0.36, 0.55, 0.30]];
+  trees.forEach((t, k) => { const c = palette[(t[3] * palette.length) | 0]; tint.set(c, k * 3); });
+  treeGeo.setAttribute("tint", new THREE.InstancedBufferAttribute(tint, 3));
+}
+function placeTrees() {
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
+  trees.forEach((t, k) => { p.set(sx(t[0]), heightAt(t[0], t[1]) * ZS() - 0.04, sz(t[1])); s.setScalar(t[2]); m.compose(p, q, s); treeMesh.setMatrixAt(k, m); });
+  treeMesh.instanceMatrix.needsUpdate = true;
+}
+placeTrees();
+scene.add(treeMesh);
+
+// ---------------------------------------------------------------- nubes
+function cloudTexture(seed) {
+  const c = document.createElement("canvas"); c.width = 256; c.height = 128; const g = c.getContext("2d"), r = rnd(seed);
+  for (let i = 0; i < 14; i++) {
+    const x = 50 + r() * 156, y = 58 + r() * 34, rad = 22 + r() * 30;
+    const gr = g.createRadialGradient(x, y - rad * 0.3, rad * 0.1, x, y, rad);
+    gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.65, "rgba(250,246,255,0.95)"); gr.addColorStop(1, "rgba(220,215,240,0)");
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, rad, 0, 7); g.fill();
+  }
+  const t = new THREE.CanvasTexture(c); return t;
+}
+const clouds = new THREE.Group(); scene.add(clouds);
+{
+  const r = rnd(7), texs = [cloudTexture(1), cloudTexture(2), cloudTexture(3)];
+  for (let i = 0; i < 16; i++) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: texs[i % 3], transparent: true, opacity: 0.92, depthWrite: false, fog: false }));
+    const w = 14 + r() * 16; sp.scale.set(w, w / 2, 1);
+    sp.position.set(-130 + r() * 260, 10 + r() * 6, -90 + r() * 180);
+    sp.userData.v = 0.4 + r() * 0.5; clouds.add(sp);
+  }
+}
+
+// ---------------------------------------------------------------- sol y hora
+function setHour(hh) {
+  const t = (hh - 7) / 14;                         // 0 = 7:00, 1 = 21:00
+  const az = (-80 + t * 200) * Math.PI / 180;      // del este al oeste pasando por el sur
+  const el = Math.sin(Math.PI * Math.min(Math.max((hh - 6.2) / 15.2, 0), 1)) * 62 * Math.PI / 180 + 0.04;
+  U.uSun.value.set(-Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)).normalize();
+  const golden = 1 - Math.min(1, Math.max(0, (el - 0.12) / 0.5));
+  U.uSunCol.value.set("#fff6e4").lerp(new THREE.Color("#ffc58a"), golden);
+  U.uShadeCol.value.set("#6a7aa6").lerp(new THREE.Color("#7a5f9e"), golden * 0.8);
+  skyMat.uniforms.uTop.value.set("#78b4de").lerp(new THREE.Color("#8d8fc9"), golden * 0.6);
+  skyMat.uniforms.uHorizon.value.set("#e9f1ee").lerp(new THREE.Color("#ffd3a8"), golden);
+  U.uFog.value.set("#d6e6ee").lerp(new THREE.Color("#f2d6c2"), golden * 0.85);
+  ground.material.color.copy(U.uFog.value);
+  clouds.children.forEach(s => s.material.color.set("#ffffff").lerp(new THREE.Color("#ffd9c4"), golden * 0.7));
+  const hhh = Math.floor(hh), mm = Math.round((hh - hhh) * 60);
+  $("hora-o").textContent = hhh + ":" + String(mm).padStart(2, "0");
+}
+setHour(17);
+
+// ---------------------------------------------------------------- rótulos
+const labelHost = $("labels");
+const labels = [];
+function addLabel(kind, html, mx, my, prio, minDist) {
+  const el = document.createElement("div"); el.className = "lbl " + kind; el.innerHTML = html; el.style.display = "none";
+  labelHost.appendChild(el);
+  labels.push({ el, kind, mx, my, prio, minDist: minDist || 0, w: 0, h: 0, vis: false });
+}
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const popBy = Object.fromEntries(data.municipios.map(m => [m.c, m.p || 0]));
+// localidades destacadas (se buscan por nombre en el Nomenclátor del IGN)
+// lista privada opcional: data/destacados.json (array de nombres del Nomenclátor). No se sube al repositorio.
+const DESTACADAS = Array.isArray(destacadas) ? destacadas.filter(x => typeof x === "string") : [];
+const norm = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const favs = DESTACADAS.map(n => {
+  const e = data.capitales.find(x => norm(x.n.split(" / ")[0]) === norm(n)) || data.entidades.find(x => norm(x.n.split(" / ")[0]) === norm(n));
+  return e ? { n: e.n.split(" / ")[0], mx: e.xy[0], my: e.xy[1], mun: munAt(e.xy[0], e.xy[1]) } : null;
+}).filter(Boolean);
+const favSet = new Set(favs.map(f => f.mx + "," + f.my));
+for (const f of favs) { addLabel("fav", '<span class="star">★</span>' + esc(f.n), f.mx, f.my, 5000, 0); labels[labels.length - 1].lift = 2.75; }
+for (const c of data.capitales) {
+  if (favSet.has(c.xy[0] + "," + c.xy[1])) continue;
+  const p = popBy[c.c] || 0;
+  const kind = c.c === "24089" ? "city" : p >= 3000 ? "town" : "vil";
+  const name = c.n.split(" / ")[0];
+  addLabel(kind, '<span class="dot"></span>' + esc(name), c.xy[0], c.xy[1], kind === "city" ? 1000 : p >= 3000 ? 500 + p / 1000 : 50 + p / 100,
+    kind === "vil" ? (p > 800 ? 75 : 50) : 0);
+}
+data.picos.forEach((p, i) => addLabel("peak" + (i < 12 ? " top" : ""), '<span class="tri"></span>' + esc(p.n.split(" / ")[0]) + "<small>" + fmt.format(p.e) + " m</small>", p.xy[0], p.xy[1], 300 + p.e / 20 - i, i < 12 ? 0 : i < 45 ? 120 : 55));
+const oro = data.orografia || { sierras: [], valles: [], puertos: [] };
+oro.sierras.forEach((p, i) => addLabel("sierra" + (i < 15 ? " big" : ""), esc(p.n.split(" / ")[0]), p.xy[0], p.xy[1], 380 - i, i < 15 ? 0 : i < 50 ? 110 : 50));
+oro.valles.forEach((p, i) => addLabel("valle", esc(p.n.split(" / ")[0]), p.xy[0], p.xy[1], 160 - i / 4, i < 30 ? 90 : 38));
+oro.puertos.forEach((p, i) => addLabel("puerto", '<span class="notch"></span>' + esc(p.n.split(" / ")[0]) + "<small>" + fmt.format(p.e) + " m</small>", p.xy[0], p.xy[1], 260 - i, i < 20 ? 130 : 60));
+for (const r of data.rios.slice(0, 18)) {
+  let best = r.g[0]; for (const p of r.g) if (p.length > best.length) best = p;
+  const k = Math.floor(best.length / 4) * 2;
+  addLabel("river", esc(r.n), best[k], best[k + 1], 200 + r.k, r.k > 60 ? 0 : 110);
+}
+for (const c of data.comarcas) if (c.n !== BIERZO_OFICIAL && c.ctr) addLabel("comarca", esc(c.n), c.ctr[0], c.ctr[1], 420 + c.m, 0);
+for (const a of data.aguas) if (a.n && a.t === "Embalse") {
+  const r = a.g[0]; let x = 0, y = 0; for (let i = 0; i < r.length; i += 2) { x += r[i]; y += r[i + 1]; }
+  addLabel("lake", esc(a.n), x / (r.length / 2), y / (r.length / 2), 150, 140);
+}
+labels.sort((a, b) => b.prio - a.prio);
+
+// marcadores 3D de las localidades destacadas
+const favGroup = new THREE.Group(); scene.add(favGroup);
+{
+  const beamMat = new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending });
+  const gemMat = new THREE.MeshBasicMaterial({ color: 0xf5b83d });
+  const gemEdge = new THREE.LineBasicMaterial({ color: 0x8a5a10 });
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xfff1c4, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false });
+  const beamGeo = new THREE.CylinderGeometry(0.05, 0.05, 2.0, 8, 1, true), gemGeo = new THREE.OctahedronGeometry(0.3), ringGeo = new THREE.RingGeometry(0.32, 0.5, 32);
+  for (const f of favs) {
+    const g = new THREE.Group();
+    const beam = new THREE.Mesh(beamGeo, beamMat); beam.position.y = 1.0;
+    const gem = new THREE.Mesh(gemGeo, gemMat); gem.position.y = 2.25; gem.add(new THREE.LineSegments(new THREE.EdgesGeometry(gemGeo), gemEdge));
+    const ring = new THREE.Mesh(ringGeo, ringMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06;
+    g.add(beam, gem, ring); f.group = g; f.gem = gem; favGroup.add(g);
+  }
+}
+function placeFavs() { for (const f of favs) f.group.position.set(sx(f.mx), heightAt(f.mx, f.my) * ZS(), sz(f.my)); }
+placeFavs();
+$("favs-box").hidden = !favs.length; $("l-fav-row").hidden = !favs.length;
+$("favs").innerHTML = favs.map((f, i) => `<button class="fav-btn" data-i="${i}"><span><span class="pin">★</span>${esc(f.n)}</span><small>${f.mun && norm(f.mun.n) !== norm(f.n) ? esc(f.mun.n) : ""}</small></button>`).join("");
+$("favs").addEventListener("click", (e) => {
+  const b = e.target.closest(".fav-btn"); if (!b) return;
+  const f = favs[+b.dataset.i];
+  flyToPoint(f.mx, f.my, 10); if (f.mun) showInfo(f.mun);
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+});
+const tmpV = new THREE.Vector3();
+function updateLabels() {
+  const cw = host.clientWidth, ch = host.clientHeight, placed = [];
+  const camDist = camera.position.distanceTo(controls.target);
+  for (const L of labels) {
+    const k0 = L.kind.split(" ")[0];
+    let show = k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
+      L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+    if (show && L.minDist && camDist > L.minDist) show = false;
+    if (show && !layers.entorno && !inProv(L.mx, L.my)) show = false;
+    if (show) {
+      tmpV.set(sx(L.mx), heightAt(L.mx, L.my) * ZS() + (L.lift || 0.15), sz(L.my)).project(camera);
+      if (tmpV.z > 1 || Math.abs(tmpV.x) > 1.1 || Math.abs(tmpV.y) > 1.1) show = false;
+      else {
+        const x = (tmpV.x * 0.5 + 0.5) * cw, y = (-tmpV.y * 0.5 + 0.5) * ch;
+        if (!L.w) { L.el.style.display = "block"; L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; }
+        const bx = L.kind === "fav" ? x - L.w / 2 : x - 6, by = L.kind === "fav" ? y - L.h : y - L.h / 2, box = [bx, by, bx + L.w, by + L.h];
+        if (placed.some(p => box[0] < p[2] + 4 && box[2] > p[0] - 4 && box[1] < p[3] + 2 && box[3] > p[1] - 2)) show = false;
+        else { placed.push(box); L.el.style.transform = `translate(${bx.toFixed(1)}px, ${by.toFixed(1)}px)`; }
+      }
+    }
+    if (show !== L.vis) { L.el.style.display = show ? "block" : "none"; L.vis = show; }
+  }
+}
+
+// ---------------------------------------------------------------- selección, búsqueda y lectura
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function pickTerrain(clientX, clientY) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const o = ray.ray.origin, d = ray.ray.direction;
+  let t = 0, prev = null;
+  const maxT = camera.position.length() + 400;
+  for (let n = 0; n < 1600 && t < maxT; n++) {
+    const x = o.x + d.x * t, y = o.y + d.y * t, z = o.z + d.z * t;
+    const mx = (x + KM_W / 2) * 1000, my = (z + KM_D / 2) * 1000;
+    if (mx >= 0 && my >= 0 && mx <= M.ancho && my <= M.alto) {
+      const gh = heightAt(mx, my) * ZS();
+      if (y <= gh) {
+        if (!layers.entorno && !inProv(mx, my)) { prev = t; t += 0.25; continue; }
+        let a = prev ?? t - 0.25, b = t;
+        for (let k = 0; k < 18; k++) { const m = (a + b) / 2; const yy = o.y + d.y * m, mxm = (o.x + d.x * m + KM_W / 2) * 1000, mym = (o.z + d.z * m + KM_D / 2) * 1000;
+          if (yy <= heightAt(mxm, mym) * ZS()) b = m; else a = m; }
+        return { mx: (o.x + d.x * b + KM_W / 2) * 1000, my: (o.z + d.z * b + KM_D / 2) * 1000 };
+      }
+    }
+    prev = t; t += Math.max(0.25, t * 0.004);
+  }
+  return null;
+}
+function showInfo(m) {
+  selected = m; drawOverlay();
+  if (!m) { $("info").hidden = true; return; }
+  $("info").hidden = false;
+  $("i-name").textContent = m.n;
+  $("i-cap").textContent = m.t === "condominio" ? "Comunidad de aprovechamiento compartido entre municipios" : (m.cap ? "Capital: " + m.cap.split(" / ")[0] : "");
+  $("i-pop").textContent = m.p != null ? fmt.format(m.p) + " hab." : "Sin población propia";
+  $("i-area").textContent = fmt1.format(m.a) + " km²";
+  $("i-dens").textContent = m.p != null ? fmt1.format(m.p / m.a) + " hab./km²" : "–";
+  $("i-l4").textContent = "Código INE"; $("i-code").textContent = m.c;
+  $("i-com").textContent = m.cm ? "Comarca: " + m.cm + (m.bz && m.cm !== "El Bierzo" ? " · El Bierzo" : "") : "";
+  const lo = 200, hi = 2650, pct = (v) => ((v - lo) / (hi - lo) * 100).toFixed(1) + "%";
+  $("i-mk-min").style.left = pct(m.amin); $("i-mk-med").style.left = pct(m.amed); $("i-mk-max").style.left = pct(m.amax);
+  $("i-amin").textContent = "mín. " + fmt.format(m.amin) + " m"; $("i-amed").textContent = "media " + fmt.format(m.amed) + " m"; $("i-amax").textContent = "máx. " + fmt.format(m.amax) + " m";
+  const rank = [...data.municipios].filter(x => x.p != null).sort((a, b) => b.p - a.p).indexOf(m) + 1;
+  $("i-hint").textContent = rank ? "Puesto " + rank + " de 211 por población en la provincia." : "";
+}
+$("info-close").onclick = () => { if (comarcaSel) { $("comarca").value = ""; showComarca(null); } else showInfo(null); };
+
+function showComarca(c) {
+  comarcaSel = c; selected = null; drawOverlay();
+  if (!c) { $("info").hidden = true; return; }
+  const muns = c.muns, area = muns.reduce((s, m) => s + m.a, 0);
+  $("info").hidden = false;
+  $("i-name").textContent = c.n === BIERZO_OFICIAL ? "El Bierzo" : c.n;
+  $("i-cap").textContent = c.n === BIERZO_OFICIAL ? "Comarca oficial (Ley 1/1991 de Castilla y León)" : "Comarca tradicional" + (c.bz ? " de El Bierzo" : "");
+  $("i-com").textContent = "";
+  $("i-pop").textContent = fmt.format(c.p) + " hab.";
+  $("i-area").textContent = fmt1.format(area) + " km²";
+  $("i-dens").textContent = fmt1.format(c.p / area) + " hab./km²";
+  $("i-l4").textContent = "Municipios"; $("i-code").textContent = muns.length;
+  const amin = Math.min(...muns.map(m => m.amin)), amax = Math.max(...muns.map(m => m.amax)), amed = Math.round(muns.reduce((s, m) => s + m.amed * m.a, 0) / area);
+  const lo = 200, hi = 2650, pct = (v) => ((v - lo) / (hi - lo) * 100).toFixed(1) + "%";
+  $("i-mk-min").style.left = pct(amin); $("i-mk-med").style.left = pct(amed); $("i-mk-max").style.left = pct(amax);
+  $("i-amin").textContent = "mín. " + fmt.format(amin) + " m"; $("i-amed").textContent = "media " + fmt.format(amed) + " m"; $("i-amax").textContent = "máx. " + fmt.format(amax) + " m";
+  $("i-hint").textContent = muns.map(m => m.n).sort((a, b) => a.localeCompare(b, "es")).join(", ") + ".";
+}
+{
+  const opts = [...data.comarcas].sort((a, b) => a.n === BIERZO_OFICIAL ? -1 : b.n === BIERZO_OFICIAL ? 1 : a.n.localeCompare(b.n, "es"));
+  $("comarca").innerHTML += opts.map(c => `<option value="${esc(c.n)}">${esc(c.n)} (${c.m})</option>`).join("");
+  $("comarca").addEventListener("change", (e) => {
+    const c = data.comarcas.find(x => x.n === e.target.value) || null;
+    showComarca(c);
+    if (c) {
+      const size = Math.max(c.bb[2] - c.bb[0], c.bb[3] - c.bb[1]) / 1000;
+      flyToPoint((c.bb[0] + c.bb[2]) / 2, (c.bb[1] + c.bb[3]) / 2, Math.max(18, size * 2.2));
+      if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+    }
+  });
+}
+
+let fly = null;
+function flyTo(m) {
+  const size = Math.max(m.bb[2] - m.bb[0], m.bb[3] - m.bb[1]) / 1000;
+  flyToPoint((m.bb[0] + m.bb[2]) / 2, (m.bb[1] + m.bb[3]) / 2, Math.max(14, size * 2.6));
+}
+function flyToPoint(cx, cy, dist) {
+  const tgt = new THREE.Vector3(sx(cx), heightAt(cx, cy) * ZS(), sz(cy));
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  dir.y = Math.max(dir.y, 0.55); dir.normalize();
+  fly = { t0: performance.now(), dur: reduceMotion ? 1 : 1400, fromT: controls.target.clone(), fromP: camera.position.clone(), toT: tgt, toP: tgt.clone().add(dir.multiplyScalar(dist)) };
+}
+$("munlist").innerHTML = data.municipios.filter(m => m.t === "municipio").map(m => m.n).sort((a, b) => a.localeCompare(b, "es")).map(n => `<option value="${esc(n)}">`).join("");
+$("search").addEventListener("change", (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  const m = data.municipios.find(x => x.n.toLowerCase() === q) || data.municipios.find(x => x.n.toLowerCase().includes(q));
+  if (m) { showInfo(m); flyTo(m); if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } }
+});
+
+let downAt = null, hoverPending = null;
+renderer.domElement.addEventListener("pointerdown", (e) => { downAt = [e.clientX, e.clientY]; fly = null; });
+renderer.domElement.addEventListener("pointerup", (e) => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  const p = pickTerrain(e.clientX, e.clientY);
+  const m = p && inProv(p.mx, p.my) ? munAt(p.mx, p.my) : null;
+  showInfo(m && m !== selected ? m : null);
+});
+renderer.domElement.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") hoverPending = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener("pointerleave", () => { hoverPending = null; hovered = null; });
+function doHover() {
+  if (!hoverPending) return;
+  const [x, y] = hoverPending; hoverPending = null;
+  const p = pickTerrain(x, y);
+  let m = null, txt = "Fuera del mapa";
+  if (p) {
+    const [lat, lon] = utmToLatLon(M.x0 + p.mx, M.y1 - p.my);
+    const h = heightAt(p.mx, p.my);
+    const ip = inProv(p.mx, p.my);
+    m = ip ? munAt(p.mx, p.my) : null;
+    // entidad de población más cercana (< 900 m)
+    let near = null, nd = 900;
+    if (ip) for (const e of data.entidades.concat(data.capitales)) { const d = Math.hypot(e.xy[0] - p.mx, e.xy[1] - p.my); if (d < nd) { nd = d; near = e; } }
+    txt = `${lat.toFixed(3)}° N · ${Math.abs(lon).toFixed(3)}° O · <b>${fmt.format(Math.round(h))} m</b>` +
+      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + (near ? ` · ${esc(near.n.split(" / ")[0])}` : "");
+  }
+  $("readout").innerHTML = txt;
+  hovered = m;
+}
+
+// ---------------------------------------------------------------- controles de capas
+const bind = (id, key, fn) => $(id).addEventListener("change", (e) => { layers[key] = e.target.checked; fn && fn(); });
+bind("l-mun", "mun", drawOverlay); bind("l-rios", "rios", drawOverlay); bind("l-aguas", "aguas", drawOverlay); bind("l-pob", "pob", drawOverlay);
+bind("l-picos", "picos");
+bind("l-sierras", "sierras"); bind("l-valles", "valles"); bind("l-puertos", "puertos");
+bind("l-carr", "carr", drawOverlay); bind("l-comarcas", "comarcas", drawOverlay);
+bind("l-fav", "fav", () => { favGroup.visible = layers.fav; });
+bind("l-entorno", "entorno", () => { U.uEntorno.value = layers.entorno ? 1 : 0; });
+bind("l-arboles", "arboles", () => { treeMesh.visible = layers.arboles; });
+bind("l-nubes", "nubes", () => { clouds.visible = layers.nubes; });
+let exagTimer = null;
+$("exag").addEventListener("input", (e) => {
+  exag = +e.target.value; U.uExag.value = exag / 1000;
+  $("exag-o").textContent = "×" + String(exag).replace(".", ",");
+  placeTrees(); placeFavs();
+  clearTimeout(exagTimer); exagTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, 120);
+});
+$("hora").addEventListener("input", (e) => setHour(+e.target.value));
+
+addEventListener("resize", () => {
+  camera.aspect = host.clientWidth / host.clientHeight; camera.updateProjectionMatrix();
+  renderer.setSize(host.clientWidth, host.clientHeight);
+});
+
+// ---------------------------------------------------------------- bucle
+let last = performance.now(), hoverTick = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (fly) {
+    const k = Math.min(1, (now - fly.t0) / fly.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+    controls.target.lerpVectors(fly.fromT, fly.toT, e); camera.position.lerpVectors(fly.fromP, fly.toP, e);
+    if (k >= 1) fly = null;
+  }
+  controls.update();
+  U.uCam.value = camera.position;
+  if (layers.nubes && !reduceMotion) for (const c of clouds.children) { c.position.x += c.userData.v * dt; if (c.position.x > 140) c.position.x = -140; }
+  if (!reduceMotion) favs.forEach((f, i) => { f.gem.rotation.y += dt * 1.2; f.gem.position.y = 2.25 + Math.sin(now / 650 + i) * 0.12; });
+  if ((hoverTick = (hoverTick + 1) % 3) === 0) doHover();
+  renderer.render(scene, camera);
+  updateLabels();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+$("loading").classList.add("done");
+})();
+</script>

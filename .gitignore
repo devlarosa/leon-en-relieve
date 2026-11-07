@@ -1,0 +1,11 @@
+# Datos descargados y generados (se reconstruyen con scripts/descargar_datos.sh y R/10_preparar_web.R)
+raw/
+web/data/
+# Lista privada de lugares destacados
+destacados.json
+# R
+.Rhistory
+.RData
+.Rproj.user/
+# Python
+__pycache__/
