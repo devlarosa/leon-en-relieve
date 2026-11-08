@@ -180,6 +180,25 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
 #info button.x:hover { background: var(--moss-soft); }
 #info .hint { margin-top: 12px; font-size: 11.5px; color: var(--ink-soft); }
 
+#nav { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; padding: 4px; gap: 2px; border-radius: 14px; }
+#nav button { width: 38px; height: 38px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); font: inherit;
+  font-size: 18px; font-weight: 700; cursor: pointer; display: grid; place-items: center; }
+#nav button:hover { background: var(--moss-soft); }
+#nav button:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+#nav-tilt { font-size: 12.5px !important; letter-spacing: .04em; }
+#nav-needle { transition: none; }
+#help { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(620px, calc(100% - 32px)); max-height: calc(100% - 48px);
+  overflow: auto; padding: 18px 20px; box-sizing: border-box; z-index: 4; }
+#help h2 { margin: 0 0 10px; font-family: var(--font-display); font-size: 24px; font-weight: 800; }
+#help .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+#help dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0 0 12px; font-size: 13.5px; }
+#help dt { color: var(--ink); font-weight: 600; } #help dd { margin: 0; color: var(--ink-soft); }
+#help button.x { position: absolute; top: 10px; right: 10px; border: 0; background: transparent; color: var(--ink-soft); font-size: 20px; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; }
+#help button.x:hover { background: var(--moss-soft); }
+kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px;
+  font-family: var(--font-ui); font-size: 11.5px; font-weight: 700; text-align: center; background: var(--panel-solid); color: var(--ink); }
+@media (max-width: 720px) { #help .help-grid { grid-template-columns: 1fr; } #nav { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); } }
 #readout { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   padding: 7px 14px; font-size: 12.5px; font-variant-numeric: tabular-nums; white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; }
 #readout b { font-weight: 700; }
@@ -339,10 +358,55 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
   <p class="hint">Cálculo sobre el MDT del IGN a 100 m, con curvatura terrestre y refracción, para un observador de 1,7 m. No tiene en cuenta árboles ni edificios.</p>
 </section>
 
-<div id="readout" class="card">Pasa el cursor por el mapa</div>
+<div id="nav" class="card" role="toolbar" aria-label="Controles del mapa">
+  <button id="nav-in" aria-label="Acercar" title="Acercar (+)">+</button>
+  <button id="nav-out" aria-label="Alejar" title="Alejar (−)">−</button>
+  <button id="nav-north" aria-label="Norte arriba" title="Norte arriba (N)"><svg viewBox="0 0 24 24" width="22" height="22" id="nav-needle" aria-hidden="true"><path d="M12 2 L16 12 L12 10.5 L8 12 Z" fill="#c4493a"/><path d="M12 22 L8 12 L12 13.5 L16 12 Z" fill="currentColor" opacity=".55"/></svg></button>
+  <button id="nav-tilt" aria-label="Cambiar entre vista inclinada y cenital" title="Vista 2D / 3D">2D</button>
+  <button id="nav-help" aria-label="Ver controles" aria-expanded="false" aria-controls="help" title="Controles (?)">?</button>
+</div>
+
+<section id="help" class="card" hidden aria-label="Controles de navegación">
+  <button class="x" id="help-close" aria-label="Cerrar ayuda">×</button>
+  <h2>Cómo moverse</h2>
+  <div class="help-grid">
+    <div>
+      <p class="group-title">Ratón</p>
+      <dl>
+        <dt>Arrastrar</dt><dd>Mover el mapa</dd>
+        <dt>Rueda</dt><dd>Zoom hacia el cursor</dd>
+        <dt>Doble clic</dt><dd>Acercar ahí</dd>
+        <dt>Botón derecho + arrastrar</dt><dd>Girar e inclinar</dd>
+        <dt>Ctrl o Mayús + arrastrar</dt><dd>Girar e inclinar</dd>
+        <dt>Clic</dt><dd>Ficha del municipio</dd>
+      </dl>
+      <p class="group-title">Táctil</p>
+      <dl>
+        <dt>Un dedo</dt><dd>Mover</dd>
+        <dt>Pellizcar</dt><dd>Zoom</dd>
+        <dt>Girar dos dedos</dt><dd>Rotar</dd>
+        <dt>Dos dedos arriba/abajo</dt><dd>Inclinar</dd>
+      </dl>
+    </div>
+    <div>
+      <p class="group-title">Teclado</p>
+      <dl>
+        <dt><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> o <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dt><dd>Mover</dd>
+        <dt><kbd>+</kbd> <kbd>−</kbd></dt><dd>Zoom</dd>
+        <dt><kbd>Q</kbd> <kbd>E</kbd> o <kbd>Mayús</kbd>+<kbd>←</kbd><kbd>→</kbd></dt><dd>Girar</dd>
+        <dt><kbd>R</kbd> <kbd>F</kbd> o <kbd>Mayús</kbd>+<kbd>↑</kbd><kbd>↓</kbd></dt><dd>Inclinar</dd>
+        <dt><kbd>N</kbd></dt><dd>Norte arriba</dd>
+        <dt><kbd>0</kbd></dt><dd>Vista inicial</dd>
+        <dt><kbd>Esc</kbd></dt><dd>Cerrar fichas</dd>
+        <dt><kbd>?</kbd></dt><dd>Esta ayuda</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<div id="readout" class="card">Arrastra para mover · rueda para zoom · botón derecho para girar · <kbd>?</kbd> controles</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 function showFatal(err) {
   const box = document.querySelector("#loading .box");
@@ -353,7 +417,7 @@ function showFatal(err) {
 }
 addEventListener("error", (e) => showFatal(e.error || e.message));
 addEventListener("unhandledrejection", (e) => showFatal(e.reason));
-if (!window.THREE || !THREE.OrbitControls) showFatal(new Error("no se pudo cargar la librería Three.js"));
+if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"));
 </script>
 <script>
 (async function () {
@@ -622,11 +686,170 @@ host.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, host.clientWidth / host.clientHeight, 0.1, 2000);
 camera.position.set(-30, 120, 150);
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 2, 4);
-controls.enableDamping = true; controls.dampingFactor = 0.08;
-controls.maxPolarAngle = 1.38; controls.minDistance = 4; controls.maxDistance = 360;
-controls.screenSpacePanning = false;
+// ---------------------------------------------------------------- navegación (al estilo de Google Maps)
+// Arrastrar = agarrar el mapa; rueda = zoom hacia el cursor; derecho o Ctrl/Mayús + arrastrar = girar e inclinar;
+// dos dedos = pellizco, giro e inclinación; teclado: flechas/WASD, +/−, Q/E, R/F, N, 0, Esc, ?
+const ctl = { target: new THREE.Vector3(0, 2, 4), dist: 1, theta: 0, phi: 1, tw: null, zoomQ: null };
+const PHI_MIN = 0.02, PHI_MAX = 1.38, DIST_MIN = 1.5, DIST_MAX = 360;
+const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
+function syncFromCamera() {
+  const v = camera.position.clone().sub(ctl.target);
+  ctl.dist = v.length(); ctl.phi = Math.acos(clampN(v.y / ctl.dist, -1, 1)); ctl.theta = Math.atan2(v.x, v.z);
+}
+function applyCamera() {
+  ctl.phi = clampN(ctl.phi, PHI_MIN, PHI_MAX); ctl.dist = clampN(ctl.dist, DIST_MIN, DIST_MAX);
+  const lim = 40; ctl.target.x = clampN(ctl.target.x, -KM_W / 2 - lim, KM_W / 2 + lim); ctl.target.z = clampN(ctl.target.z, -KM_D / 2 - lim, KM_D / 2 + lim);
+  const sp = Math.sin(ctl.phi);
+  camera.position.set(ctl.target.x + ctl.dist * sp * Math.sin(ctl.theta), ctl.target.y + ctl.dist * Math.cos(ctl.phi), ctl.target.z + ctl.dist * sp * Math.cos(ctl.theta));
+  const mx = (camera.position.x + KM_W / 2) * 1000, my = (camera.position.z + KM_D / 2) * 1000;
+  if (mx >= 0 && my >= 0 && mx <= M.ancho && my <= M.alto) camera.position.y = Math.max(camera.position.y, heightAt(mx, my) * ZS() + 0.25);
+  camera.lookAt(ctl.target); camera.updateMatrixWorld();
+}
+const controls = { target: ctl.target, update: applyCamera };
+camera.position.set(-30, 120, 150); syncFromCamera();
+const HOME = { tx: 0, ty: 2, tz: 4, dist: ctl.dist, theta: ctl.theta, phi: ctl.phi };
+const navRay = new THREE.Raycaster(), navNdc = new THREE.Vector2();
+function rayPlane(x, y, h) {
+  const r = renderer.domElement.getBoundingClientRect();
+  navNdc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
+  navRay.setFromCamera(navNdc, camera);
+  const o = navRay.ray.origin, d = navRay.ray.direction;
+  if (Math.abs(d.y) < 1e-4) return null;
+  const t = (h - o.y) / d.y; if (t < 0 || t > 3000) return null;
+  return new THREE.Vector3(o.x + d.x * t, h, o.z + d.z * t);
+}
+function groundPoint(x, y) {
+  const p = pickTerrain(x, y);
+  return p ? new THREE.Vector3(sx(p.mx), heightAt(p.mx, p.my) * ZS(), sz(p.my)) : rayPlane(x, y, ctl.target.y);
+}
+function zoomAround(P, f) {
+  const nd = clampN(ctl.dist * f, DIST_MIN, DIST_MAX), fe = nd / ctl.dist;
+  if (P) ctl.target.lerp(P, 1 - fe);
+  ctl.dist = nd;
+}
+function tweenTo(to, dur) {
+  const from = { tx: ctl.target.x, ty: ctl.target.y, tz: ctl.target.z, dist: ctl.dist, theta: ctl.theta, phi: ctl.phi };
+  const t = Object.assign({}, from, to);
+  let dth = (t.theta - from.theta) % (2 * Math.PI); if (dth > Math.PI) dth -= 2 * Math.PI; if (dth < -Math.PI) dth += 2 * Math.PI;
+  t.theta = from.theta + dth;
+  fly = null; ctl.tw = { from, to: t, t0: performance.now(), dur: reduceMotion ? 1 : dur || 600 };
+}
+function stepTween(now) {
+  const w = ctl.tw; if (!w) return;
+  const k = Math.min(1, (now - w.t0) / w.dur), e = 1 - Math.pow(1 - k, 3), L = (a, b) => a + (b - a) * e;
+  ctl.target.set(L(w.from.tx, w.to.tx), L(w.from.ty, w.to.ty), L(w.from.tz, w.to.tz));
+  ctl.dist = L(w.from.dist, w.to.dist); ctl.theta = L(w.from.theta, w.to.theta); ctl.phi = L(w.from.phi, w.to.phi);
+  if (k >= 1) ctl.tw = null;
+}
+function zoomAt(x, y, f) {
+  const P = x == null ? ctl.target.clone() : groundPoint(x, y) || ctl.target.clone();
+  const nd = clampN(ctl.dist * f, DIST_MIN, DIST_MAX), fe = nd / ctl.dist, T = ctl.target.clone().lerp(P, 1 - fe);
+  tweenTo({ tx: T.x, ty: T.y, tz: T.z, dist: nd }, 450);
+}
+function stopNav() { fly = null; ctl.tw = null; ctl.zoomQ = null; }
+
+{
+  const el = renderer.domElement, ptrs = new Map();
+  let g = null;   // gesto en curso
+  el.addEventListener("contextmenu", (e) => e.preventDefault());
+  const start = (e) => {
+    const list = [...ptrs.values()];
+    if (list.length === 1) {
+      const p = list[0], rot = p.type === "mouse" && (p.button === 2 || p.button === 1 || e.ctrlKey || e.shiftKey || e.metaKey || e.altKey);
+      g = rot ? { mode: "rotate", x: p.x, y: p.y } : { mode: "pan", grab: groundPoint(p.x, p.y) };
+    } else if (list.length >= 2) {
+      const [a, b] = list, cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+      g = { mode: "pinch", d: Math.hypot(a.x - b.x, a.y - b.y), ang: Math.atan2(b.y - a.y, b.x - a.x), cy, P: groundPoint(cx, cy) };
+    } else g = null;
+  };
+  el.addEventListener("pointerdown", (e) => {
+    stopNav();
+    try { el.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ }
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, button: e.button, type: e.pointerType });
+    start(e);
+  });
+  el.addEventListener("pointermove", (e) => {
+    const p = ptrs.get(e.pointerId); if (!p || !g) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y;
+    p.x = e.clientX; p.y = e.clientY;
+    if (g.mode === "pan" && g.grab) {
+      const P = rayPlane(p.x, p.y, g.grab.y); if (!P) return;
+      const d = g.grab.clone().sub(P); d.y = 0;
+      const maxStep = ctl.dist * 0.8; if (d.length() > maxStep) d.setLength(maxStep);
+      ctl.target.add(d); applyCamera();
+    } else if (g.mode === "rotate") {
+      ctl.theta -= dx * 0.006; ctl.phi -= dy * 0.005; applyCamera();
+    } else if (g.mode === "pinch") {
+      const [a, b] = [...ptrs.values()]; if (!b) return;
+      const d = Math.hypot(a.x - b.x, a.y - b.y), ang = Math.atan2(b.y - a.y, b.x - a.x), cy = (a.y + b.y) / 2;
+      if (d > 10 && g.d > 10) zoomAround(g.P, g.d / d);
+      let da = ang - g.ang; if (da > Math.PI) da -= 2 * Math.PI; if (da < -Math.PI) da += 2 * Math.PI;
+      ctl.theta += da; ctl.phi -= (cy - g.cy) * 0.004;
+      g.d = d; g.ang = ang; g.cy = cy; applyCamera();
+    }
+  });
+  const end = (e) => { if (!ptrs.delete(e.pointerId)) return; start(e); };
+  el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+  el.addEventListener("wheel", (e) => {
+    e.preventDefault(); fly = null; ctl.tw = null;
+    const k = e.deltaY * (e.deltaMode === 1 ? 0.05 : e.deltaMode === 2 ? 1 : 0.0016);
+    const P = groundPoint(e.clientX, e.clientY);
+    ctl.zoomQ = { P: P || (ctl.zoomQ && ctl.zoomQ.P) || ctl.target.clone(), k: (ctl.zoomQ ? ctl.zoomQ.k : 0) + clampN(k, -1, 1) };
+  }, { passive: false });
+}
+
+// teclado
+const keys = new Set(); let shiftDown = false;
+const NAV_KEYS = new Set(["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d", "q", "e", "r", "f", "+", "=", "-", "_", "pageup", "pagedown"]);
+const typing = (t) => t && ((t.tagName === "INPUT" && !["checkbox", "button"].includes(t.type)) || t.tagName === "SELECT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+addEventListener("keydown", (e) => {
+  if (e.key === "Shift") shiftDown = true;
+  if (e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+  const k = e.key.toLowerCase();
+  if (NAV_KEYS.has(k)) { keys.add(k); stopNav(); e.preventDefault(); return; }
+  if (k === "n") { tweenTo({ theta: 0 }); }
+  else if (k === "0" || k === "home") { tweenTo(HOME, 900); }
+  else if (e.key === "?") { toggleHelp(); }
+  else if (k === "escape") {
+    if (!$("help").hidden) toggleHelp(false);
+    else if (!$("mirador").hidden || miradorArmed) closeMirador();
+    else if (!$("info").hidden) $("info-close").click();
+    else if (!$("panel").classList.contains("collapsed") && matchMedia("(max-width: 720px)").matches) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+  } else return;
+  e.preventDefault();
+});
+addEventListener("keyup", (e) => { if (e.key === "Shift") shiftDown = false; keys.delete(e.key.toLowerCase()); });
+addEventListener("blur", () => { keys.clear(); shiftDown = false; });
+function stepKeys(dt) {
+  if (!keys.size) return;
+  const has = (k) => keys.has(k), sp = ctl.dist * 0.75 * dt, st = Math.sin(ctl.theta), ct = Math.cos(ctl.theta);
+  const up = has("w") || (has("arrowup") && !shiftDown), dn = has("s") || (has("arrowdown") && !shiftDown);
+  const lf = has("a") || (has("arrowleft") && !shiftDown), rt = has("d") || (has("arrowright") && !shiftDown);
+  const fz = (up ? 1 : 0) - (dn ? 1 : 0), fx = (rt ? 1 : 0) - (lf ? 1 : 0);
+  ctl.target.x += (-st * fz + ct * fx) * sp; ctl.target.z += (-ct * fz - st * fx) * sp;
+  if (has("q") || (shiftDown && has("arrowleft"))) ctl.theta += 1.3 * dt;
+  if (has("e") || (shiftDown && has("arrowright"))) ctl.theta -= 1.3 * dt;
+  if (has("r") || (shiftDown && has("arrowup"))) ctl.phi += 0.9 * dt;
+  if (has("f") || (shiftDown && has("arrowdown"))) ctl.phi -= 0.9 * dt;
+  if (has("+") || has("=") || has("pageup")) ctl.dist *= Math.exp(-1.6 * dt);
+  if (has("-") || has("_") || has("pagedown")) ctl.dist *= Math.exp(1.6 * dt);
+}
+function stepWheel(dt) {
+  const q = ctl.zoomQ; if (!q) return;
+  const step = Math.abs(q.k) < 0.002 ? q.k : q.k * Math.min(1, dt * 14);
+  zoomAround(q.P, Math.exp(step)); q.k -= step;
+  if (Math.abs(q.k) < 1e-4) ctl.zoomQ = null;
+}
+function toggleHelp(on) {
+  const h = $("help"), show = on == null ? h.hidden : on;
+  h.hidden = !show; $("nav-help").setAttribute("aria-expanded", String(show));
+}
+$("help-close").onclick = () => toggleHelp(false);
+$("nav-help").onclick = () => toggleHelp();
+$("nav-in").onclick = () => zoomAt(null, null, 0.6);
+$("nav-out").onclick = () => zoomAt(null, null, 1.6);
+$("nav-north").onclick = () => tweenTo({ theta: 0 });
+$("nav-tilt").onclick = () => tweenTo({ phi: ctl.phi > 0.35 ? PHI_MIN : 0.95 });
 
 let exag = 2.5;
 const ZS = () => exag / 1000;   // metros -> km de escena con exageración
@@ -1508,13 +1731,19 @@ $("search").addEventListener("change", (e) => {
 
 let downAt = null, hoverPending = null;
 renderer.domElement.addEventListener("pointerdown", (e) => { downAt = [e.clientX, e.clientY]; fly = null; });
+let lastTap = null;
 renderer.domElement.addEventListener("pointerup", (e) => {
   if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  if (e.button !== 0 || e.ctrlKey || e.shiftKey || e.metaKey || e.altKey) return;
   // en el móvil, con el panel abierto encima del mapa, un toque solo cierra el panel
   if (matchMedia("(max-width: 720px)").matches && !$("panel").classList.contains("collapsed")) {
     $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false");
     return;
   }
+  // doble clic o doble toque: acercar hacia ese punto, sin cambiar la selección
+  const tNow = performance.now();
+  if (lastTap && tNow - lastTap.t < 330 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 14) { lastTap = null; zoomAt(e.clientX, e.clientY, 0.45); return; }
+  lastTap = { t: tNow, x: e.clientX, y: e.clientY };
   const p = pickTerrain(e.clientX, e.clientY);
   if (miradorArmed || mirador) { if (p) { setArmed(true); openMirador(p.mx, p.my, null, 0); } return; }
   const m = p && inProv(p.mx, p.my) ? munAt(p.mx, p.my) : null;
@@ -1605,9 +1834,13 @@ function frame(now) {
   if (fly) {
     const k = Math.min(1, (now - fly.t0) / fly.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
     controls.target.lerpVectors(fly.fromT, fly.toT, e); camera.position.lerpVectors(fly.fromP, fly.toP, e);
+    syncFromCamera();
     if (k >= 1) fly = null;
   }
+  stepTween(now); stepKeys(dt); stepWheel(dt);
   controls.update();
+  $("nav-needle").style.transform = `rotate(${ctl.theta}rad)`;
+  $("nav-tilt").textContent = ctl.phi > 0.35 ? "2D" : "3D";
   U.uCam.value = camera.position;
   if (layers.nubes && !reduceMotion) for (const c of clouds.children) { c.position.x += c.userData.v * dt; if (c.position.x > 140) c.position.x = -140; }
   if (!reduceMotion && eyeGroup.visible) { eyeGroup.userData.gem.rotation.y += dt * 1.2; }
