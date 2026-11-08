@@ -58,7 +58,7 @@ for s in 0 1500 3000 4500 6000 7500 9000; do
 done
 
 echo "4/9 Nomenclátor Geográfico Básico (IGN): poblaciones y orografía"
-for T in "Capital de provincia" "Capital de municipio" "Entidad singular" "Montaña" "Alineación montañosa" "Depresión" "Paso de montaña" "Comarca geográfica"; do
+for T in "Capital de provincia" "Capital de municipio" "Entidad singular" "Núcleos de población" "Capital de EATIM" "Entidad menor de población" "Montaña" "Alineación montañosa" "Depresión" "Paso de montaña" "Comarca geográfica"; do
   F="<fes:Filter xmlns:fes=\"http://www.opengis.net/fes/2.0\" xmlns:gn=\"http://inspire.ec.europa.eu/schemas/gn/4.0\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gml=\"http://www.opengis.net/gml/3.2\"><fes:And><fes:BBOX><fes:ValueReference>gn:geometry</fes:ValueReference><gml:Envelope srsName=\"urn:ogc:def:crs:EPSG::4258\"><gml:lowerCorner>41.95 -7.15</gml:lowerCorner><gml:upperCorner>43.30 -4.65</gml:upperCorner></gml:Envelope></fes:BBOX><fes:PropertyIsEqualTo><fes:ValueReference>gn:localType/gmd:LocalisedCharacterString</fes:ValueReference><fes:Literal>$T</fes:Literal></fes:PropertyIsEqualTo></fes:And></fes:Filter>"
   wfs_filtro "https://www.ign.es/wfs-inspire/ngbe" "gn:NamedPlace" "$F" "raw/ngbe/$(echo "$T" | tr ' ' '_').gml"
 done
@@ -84,6 +84,10 @@ mkdir -p raw/comarcas_agrarias
 echo "Población del Censo 2021 en celdas de 1 km² (INE, rejilla europea)"
 mkdir -p raw/rejilla
 [ -s raw/rejilla/Poblacion_Rejilla_Europea.csv ] || bajar "https://www.ine.es/censos2021/Poblacion_Rejilla_Europea.csv" raw/rejilla/Poblacion_Rejilla_Europea.csv
+
+echo "Población de cada pueblo (INE, Nomenclátor a 1 de enero)"
+mkdir -p raw/nomenclator
+[ -s raw/nomenclator/entidades_ine.csv ] || python3 -I scripts/ine_nomenclator.py 2025 raw/nomenclator/entidades_ine.csv
 
 echo "9/9 Población histórica (INE, censos desde 1900; tarda unos minutos)"
 [ -s raw/historico/censos.json ] || python3 -I scripts/ine_censos.py raw/poblacion_ine_2025.csv raw/historico/censos.json

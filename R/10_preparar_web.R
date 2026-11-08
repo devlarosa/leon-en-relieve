@@ -47,16 +47,57 @@ rd_pts <- function(f) {
 }
 capprov <- rd_pts("raw/ngbe/Capital_de_provincia.gml")
 capmun  <- rd_pts("raw/ngbe/Capital_de_municipio.gml")
-ent     <- rd_pts("raw/ngbe/Entidad_singular.gml")
+# localidades: entidades singulares, núcleos, capitales de junta vecinal (EATIM) y entidades menores del NGBE
+tipos_loc <- c("Entidad_singular", "Núcleos_de_población", "Capital_de_EATIM", "Entidad_menor_de_población")
+ent <- do.call(rbind, lapply(tipos_loc, function(t) { f <- sprintf("raw/ngbe/%s.gml", t); if (file.exists(f)) rd_pts(f) }))
 mont    <- rd_pts("raw/ngbe/Montaña.gml")
 
 capmun <- st_join(capmun, mun[, c("code")], join = st_within) %>% filter(!is.na(code)) %>%
   group_by(code) %>% slice(1) %>% ungroup()
 capmun$capital_prov <- capmun$code == "24089"
 mun <- mun %>% left_join(st_drop_geometry(capmun)[, c("code", "nombre")] %>% rename(capital = nombre), by = "code")
-# entidades: quitar las que coinciden con capitales
-ent <- ent[!(paste(ent$nombre) %in% capmun$nombre & lengths(st_is_within_distance(ent, capmun, 300)) > 0), ]
-cat("Capitales:", nrow(capmun), " Entidades:", nrow(ent), "\n")
+# normalización de nombres para cruzar IGN e INE ("UÑA (LA)" = "La Uña"; sin tildes ni signos)
+norm_nom <- function(x) {
+  x <- sub("^(.*) \\((EL|LA|LOS|LAS|LO|L')\\)$", "\\2 \\1", toupper(trimws(x)))
+  x <- iconv(x, "UTF-8", "ASCII//TRANSLIT"); x <- gsub("[^A-Z0-9 ]", " ", x); gsub("\\s+", " ", trimws(x))
+}
+primer_nom <- function(x) trimws(sub(" / .*", "", x))
+ent$municipio <- st_join(ent, mun[, "code"], join = st_within)$code
+ent <- ent[!is.na(ent$municipio), ]
+ent$clave <- norm_nom(primer_nom(ent$nombre))
+# un mismo pueblo aparece con varios tipos: se queda uno por nombre y municipio (y a menos de 1,5 km)
+ent <- ent[order(ent$municipio, ent$clave), ]
+dup <- logical(nrow(ent)); xy <- st_coordinates(ent)
+for (i in seq_len(nrow(ent))[-1]) {
+  j <- which(ent$clave[seq_len(i - 1)] == ent$clave[i] & ent$municipio[seq_len(i - 1)] == ent$municipio[i] & !dup[seq_len(i - 1)])
+  if (length(j) && any(sqrt((xy[j, 1] - xy[i, 1])^2 + (xy[j, 2] - xy[i, 2])^2) < 1500)) dup[i] <- TRUE
+}
+ent <- ent[!dup, ]
+# población de cada pueblo: Nomenclátor del INE (entidades singulares), cruzado por municipio y nombre
+ine_ent <- read.csv("raw/nomenclator/entidades_ine.csv", colClasses = c(codigo = "character", municipio_ine = "character"))
+names(ine_ent)[5] <- "pob"
+ine_ent$clave <- norm_nom(ine_ent$nombre_ine)
+k_ign <- paste(ent$municipio, ent$clave); k_ine <- paste(ine_ent$municipio_ine, ine_ent$clave)
+ent$pob <- ine_ent$pob[match(k_ign, k_ine)]
+# segunda pasada: nombres casi iguales dentro del mismo municipio ("San Martín" / "San Martín de la Falamosa")
+for (i in which(is.na(ent$pob))) {
+  cand <- ine_ent[ine_ent$municipio_ine == ent$municipio[i] & !(k_ine %in% k_ign[!is.na(ent$pob)]), ]
+  if (!nrow(cand)) next
+  d <- adist(ent$clave[i], cand$clave) / pmax(nchar(ent$clave[i]), nchar(cand$clave))
+  pre <- startsWith(paste0(cand$clave, " "), paste0(ent$clave[i], " ")) | startsWith(paste0(ent$clave[i], " "), paste0(cand$clave, " "))
+  if (min(d) <= 0.2) ent$pob[i] <- cand$pob[which.min(d)]
+  else if (sum(pre) == 1) ent$pob[i] <- cand$pob[pre]      # "Caín" = "Caín de Valdeón"
+}
+emp <- !is.na(ent$pob)
+cat("Localidades IGN:", nrow(ent), " con población INE:", sum(emp), sprintf("(%.0f %%)", 100 * mean(emp)),
+    " habitantes asignados:", sum(ent$pob, na.rm = TRUE), " pueblos INE sin punto IGN:",
+    sum(!(k_ine %in% k_ign[emp])), "\n")
+# las que no tienen población en el INE y no son entidad singular suelen ser barrios o caseríos: se quedan, sin cifra
+capmun$pob_nucleo <- ent$pob[match(paste(capmun$code, norm_nom(primer_nom(capmun$nombre))), paste(ent$municipio, ent$clave))]
+# quitar de las localidades las que son la capital del municipio
+es_cap <- paste(ent$municipio, ent$clave) %in% paste(capmun$code, norm_nom(primer_nom(capmun$nombre)))
+ent <- ent[!es_cap, ]
+cat("Capitales:", nrow(capmun), " Localidades (sin capitales):", nrow(ent), "\n")
 
 # Picos: altitud del MDT25 (máximo en 60 m alrededor) y selección espaciada
 mont$elev <- terra::extract(dem25, vect(st_buffer(mont, 60)), fun = max, na.rm = TRUE)[,2]
@@ -199,6 +240,7 @@ out <- list(
                 poblacion = "INE · Padrón municipal a 1 de enero de 2025 (tabla 2877)",
                 carreteras = "IGN · Red de transporte, clase funcional (api-features.idee.es, roadlink)",
                 historico = "INE · Alteraciones de los municipios en los Censos de Población desde 1842 (población de derecho; se suman los municipios absorbidos)",
+                localidades = "IGN · NGBE (entidades singulares, núcleos, capitales de EATIM y entidades menores); población: INE · Nomenclátor a 1 de enero de 2025",
                 orografia = "IGN · Nomenclátor Geográfico Básico (cumbres, alineaciones montañosas, depresiones y pasos); altitudes del MDT25",
                 comarcas = "MAPA · Comarcas agrarias (ComarcasAgrarias.shp de la IDE del MAPA, vía rOpenSpain/mapSpain); El Bierzo oficial: Ley 1/1991 de Castilla y León",
                 comarcas_tradicionales = "Comarca tradicional de cada municipio según su ficha en es.wikipedia.org (no oficial)")),
@@ -212,8 +254,9 @@ out <- list(
   aguas = lapply(seq_len(nrow(aguas)), function(i) list(n = aguas$nombre[i], t = aguas$tipo[i],
     g = poly_coords(aguas[i, ])[[1]])),
   capitales = lapply(seq_len(nrow(capmun)), function(i) list(n = capmun$nombre[i], c = capmun$code[i],
-    xy = pt(capmun[i, ])[[1]])),
-  entidades = lapply(seq_len(nrow(ent)), function(i) list(n = ent$nombre[i], xy = pt(ent[i, ])[[1]])),
+    p = if (is.na(capmun$pob_nucleo[i])) NULL else capmun$pob_nucleo[i], xy = pt(capmun[i, ])[[1]])),
+  entidades = lapply(seq_len(nrow(ent)), function(i) list(n = ent$nombre[i], c = ent$municipio[i],
+    p = if (is.na(ent$pob[i])) NULL else ent$pob[i], xy = pt(ent[i, ])[[1]])),
   carreteras = lapply(seq_len(nrow(carr)), function(i) list(c = carr$clase[i], g = line_coords(carr[i, ])[[1]])),
   comarcas = lapply(seq_len(nrow(grp)), function(i) list(n = grp$nombre[i], m = grp$n[i], p = grp$pob[i], bz = grp$bierzo[i],
     g = poly_coords(grp[i, ])[[1]])),

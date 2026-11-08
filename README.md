@@ -14,7 +14,8 @@ Todos los datos geográficos proceden de fuentes oficiales; la comarca tradicion
 | Provincia, municipios y condominios | IGN · Unidades administrativas INSPIRE, WFS `www.ign.es/wfs-inspire/unidades-administrativas` |
 | Ríos | IGN · Hidrografía INSPIRE, WFS `servicios.idee.es/wfs-inspire/hidrografia` |
 | Embalses y lagos, carreteras | IGN · OGC API Features `api-features.idee.es` (`standingwater`, `roadlink`) |
-| Poblaciones, cumbres, sierras, valles, puertos | IGN · Nomenclátor Geográfico Básico de España, WFS `www.ign.es/wfs-inspire/ngbe` |
+| Localidades (incluidas las que no son municipio), cumbres, sierras, valles, puertos | IGN · Nomenclátor Geográfico Básico de España, WFS `www.ign.es/wfs-inspire/ngbe` (entidades singulares, núcleos, capitales de EATIM y entidades menores) |
+| Población de cada pueblo | INE · Nomenclátor a 1 de enero de 2025 (entidades singulares), cruzado con el IGN por municipio y nombre |
 | Población | INE · Padrón municipal a 1 de enero (tabla 2877) |
 | Densidad de población | INE · Censo 2021, población en celdas de 1 km² de la rejilla europea (`Poblacion_Rejilla_Europea.csv`) |
 | Población histórica | INE · Alteraciones de los municipios en los Censos de Población desde 1842 (población de derecho 1900–2021; a cada municipio actual se le suman los que absorbió) |
@@ -56,6 +57,7 @@ scripts/fetch_ogcapi.py      cliente paginado de la OGC API Features de la IDEE
 scripts/ine_poblacion.py     padrón del INE
 scripts/comarcas_wikipedia.py comarca tradicional de cada municipio
 scripts/ine_censos.py        población histórica por municipio (censos del INE)
+scripts/ine_nomenclator.py   población de cada pueblo (Nomenclátor del INE)
 R/03_admin.R                 límites administrativos
 R/10_preparar_web.R          rejilla de alturas, recortes, simplificación y JSON para la web
 R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del visor
