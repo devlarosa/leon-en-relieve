@@ -90,6 +90,12 @@ marca <- function(M, prof) {
 marca(rioM, 1.1)                       # menos de 2 unidades: se puede vadear
 lagoInt <- lagoM & (as.matrix(focal(rast(lagoM * 1), 3, "min", na.rm = TRUE), wide = TRUE) > 0)
 marca(lagoM, 1.5); marca(lagoInt, 5)
+# orillas suaves: los vértices cercanos al agua bajan en rampa (de 1 a 3 casillas) para que los ríos no parezcan barrancos
+agua_v <- alt < AGUA
+for (r in 1:3) {
+  cerca <- as.matrix(focal(rast(agua_v * 1), 2 * r + 1, "max", na.rm = TRUE), wide = TRUE) > 0 & !agua_v
+  alt[cerca] <- pmax(pmin(alt[cerca], AGUA + 0.5 + (r - 1) * 1.6), alt[cerca] - 2)   # sin rebajar más de 2 unidades
+}
 alt <- pmin(pmax(alt, 0), 700)
 
 # ---------- carreteras principales (IGN): perfil suavizado para que los puertos sean transitables ----------
@@ -157,8 +163,13 @@ hv <- round(alt[(N + 1):1, ] * 92)                    # el juego guarda las fila
 writeBin(as.integer(t(hv)), cuerpo, size = 2, endian = "little")
 writeBin(length(texturas), cuerpo, size = 4, endian = "little")
 for (tx in texturas) { writeBin(nchar(tx, "bytes"), cuerpo, size = 4, endian = "little"); writeBin(charToRaw(tx), cuerpo) }
-idx <- matrix(match(tex, texturas) - 1L, N, N)[N:1, ]  # sur → norte
-casillas <- as.vector(t(idx))
+idx <- matrix(match(tex, texturas) - 1L, N, N)[N:1, ]  # filas de sur a norte (z), columnas de oeste a este (x)
+# el formato guarda las casillas parche a parche (16 × 16): parche (z, x) → fila de casillas → casilla
+P <- N / 16; orden <- integer(N * N); k <- 0L
+for (pz in 0:(P - 1)) for (px in 0:(P - 1)) for (m in 0:15) {
+  z <- pz * 16 + m; orden[k + 1:16] <- (px * 16 + 0:15) * N + z + 1L; k <- k + 16L
+}
+casillas <- as.vector(idx)[orden]                        # as.vector(idx) recorre por columnas: índice = x * N + z + 1
 bloque <- matrix(as.raw(0), 8, length(casillas))
 bloque[1, ] <- as.raw(casillas %% 256); bloque[2, ] <- as.raw(casillas %/% 256)
 bloque[3, ] <- as.raw(255); bloque[4, ] <- as.raw(255)          # segunda textura: ninguna (0xFFFF)
