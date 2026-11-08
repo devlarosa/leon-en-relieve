@@ -9,3 +9,5 @@ destacados.json
 .Rproj.user/
 # Python
 __pycache__/
+# Renders locales
+salida/
