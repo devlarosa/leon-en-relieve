@@ -38,7 +38,7 @@ Rscript R/03_admin.R              # provincia y municipios en ETRS89 / UTM 30N
 Rscript R/10_preparar_web.R       # genera web/data/relieve.png y web/data/leon.json
 Rscript R/11_rejilla_poblacion.R  # genera web/data/poblacion.png (Censo 2021 en celdas de 1 km²)
 Rscript R/12_cobertura_copernicus.R  # descarga CLC+ Backbone y genera web/data/cobertura.png
-cd web && python3 -m http.server  # abrir http://localhost:8000
+./abrir_visor.sh                  # sirve web/ en http://127.0.0.1:8800 y abre el navegador (--parar para detenerlo)
 ```
 
 Los servidores del IGN fallan a veces (errores 502 o respuestas cortadas). El script de descarga reintenta y salta lo que ya está completo, así que basta con volver a lanzarlo.
@@ -65,6 +65,8 @@ R/10_preparar_web.R          rejilla de alturas, recortes, simplificación y JSO
 R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del visor
 R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 2021)
 web/index.html               visor 3D
+abrir_visor.sh               abre el visor en local (para un acceso directo del escritorio; icono en recursos/icono.svg)
+pruebas/                     pruebas automáticas en Firefox (WebDriver BiDi)
 ```
 
 ## Pendiente
