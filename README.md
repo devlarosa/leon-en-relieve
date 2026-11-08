@@ -69,6 +69,10 @@ abrir_visor.sh               abre el visor en local (para un acceso directo del 
 pruebas/                     pruebas automáticas en Firefox (WebDriver BiDi)
 ```
 
+## Mapas para juegos
+
+`juegos/0ad/` genera mapas de escaramuza de León para 0 A.D. (gratuito y libre) con el relieve, los ríos, los bosques y las ciudades reales. Ver [juegos/0ad/README.md](juegos/0ad/README.md).
+
 ## Pendiente
 
 - Especies arbóreas con el Mapa Forestal de España (MFE25, MITECO): Copernicus distingue coníferas, caducifolias y perennifolias, pero no especies. Su descarga tiene un captcha y hay que bajarla a mano.

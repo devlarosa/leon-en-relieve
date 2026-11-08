@@ -11,3 +11,5 @@ destacados.json
 __pycache__/
 # Renders locales
 salida/
+# Mapas generados para 0 A.D. (se reconstruyen con juegos/0ad/generar_mapa_leon.R)
+juegos/0ad/user/
