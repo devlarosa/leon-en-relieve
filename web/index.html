@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>León en relieve</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -473,19 +474,6 @@ try {
   const px = cx.getImageData(0, 0, W, R).data;
   H = new Float32Array(W * R);
   for (let i = 0, j = 0; i < H.length; i++, j += 4) H[i] = ((px[j] * 65536 + px[j + 1] * 256 + px[j + 2]) / 10) - 10000;
-  // población del Censo 2021 en celdas de 1 km² (opcional)
-  try {
-    const rp = await fetch("data/poblacion.png");
-    if (rp.ok) {
-      const b2 = await createImageBitmap(await rp.blob(), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
-      if (b2.width === W && b2.height === R) {
-        cx.clearRect(0, 0, W, R); cx.drawImage(b2, 0, 0);
-        const q = cx.getImageData(0, 0, W, R).data;
-        PD = new Float32Array(W * R); PA = new Float32Array(W * R);
-        for (let i = 0, j = 0; i < PD.length; i++, j += 4) { PD[i] = q[j] * 256 + q[j + 1]; PA[i] = q[j + 2] / 255; }
-      }
-    }
-  } catch (e) { PD = null; PA = null; }
   // cubierta del suelo de Copernicus (CLC+ Backbone 2021) a 50 m (opcional)
   try {
     const rc = await fetch("data/cobertura.png");
@@ -505,7 +493,7 @@ try {
 for (const m of data.municipios) { m.ph = Array.isArray(m.ph) && m.ph.length ? m.ph : null; m.pmax = m.ph ? Math.max(...m.ph) : 0; m.abs = Array.isArray(m.abs) ? m.abs : typeof m.abs === "string" && m.abs ? [m.abs] : []; }
 for (const m of data.municipios) { if (typeof m.p !== "number") m.p = null; if (typeof m.cap !== "string" || m.cap === "NA") m.cap = null; if (typeof m.cm !== "string" || m.cm === "NA") m.cm = null; if (typeof m.ct !== "string" || m.ct === "NA") m.ct = null; }
 const M = data.meta;
-HE = H.slice(); HP = new Float32Array(W * R);   // HE: altura efectiva (relieve real mezclado con el de población)
+HE = H; HP = null;   // HE: altura efectiva; se separa de H solo si se usa el relieve de población
 const KM_W = M.ancho / 1000, KM_D = M.alto / 1000;          // 196 × 135 km
 const CELL_KM = M.celda / 1000;
 $("f-pop").textContent = fmt.format(M.poblacion_total);
@@ -539,15 +527,22 @@ function utmToLatLon(E, N) {
 // ---------------------------------------------------------------- lienzos 2D (máscara y capas vectoriales)
 msg("Dibujando municipios y ríos");
 const maxTex = (() => { try { const g = document.createElement("canvas").getContext("webgl"); return g ? g.getParameter(g.MAX_TEXTURE_SIZE) : 4096; } catch (e) { return 4096; } })();
-const TW = Math.min(isPhone ? 4096 : 6144, maxTex), TH = Math.round(TW * KM_D / KM_W), TS = TW / M.ancho;
+const TW = Math.min(!isPhone && (navigator.deviceMemory || 4) >= 8 ? 6144 : 4096, maxTex), TH = Math.round(TW * KM_D / KM_W), TS = TW / M.ancho;
 function ringPath(ctx, rings) {
   ctx.beginPath();
   for (const r of rings) { ctx.moveTo(r[0] * TS, r[1] * TS); for (let i = 2; i < r.length; i += 2) ctx.lineTo(r[i] * TS, r[i + 1] * TS); ctx.closePath(); }
 }
-const maskCv = document.createElement("canvas"); maskCv.width = TW; maskCv.height = TH;
-{ const c = maskCv.getContext("2d"); c.fillStyle = "#000"; c.fillRect(0, 0, TW, TH); c.fillStyle = "#fff"; ringPath(c, data.provincia); c.fill("evenodd"); }
-const maskPx = maskCv.getContext("2d").getImageData(0, 0, TW, TH).data;
-const inProv = (mx, my) => { const x = Math.round(mx * TS), y = Math.round(my * TS); return x >= 0 && y >= 0 && x < TW && y < TH && maskPx[(y * TW + x) * 4] > 127; };
+// máscara de la provincia a la resolución del relieve (100 m): 2,6 MB en lugar de un lienzo de 6.144 px
+const maskA = new Uint8Array(W * R);
+{
+  const mc = document.createElement("canvas"); mc.width = W; mc.height = R;
+  const c = mc.getContext("2d", { willReadFrequently: true });
+  c.fillStyle = "#000"; c.fillRect(0, 0, W, R); c.setTransform(W / TW, 0, 0, R / TH, 0, 0);
+  c.fillStyle = "#fff"; ringPath(c, data.provincia); c.fill("evenodd");
+  const d = c.getImageData(0, 0, W, R).data; for (let i = 0; i < maskA.length; i++) maskA[i] = d[i * 4];
+  mc.width = mc.height = 1;
+}
+const inProv = (mx, my) => { const x = (mx / M.celda) | 0, y = (my / M.celda) | 0; return x >= 0 && y >= 0 && x < W && y < R && maskA[y * W + x] > 127; };
 
 for (const m of data.municipios) {
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
@@ -586,13 +581,6 @@ for (const c of data.comarcas) {
 function drawOverlay() {
   ov.clearRect(0, 0, TW, TH);
   ov.lineJoin = "round"; ov.lineCap = "round";
-  if (layers.hist) {
-    for (const m of data.municipios) {
-      if (!m.ph) continue;
-      ringPath(ov, m.g); ov.fillStyle = rampColor(m.ph[yearIdx] / m.pmax, 0.74); ov.fill("evenodd");
-    }
-  }
-  if (selected) { ringPath(ov, selected.g); ov.fillStyle = "rgba(255, 226, 150, 0.42)"; ov.fill("evenodd"); }
   if (layers.aguas) {
     for (const a of data.aguas) {
       ringPath(ov, a.g); ov.fillStyle = "#6cc6cf"; ov.fill("evenodd");
@@ -634,15 +622,6 @@ function drawOverlay() {
       ov.strokeStyle = "#7a4d8c"; ov.lineWidth = 3 * px1; ov.stroke();
     }
   }
-  if (comarcaSel) {
-    ov.beginPath(); ov.rect(0, 0, TW, TH);
-    for (const r of comarcaSel.g) { ov.moveTo(r[0] * TS, r[1] * TS); for (let i = 2; i < r.length; i += 2) ov.lineTo(r[i] * TS, r[i + 1] * TS); ov.closePath(); }
-    ov.fillStyle = "rgba(244, 240, 232, 0.62)"; ov.fill("evenodd");
-    ringPath(ov, comarcaSel.g);
-    ov.strokeStyle = "rgba(255, 248, 236, 0.95)"; ov.lineWidth = 12 * px1; ov.stroke();
-    ov.strokeStyle = "#7a4d8c"; ov.lineWidth = 5 * px1; ov.stroke();
-  }
-  if (selected) { ringPath(ov, selected.g); ov.strokeStyle = "#c9862b"; ov.lineWidth = 6 * px1; ov.stroke(); }
   // límite provincial: cinta clara + línea oscura
   ringPath(ov, data.provincia);
   ov.strokeStyle = "rgba(255, 250, 235, 0.95)"; ov.lineWidth = 10 * px1; ov.stroke();
@@ -713,7 +692,7 @@ function updateHistPanel() {
 msg("Preparando la escena");
 const host = $("scene");
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.setSize(host.clientWidth, host.clientHeight);
 host.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
@@ -909,7 +888,8 @@ nrmTex.magFilter = THREE.LinearFilter; nrmTex.minFilter = THREE.LinearFilter; nr
 
 const ovTex = new THREE.CanvasTexture(ovCv);
 ovTex.anisotropy = renderer.capabilities.getMaxAnisotropy(); ovTex.flipY = false;
-const maskTex = new THREE.CanvasTexture(maskCv); maskTex.flipY = false;
+const maskTex = new THREE.DataTexture(maskA, W, R, THREE.RedFormat, THREE.UnsignedByteType);
+maskTex.magFilter = THREE.LinearFilter; maskTex.minFilter = THREE.LinearFilter; maskTex.needsUpdate = true;
 drawOverlay();
 
 // malla del terreno
@@ -942,6 +922,7 @@ const U = {
   uShadeCol: { value: new THREE.Color("#5d6a9c") }, uFog: { value: new THREE.Color("#cfe3ee") },
   uEntorno: { value: 0 }, uCam: { value: camera.position }, uVis: { value: null }, uViewOn: { value: 0 },
   uSnow: { value: 2300 }, uAutumn: { value: 0 }, uWinter: { value: 0 }, uMorph: { value: 0 }, uPop: { value: null },
+  uMunId: { value: null }, uMunState: { value: null }, uMunHist: { value: null }, uComarcaOn: { value: 0 }, uHistOn: { value: 0 }, uNoise: { value: null },
   uCover: { value: null }, uCoverOn: { value: 0 }, uCovTexel: { value: new THREE.Vector2(1, 1) }, uCls: { value: Array.from({ length: 12 }, () => new THREE.Color(1, 1, 1)) },
   uLow: { value: new THREE.Color(0.56, 0.75, 0.36) }, uMeadow: { value: new THREE.Color(0.47, 0.70, 0.33) }, uField: { value: new THREE.Color(0.86, 0.76, 0.46) },
   uForA: { value: new THREE.Color(0.24, 0.47, 0.28) }, uForB: { value: new THREE.Color(0.24, 0.47, 0.28) }, uAlpine: { value: new THREE.Color(0.62, 0.70, 0.40) }
@@ -958,13 +939,15 @@ const terrainMat = new THREE.ShaderMaterial({
       gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
     }`,
   fragmentShader: `
-    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow, uMorph, uCoverOn; uniform sampler2D uPop, uCover; uniform vec2 uCovTexel; uniform vec3 uCls[12];
+    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow, uMorph, uCoverOn, uComarcaOn, uHistOn; uniform sampler2D uPop, uCover, uMunId, uMunState, uMunHist, uNoise; uniform vec2 uCovTexel; uniform vec3 uCls[12];
     uniform vec3 uLow, uMeadow, uField, uForA, uForB, uAlpine;
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
       return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }
     float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * noise(p); p *= 2.03; a *= 0.5; } return s; }
+    float fT(vec2 p) { return texture2D(uNoise, p * 0.125).r; }   // ruido fractal precalculado (periodo 8)
+    float nT(vec2 p) { return texture2D(uNoise, p * 0.125).g; }
     void main() {
       float mask = texture2D(uMask, vUv).r;
       if (uEntorno < 0.5 && mask < 0.5) discard;
@@ -973,11 +956,11 @@ const terrainMat = new THREE.ShaderMaterial({
       vec3 n = normalize(vec3(nxz.x, sqrt(max(0.0, 1.0 - dot(nxz, nxz))), nxz.y));
       float slope = nt.b * 255.0 / 600.0;
       vec2 wp = vWorld.xz;
-      float nz = fbm(wp * 0.35), nz2 = fbm(wp * 1.7 + 7.0), brush = noise(vec2(wp.x * 2.2 + wp.y * 0.6, wp.y * 0.25));
+      float nz = fT(wp * 0.35), nz2 = fT(wp * 1.7 + 7.0), brush = nT(vec2(wp.x * 2.2 + wp.y * 0.6, wp.y * 0.25));
       float e = vH + (nz - 0.5) * 140.0;
       // paleta pictórica por altitud y pendiente
       vec3 lowGreen = uLow, wheat = uField, meadow = uMeadow;
-      vec3 forest = mix(uForA, uForB, smoothstep(0.3, 0.7, noise(wp * 3.1 + 3.0))), alpine = uAlpine, rock = vec3(0.62, 0.62, 0.68), snow = vec3(0.96, 0.97, 1.0);
+      vec3 forest = mix(uForA, uForB, smoothstep(0.3, 0.7, nT(wp * 3.1 + 3.0))), alpine = uAlpine, rock = vec3(0.62, 0.62, 0.68), snow = vec3(0.96, 0.97, 1.0);
       float flatA = 1.0 - smoothstep(0.004, 0.02, slope);
       vec3 col = mix(lowGreen, meadow, smoothstep(500.0, 800.0, e));
       col = mix(col, wheat, flatA * smoothstep(720.0, 800.0, e) * (1.0 - smoothstep(960.0, 1040.0, e)) * smoothstep(0.35, 0.55, nz2 * 0.6 + nz * 0.6));
@@ -987,7 +970,7 @@ const terrainMat = new THREE.ShaderMaterial({
       col = mix(col, rock, smoothstep(0.11, 0.2, slope + (nz2 - 0.5) * 0.06));
       // cubierta real (Copernicus CLC+ Backbone): bordes pictóricos con un poco de ruido en la muestra
       if (uCoverOn > 0.5) {
-        vec2 uj = vUv + (vec2(noise(wp * 9.0), noise(wp * 9.0 + 17.0)) - 0.5) * uCovTexel * 1.7;
+        vec2 uj = vUv + (vec2(nT(wp * 9.0), nT(wp * 9.0 + 17.0)) - 0.5) * uCovTexel * 1.7;
         int k = int(floor(texture2D(uCover, uj).r * 255.0 + 0.5));
         if (k > 0 && k < 12) {
           vec3 cc = uCls[k];
@@ -1007,9 +990,18 @@ const terrainMat = new THREE.ShaderMaterial({
       col = mix(col, mix(vec3(dot(col, vec3(0.33))), col, 0.35) * 0.82 + 0.2, outside * 0.8);
       // relieve de población: color por densidad o envejecimiento
       if (uMorph > 0.001) { vec4 pc = texture2D(uPop, vUv); vec3 pcol = pc.a > 0.5 ? pc.rgb : vec3(0.88, 0.87, 0.82); col = mix(col, pcol, smoothstep(0.0, 0.6, uMorph)); }
+      // municipios: coropleta histórica y selección (identificador en textura, estado en tablas de 256)
+      float mid = floor(texture2D(uMunId, vUv).r * 255.0 + 0.5);
+      vec2 mu = vec2((mid + 0.5) / 256.0, 0.5);
+      vec4 st = mid > 0.5 ? texture2D(uMunState, mu) : vec4(0.0);
+      if (mid > 0.5) {
+        if (uHistOn > 0.5) { vec4 hc = texture2D(uMunHist, mu); col = mix(col, hc.rgb, hc.a); }
+        col = mix(col, vec3(1.0, 0.886, 0.588), st.r * 0.42);
+      }
       // capas vectoriales
       vec4 ov = texture2D(uOv, vUv);
       col = mix(col, ov.rgb, ov.a);
+      if (uComarcaOn > 0.5) col = mix(col, vec3(0.957, 0.941, 0.910), (1.0 - st.g) * 0.62);
       // luz por bandas suaves (cel shading con sombras teñidas)
       float l = dot(n, uSun);
       float band = smoothstep(-0.02, 0.06, l) * 0.55 + smoothstep(0.38, 0.48, l) * 0.3 + smoothstep(0.75, 0.82, l) * 0.15;
@@ -1032,6 +1024,113 @@ const terrainMat = new THREE.ShaderMaterial({
 const terrain = new THREE.Mesh(geo, terrainMat);
 scene.add(terrain);
 
+// ---------------------------------------------------------------- texturas auxiliares (ruido, municipios) y contornos
+U.uNoise.value = (() => {      // ruido de valor periódico: canal R fractal (4 octavas), canal G una octava
+  const N = 256, P0 = 8, d = new Uint8Array(N * N * 4), sm = (t) => t * t * (3 - 2 * t);
+  const lat = (per, seed) => { const r = rnd(seed), a = new Float32Array(per * per); for (let i = 0; i < a.length; i++) a[i] = r(); return a; };
+  const val = (a, per, x, y) => {
+    const xi = Math.floor(x), yi = Math.floor(y), fx = sm(x - xi), fy = sm(y - yi);
+    const i0 = ((xi % per) + per) % per, j0 = ((yi % per) + per) % per, i1 = (i0 + 1) % per, j1 = (j0 + 1) % per;
+    return (a[j0 * per + i0] * (1 - fx) + a[j0 * per + i1] * fx) * (1 - fy) + (a[j1 * per + i0] * (1 - fx) + a[j1 * per + i1] * fx) * fy;
+  };
+  const oct = [0, 1, 2, 3].map(o => ({ per: P0 << o, a: lat(P0 << o, 11 + o) })), one = lat(P0, 77);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const u = x / N, v = y / N; let f = 0, amp = 0.5;
+    for (const o of oct) { f += amp * val(o.a, o.per, u * o.per, v * o.per); amp *= 0.5; }
+    const k = (y * N + x) * 4; d[k] = Math.round(f * 255); d[k + 1] = Math.round(val(one, P0, u * P0, v * P0) * 255); d[k + 3] = 255;
+  }
+  const t = new THREE.DataTexture(d, N, N, THREE.RGBAFormat);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.needsUpdate = true;
+  return t;
+})();
+
+// identificador de municipio cada 50 m (relleno por barrido de líneas, sin antialias)
+const IW = W * 2, IH = R * 2, ISC = IW / M.ancho, munId = new Uint8Array(IW * IH);
+data.municipios.forEach((m, n) => {
+  m.idx = n + 1;
+  const y0 = Math.max(0, Math.floor(m.bb[1] * ISC)), y1 = Math.min(IH - 1, Math.ceil(m.bb[3] * ISC)), xs = [];
+  for (let y = y0; y <= y1; y++) {
+    const yc = (y + 0.5) / ISC; xs.length = 0;
+    for (const r of m.g) for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) {
+      const ya = r[j + 1], yb = r[i + 1];
+      if ((ya > yc) !== (yb > yc)) xs.push(r[j] + (yc - ya) * (r[i] - r[j]) / (yb - ya));
+    }
+    xs.sort((a, b) => a - b);
+    for (let k = 0; k + 1 < xs.length; k += 2) {
+      const xa = Math.max(0, Math.ceil(xs[k] * ISC - 0.5)), xb = Math.min(IW - 1, Math.floor(xs[k + 1] * ISC - 0.5));
+      for (let x = xa; x <= xb; x++) munId[y * IW + x] = m.idx;
+    }
+  }
+});
+const texNearest = (d, w, h, f) => { const t = new THREE.DataTexture(d, w, h, f, THREE.UnsignedByteType); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.needsUpdate = true; return t; };
+U.uMunId.value = texNearest(munId, IW, IH, THREE.RedFormat);
+const munState = new Uint8Array(256 * 4), munHist = new Uint8Array(256 * 4);
+U.uMunState.value = texNearest(munState, 256, 1, THREE.RGBAFormat);
+U.uMunHist.value = texNearest(munHist, 256, 1, THREE.RGBAFormat);
+function updateMunState() {
+  munState.fill(0);
+  if (selected && selected.idx) munState[selected.idx * 4] = 255;
+  if (comarcaSel) for (const m of comarcaSel.muns) munState[m.idx * 4 + 1] = 255;
+  U.uMunState.value.needsUpdate = true; U.uComarcaOn.value = comarcaSel ? 1 : 0;
+  rebuildOutlines(); needsRender = true;
+}
+function updateMunHist() {
+  for (const m of data.municipios) {
+    const k = m.idx * 4;
+    if (!m.ph) { munHist[k + 3] = 0; continue; }
+    const c = rampRGB(RAMP, m.ph[yearIdx] / m.pmax);
+    munHist[k] = c[0]; munHist[k + 1] = c[1]; munHist[k + 2] = c[2]; munHist[k + 3] = Math.round(0.74 * 255);
+  }
+  U.uMunHist.value.needsUpdate = true; U.uHistOn.value = layers.hist ? 1 : 0; needsRender = true;
+}
+
+// contorno del municipio o la comarca seleccionados: cinta pegada al relieve, nítida a cualquier zoom
+const outlineGroup = new THREE.Group(); scene.add(outlineGroup);
+const ribbonMats = [];
+function ribbonMat(color, k) {
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color(color) }, uW: { value: 0.1 } },
+    vertexShader: `attribute vec2 nrm; attribute float side; uniform float uW;
+      void main() { vec3 p = position + vec3(nrm.x, 0.0, nrm.y) * side * uW; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`,
+    fragmentShader: `uniform vec3 uColor; void main() { gl_FragColor = vec4(uColor, 1.0); }`,
+    depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4
+  });
+  m.userData.k = k; ribbonMats.push(m); return m;
+}
+const MAT_HALO = ribbonMat("#fff8ec", 0.0036), MAT_SEL = ribbonMat("#c9862b", 0.0016), MAT_COM = ribbonMat("#7a4d8c", 0.0016);
+function ribbonGeo(rings) {
+  const pos = [], nrm = [], side = [], idx = [];
+  for (const r of rings) {
+    const pts = [];
+    for (let i = 0; i < r.length; i += 2) {
+      const xa = r[i], ya = r[i + 1], j = (i + 2) % r.length, xb = r[j], yb = r[j + 1];
+      const n = Math.max(1, Math.ceil(Math.hypot(xb - xa, yb - ya) / 250));
+      for (let t = 0; t < n; t++) pts.push([xa + (xb - xa) * t / n, ya + (yb - ya) * t / n]);
+    }
+    const base = pos.length / 3, L = pts.length;
+    for (let i = 0; i < L; i++) {
+      const a = pts[(i - 1 + L) % L], b = pts[(i + 1) % L], p = pts[i];
+      let tx = b[0] - a[0], tz = b[1] - a[1]; const l = Math.hypot(tx, tz) || 1; tx /= l; tz /= l;
+      const y = heightAt(p[0], p[1]) * ZS() + 0.02;
+      for (const sd of [-1, 1]) { pos.push(sx(p[0]), y, sz(p[1])); nrm.push(-tz, tx); side.push(sd); }
+      const q = base + i * 2, q2 = base + ((i + 1) % L) * 2;
+      idx.push(q, q + 1, q2, q + 1, q2 + 1, q2);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("nrm", new THREE.Float32BufferAttribute(nrm, 2));
+  g.setAttribute("side", new THREE.Float32BufferAttribute(side, 1));
+  g.setIndex(idx); return g;
+}
+function rebuildOutlines() {
+  for (const o of [...outlineGroup.children]) { o.geometry.dispose(); outlineGroup.remove(o); }
+  const add = (rings, mat) => { const g = ribbonGeo(rings); outlineGroup.add(new THREE.Mesh(g, MAT_HALO)); const m = new THREE.Mesh(g, mat); m.renderOrder = 1; outlineGroup.add(m); };
+  if (comarcaSel) add(comarcaSel.g, MAT_COM);
+  if (selected) add(selected.g, MAT_SEL);
+  needsRender = true;
+}
+
 // cielo degradado
 const skyMat = new THREE.ShaderMaterial({
   side: THREE.BackSide, depthWrite: false,
@@ -1052,9 +1151,7 @@ ground.rotation.x = -Math.PI / 2; ground.position.y = -0.3; scene.add(ground);
 // ---------------------------------------------------------------- relieve de población (Censo 2021, celdas de 1 km²)
 let morph = 0, popScale = "sqrt", popColor = "dens", DMAX = 1;
 const POP_TOP = 2600;   // altura (m) de la celda más densa: comparable a las cumbres más altas
-const popTex = new THREE.DataTexture(new Uint8Array(W * R * 4), W, R, THREE.RGBAFormat);
-popTex.magFilter = THREE.NearestFilter; popTex.minFilter = THREE.NearestFilter;
-U.uPop.value = popTex;
+let popTex = null;
 const DENS_RAMP = [[0, [243, 230, 200]], [0.25, [230, 191, 120]], [0.5, [207, 138, 60]], [0.75, [163, 81, 31]], [1, [94, 36, 18]]];
 const AGE_RAMP = [[0, [238, 232, 244]], [0.25, [205, 187, 224]], [0.5, [162, 131, 198]], [0.75, [116, 81, 159]], [1, [69, 41, 111]]];
 function rampRGB(ramp, t) {
@@ -1062,11 +1159,11 @@ function rampRGB(ramp, t) {
   const [t0, c0] = ramp[i - 1], [t1, c1] = ramp[i], k = (t - t0) / (t1 - t0);
   return c0.map((v, j) => Math.round(v + (c1[j] - v) * k));
 }
-function buildPopColors() {
+function buildPopColors() {   // PA va de 0 a 255 (153 = 60 % de mayores de 64 años)
   if (!PD) return;
   const d = popTex.image.data, ramp = popColor === "dens" ? DENS_RAMP : AGE_RAMP, lmax = Math.log10(1 + DMAX);
   for (let i = 0; i < PD.length; i++) {
-    if (PD[i] > 0) { const c = rampRGB(ramp, popColor === "dens" ? Math.log10(1 + PD[i]) / lmax : PA[i] / 0.6); d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255; }
+    if (PD[i] > 0) { const c = rampRGB(ramp, popColor === "dens" ? Math.log10(1 + PD[i]) / lmax : PA[i] / 153); d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255; }
     else d[i * 4 + 3] = 0;
   }
   popTex.needsUpdate = true;
@@ -1081,19 +1178,42 @@ function buildPopHeights() {
 }
 let morphTimer = null;
 function applyMorph(full) {
+  if (!HP) return;
   for (let i = 0; i < HE.length; i++) HE[i] = H[i] + (HP[i] - H[i]) * morph;
   U.uMorph.value = morph;
   treeMesh.visible = layers.arboles && morph < 0.5;
-  placeTrees(); placeTowns(); placeMonuments(); placeFavs();
+  placeTrees(); placeTowns(); placeMonuments(); placeFavs(); rebuildOutlines();
   clearTimeout(morphTimer);
   morphTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, full ? 0 : 150);
   $("morph-o").textContent = morph === 0 ? "Montañas" : morph === 1 ? "Población" : Math.round(morph * 100) + " % población";
 }
-if (PD) {
-  for (let i = 0; i < PD.length; i++) if (PD[i] > DMAX) DMAX = PD[i];
-  buildPopHeights(); buildPopColors();
-  $("pop-box").hidden = false;
+let popLoading = null;
+function ensurePop() {           // la rejilla de población se carga la primera vez que se usa
+  if (PD) return Promise.resolve(true);
+  if (!popLoading) popLoading = (async () => {
+    try {
+      $("morph-o").textContent = "Cargando…";
+      const rp = await fetch("data/poblacion.png"); if (!rp.ok) throw new Error("poblacion.png");
+      const b2 = await createImageBitmap(await rp.blob(), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+      if (b2.width !== W || b2.height !== R) throw new Error("tamaño");
+      const c2 = document.createElement("canvas"); c2.width = W; c2.height = R;
+      const x2 = c2.getContext("2d", { willReadFrequently: true }); x2.drawImage(b2, 0, 0);
+      const q = x2.getImageData(0, 0, W, R).data;
+      const pd = new Uint16Array(W * R), pa = new Uint8Array(W * R);
+      for (let i = 0, j = 0; i < pd.length; i++, j += 4) { pd[i] = q[j] * 256 + q[j + 1]; pa[i] = q[j + 2]; }
+      c2.width = c2.height = 1;
+      DMAX = 1; for (let i = 0; i < pd.length; i++) if (pd[i] > DMAX) DMAX = pd[i];
+      PD = pd; PA = pa; HE = H.slice(); HP = new Float32Array(W * R);
+      popTex = new THREE.DataTexture(new Uint8Array(W * R * 4), W, R, THREE.RGBAFormat);
+      popTex.magFilter = THREE.NearestFilter; popTex.minFilter = THREE.NearestFilter; U.uPop.value = popTex;
+      buildPopHeights(); buildPopColors();
+      $("morph-o").textContent = "Montañas";
+      return true;
+    } catch (e) { $("morph-o").textContent = "No disponible"; popLoading = null; return false; }
+  })();
+  return popLoading;
 }
+$("pop-box").hidden = false;
 
 // ---------------------------------------------------------------- cubierta del suelo (Copernicus)
 const COB_BASE = {   // colores base por clase; prados, cultivos y bosque caducifolio se calculan con la estación
@@ -1230,15 +1350,20 @@ function toonMat(color) {
   const key = color || "inst";
   if (toonCache.has(key)) return toonCache.get(key);
   const m = new THREE.ShaderMaterial({
-    uniforms: { uColor: { value: new THREE.Color(color || "#ffffff") }, uSnow: U.uSnow, uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam },
+    defines: key === "vcol" ? { VCOL: "" } : {},
+    uniforms: { uColor: { value: new THREE.Color(color && color[0] === "#" ? color : "#ffffff") }, uSnow: U.uSnow, uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam },
     vertexShader: `
-      #ifdef USE_INSTANCING
+      #if defined(USE_INSTANCING)
       attribute vec3 tint; attribute float hb;
+      #elif defined(VCOL)
+      attribute vec3 tint;
       #endif
       uniform vec3 uColor; varying vec3 vN; varying vec3 vC; varying vec3 vW; varying float vHb;
       void main() {
         #ifdef USE_INSTANCING
         vC = tint; vHb = hb; mat4 im = instanceMatrix;
+        #elif defined(VCOL)
+        vC = tint; vHb = -10000.0; mat4 im = mat4(1.0);
         #else
         vC = uColor; vHb = -10000.0; mat4 im = mat4(1.0);
         #endif
@@ -1424,11 +1549,30 @@ const MONS = [
       return 0.12;
   } }
 ];
+// cada monumento se fusiona en una sola malla con color por vértice (de ~40 objetos a 1)
+function mergeMonument(g) {
+  g.updateMatrixWorld(true);
+  const pos = [], nor = [], col = [];
+  g.traverse(o => {
+    if (!o.isMesh) return;
+    const gm = (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()).applyMatrix4(o.matrixWorld);
+    if (!gm.attributes.normal) gm.computeVertexNormals();
+    const c = o.material.uniforms.uColor.value, P = gm.attributes.position.array, Nn = gm.attributes.normal.array;
+    for (let i = 0; i < P.length; i++) { pos.push(P[i]); nor.push(Nn[i]); }
+    for (let i = 0; i < P.length / 3; i++) col.push(c.r, c.g, c.b);
+    gm.dispose();
+  });
+  const geo2 = new THREE.BufferGeometry();
+  geo2.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo2.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
+  geo2.setAttribute("tint", new THREE.Float32BufferAttribute(col, 3));
+  const mesh = new THREE.Mesh(geo2, toonMat("vcol")); mesh.frustumCulled = false; return mesh;
+}
 const monGroup = new THREE.Group(); scene.add(monGroup);
 for (const mo of MONS) {
   const g = new THREE.Group(); const extra = mo.build(g, rnd(hashStr(mo.n)));
-  mo.group = g; monGroup.add(g);
   let rad = 0; g.traverse(o => { if (o.isMesh) rad = Math.max(rad, Math.hypot(o.position.x, o.position.z) + Math.max(o.scale.x, o.scale.z) / 2); });
+  mo.group = mergeMonument(g); monGroup.add(mo.group);
   MON_ANCHORS.push([mo.xy[0], mo.xy[1], (rad + Math.min(extra || 0.05, 0.6) * 0.25) * 1000]);
 }
 function placeMonuments() { for (const mo of MONS) mo.group.position.set(sx(mo.xy[0]), heightAt(mo.xy[0], mo.xy[1]) * ZS(), sz(mo.xy[1])); }
@@ -1632,15 +1776,18 @@ $("favs").addEventListener("click", (e) => {
 });
 
 // ---------------------------------------------------------------- mirador (cuenca visual)
-const visData = new Uint8Array(W * R);
-const visTex = new THREE.DataTexture(visData, W, R, THREE.RedFormat, THREE.UnsignedByteType);
-visTex.magFilter = THREE.LinearFilter; visTex.minFilter = THREE.LinearFilter; visTex.needsUpdate = true;
-U.uVis.value = visTex;
-const provCell = new Uint8Array(W * R);
-for (let y = 0; y < R; y++) for (let x = 0; x < W; x++) provCell[y * W + x] = inProv((x + 0.5) * M.celda, (y + 0.5) * M.celda) ? 1 : 0;
-const provCells = provCell.reduce((a, b) => a + b, 0);
+let visData = null, visTex = null, provCells = 0;
+function ensureMirador() {       // se prepara la primera vez que se usa
+  if (visData) return;
+  visData = new Uint8Array(W * R);
+  visTex = new THREE.DataTexture(visData, W, R, THREE.RedFormat, THREE.UnsignedByteType);
+  visTex.magFilter = THREE.LinearFilter; visTex.minFilter = THREE.LinearFilter; visTex.needsUpdate = true;
+  U.uVis.value = visTex;
+  for (let i = 0; i < maskA.length; i++) if (maskA[i] > 127) provCells++;
+}
 const OBS = 1.7, K_CURV = (1 - 0.13) / (2 * 6371000), MAX_D = 110000;
 function viewshed(ox, oy, hObs) {
+  ensureMirador();
   visData.fill(0);
   const c = M.celda, gx0 = ox / c - 0.5, gy0 = oy / c - 0.5, steps = Math.floor(MAX_D / c);
   const h0 = hObs + OBS, NR = 7200;
@@ -1658,7 +1805,7 @@ function viewshed(ox, oy, hObs) {
     }
   }
   visTex.needsUpdate = true;
-  let n = 0; for (let i = 0; i < visData.length; i++) if (visData[i] && provCell[i]) n++;
+  let n = 0; for (let i = 0; i < visData.length; i++) if (visData[i] && maskA[i] > 127) n++;
   return { km2: n * (c / 1000) ** 2, pct: n / provCells * 100, far };
 }
 const seen = (mx, my) => {
@@ -1698,7 +1845,7 @@ function openMirador(mx, my, name, hKnown) {
   $("v-pue").textContent = fmt.format(pueblos);
   $("v-picos").innerHTML = pk.length ? pk.slice(0, 8).map(p => `<li><span>${esc(p.n)}</span><span>${fmt.format(p.e)} m · ${fmt1.format(p.d)} km</span></li>`).join("") +
     (pk.length > 8 ? `<li><span>y ${pk.length - 8} más</span><span></span></li>` : "") : "<li><span>Ninguna de las principales</span><span></span></li>";
-  $("info").hidden = true; selected = null; drawOverlay();
+  $("info").hidden = true; selected = null; updateMunState();
   $("mirador").hidden = false;
   $("readout").textContent = "Mirador activo: toca otro punto para cambiarlo";
 }
@@ -1719,7 +1866,7 @@ labels.forEach(L => {
 });
 const tmpV = new THREE.Vector3();
 function updateLabels() {
-  const cw = host.clientWidth, ch = host.clientHeight, placed = [];
+  const cw = host.clientWidth, ch = host.clientHeight, placed = new Map();
   const camDist = camera.position.distanceTo(controls.target);
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
@@ -1732,10 +1879,20 @@ function updateLabels() {
       if (tmpV.z > 1 || Math.abs(tmpV.x) > 1.1 || Math.abs(tmpV.y) > 1.1) show = false;
       else {
         const x = (tmpV.x * 0.5 + 0.5) * cw, y = (-tmpV.y * 0.5 + 0.5) * ch;
-        if (!L.w) { L.el.style.display = "block"; L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; }
+        if (!L.w) { L.el.style.display = "block"; L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; L.el.style.display = L.vis ? "block" : "none"; }
         const bx = L.kind === "fav" ? x - L.w / 2 : x - 6, by = L.kind === "fav" ? y - L.h : y - L.h / 2, box = [bx, by, bx + L.w, by + L.h];
-        if (placed.some(p => box[0] < p[2] + 4 && box[2] > p[0] - 4 && box[1] < p[3] + 2 && box[3] > p[1] - 2)) show = false;
-        else { placed.push(box); L.el.style.transform = `translate(${bx.toFixed(1)}px, ${by.toFixed(1)}px)`; }
+        const gx0 = Math.floor((box[0] - 4) / 96), gx1 = Math.floor((box[2] + 4) / 96), gy0 = Math.floor((box[1] - 2) / 96), gy1 = Math.floor((box[3] + 2) / 96);
+        let hit = false;
+        for (let gx = gx0; gx <= gx1 && !hit; gx++) for (let gy = gy0; gy <= gy1 && !hit; gy++) {
+          const cell = placed.get(gx * 4096 + gy);
+          if (cell) hit = cell.some(p => box[0] < p[2] + 4 && box[2] > p[0] - 4 && box[1] < p[3] + 2 && box[3] > p[1] - 2);
+        }
+        if (hit) show = false;
+        else {
+          for (let gx = gx0; gx <= gx1; gx++) for (let gy = gy0; gy <= gy1; gy++) { const k = gx * 4096 + gy; (placed.get(k) || placed.set(k, []).get(k)).push(box); }
+          const tf = `translate(${bx.toFixed(1)}px, ${by.toFixed(1)}px)`;
+          if (L.tf !== tf) { L.el.style.transform = tf; L.tf = tf; }
+        }
       }
     }
     if (show !== L.vis) { L.el.style.display = show ? "block" : "none"; L.vis = show; }
@@ -1769,7 +1926,7 @@ function pickTerrain(clientX, clientY) {
   return null;
 }
 function showInfo(m) {
-  selected = m; drawOverlay();
+  selected = m; updateMunState();
   if (!m) { $("info").hidden = true; return; }
   $("info").hidden = false;
   $("i-name").textContent = m.n;
@@ -1798,7 +1955,7 @@ $("info-close").onclick = () => {
 };
 
 function showComarca(c) {
-  comarcaSel = c; selected = null; drawOverlay();
+  comarcaSel = c; selected = null; updateMunState();
   if (!c) { $("info").hidden = true; return; }
   const muns = c.muns, area = muns.reduce((s, m) => s + m.a, 0);
   $("info").hidden = false;
@@ -1887,7 +2044,7 @@ function doHover() {
     const ci = Math.min(R - 1, Math.max(0, (p.my / M.celda) | 0)) * W + Math.min(W - 1, Math.max(0, (p.mx / M.celda) | 0));
     const hReal = H[ci];
     const cv = coverAt(p.mx, p.my), covTxt = cv && layers.cob ? ` · ${COVER_NAMES[cv]}` : "";
-    const popTxt = PD && morph > 0 ? (PD[ci] > 0 ? ` · <b>${fmt.format(PD[ci])} hab/km²</b> · ${Math.round(PA[ci] * 100)} % con más de 64 años` : " · sin población") : "";
+    const popTxt = PD && morph > 0 ? (PD[ci] > 0 ? ` · <b>${fmt.format(PD[ci])} hab/km²</b> · ${Math.round(PA[ci] / 2.55)} % con más de 64 años` : " · sin población") : "";
     txt = `${lat.toFixed(3)}° N · ${Math.abs(lon).toFixed(3)}° O · <b>${fmt.format(Math.round(morph > 0 ? hReal : h))} m</b>` + popTxt +
       (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + covTxt + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
   }
@@ -1900,19 +2057,19 @@ const bind = (id, key, fn) => $(id).addEventListener("change", (e) => { layers[k
 bind("l-mun", "mun", drawOverlay); bind("l-rios", "rios", drawOverlay); bind("l-aguas", "aguas", drawOverlay); bind("l-pob", "pob", drawOverlay);
 bind("l-picos", "picos");
 bind("l-cob", "cob", () => { U.uCoverOn.value = layers.cob && COB ? 1 : 0; $("cob-legend").hidden = !(layers.cob && COB); });
-if (PD) {
-  $("morph").addEventListener("input", (e) => { morph = +e.target.value / 100; applyMorph(false); });
+{
+  $("morph").addEventListener("input", async (e) => { const v = +e.target.value / 100; if (!(await ensurePop())) { e.target.value = 0; return; } morph = v; applyMorph(false); });
   const seg = (on, off, fn) => $(on).addEventListener("click", () => { $(on).setAttribute("aria-pressed", "true"); $(off).setAttribute("aria-pressed", "false"); fn(); });
-  seg("sc-sqrt", "sc-lin", () => { popScale = "sqrt"; buildPopHeights(); applyMorph(true); });
-  seg("sc-lin", "sc-sqrt", () => { popScale = "lin"; buildPopHeights(); applyMorph(true); });
-  seg("co-dens", "co-age", () => { popColor = "dens"; buildPopColors(); });
-  seg("co-age", "co-dens", () => { popColor = "age"; buildPopColors(); });
+  seg("sc-sqrt", "sc-lin", async () => { popScale = "sqrt"; if (await ensurePop()) { buildPopHeights(); applyMorph(true); } });
+  seg("sc-lin", "sc-sqrt", async () => { popScale = "lin"; if (await ensurePop()) { buildPopHeights(); applyMorph(true); } });
+  seg("co-dens", "co-age", () => { popColor = "dens"; if (PD) buildPopColors(); });
+  seg("co-age", "co-dens", () => { popColor = "age"; if (PD) buildPopColors(); });
 }
 bind("l-pueblos", "pueblos", () => { townGroup.visible = layers.pueblos; drawOverlay(); });
 bind("l-mon", "mon", () => { monGroup.visible = layers.mon; });
-bind("l-hist", "hist", drawOverlay);
+bind("l-hist", "hist", updateMunHist);
 function setYear(i) {
-  yearIdx = i; $("anio").value = i; updateHistPanel(); if (layers.hist) drawOverlay();
+  yearIdx = i; $("anio").value = i; updateHistPanel(); updateMunHist();
   if (!$("info").hidden && (selected || comarcaSel)) { if (selected) showInfo(selected); else showComarca(comarcaSel); }
 }
 $("anio").max = String(ANIOS.length - 1); $("anio").value = String(yearIdx);
@@ -1938,7 +2095,7 @@ let exagTimer = null;
 $("exag").addEventListener("input", (e) => {
   exag = +e.target.value; U.uExag.value = exag / 1000;
   $("exag-o").textContent = "×" + String(exag).replace(".", ",");
-  placeTrees(); placeFavs(); placeTowns(); placeMonuments(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
+  placeTrees(); placeFavs(); placeTowns(); placeMonuments(); rebuildOutlines(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
   clearTimeout(exagTimer); exagTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, 120);
 });
 $("hora").addEventListener("input", (e) => { hour = +e.target.value; updateSky(); });
@@ -1950,7 +2107,20 @@ addEventListener("resize", () => {
 });
 
 // ---------------------------------------------------------------- modo ligero
-let liteMode = false, lastSig = "", lastRender = 0, idxLite = null;
+let liteMode = false, lastSig = "", lastRender = 0, lastLabels = 0, idxLite = null;
+// resolución adaptativa: si al moverse no se llega a ~36 fps baja la resolución; si sobra, la sube (hasta ×2)
+const PR_MAX = Math.min(devicePixelRatio, 2), adapt = { t0: 0, n: 0, sum: 0 };
+function adaptRes(rawDt, now, moving) {
+  if (liteMode || !moving || document.visibilityState !== "visible") { adapt.t0 = now; adapt.n = 0; adapt.sum = 0; return; }
+  adapt.n++; adapt.sum += rawDt;
+  if (now - adapt.t0 > 1500 && adapt.n > 20) {
+    const avg = adapt.sum / adapt.n; let pr = renderer.getPixelRatio();
+    if (avg > 1 / 36 && pr > 0.75) pr = Math.max(0.75, pr - 0.25);
+    else if (avg < 1 / 57 && pr < PR_MAX) pr = Math.min(PR_MAX, pr + 0.25);
+    if (pr !== renderer.getPixelRatio()) { renderer.setPixelRatio(pr); renderer.setSize(host.clientWidth, host.clientHeight); }
+    adapt.t0 = now; adapt.n = 0; adapt.sum = 0;
+  }
+}
 const idxFull = geo.index;
 function buildLiteIndex() {          // la misma malla usando uno de cada dos vértices: una cuarta parte de triángulos
   const out = new Uint32Array(Math.ceil((gw - 1) / 2) * Math.ceil((gh - 1) / 2) * 6); let q = 0;
@@ -1964,7 +2134,7 @@ function setLite(on, save) {
   liteMode = on; $("l-lite").checked = on;
   if (on && !idxLite) idxLite = new THREE.BufferAttribute(buildLiteIndex(), 1);
   geo.setIndex(on ? idxLite : idxFull);
-  renderer.setPixelRatio(on ? Math.min(devicePixelRatio, 1) * 0.8 : Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(on ? Math.min(devicePixelRatio, 1) * 0.8 : Math.min(devicePixelRatio, 1.5));
   renderer.setSize(host.clientWidth, host.clientHeight);
   if (on) {
     layers.arboles = false; $("l-arboles").checked = false; treeMesh.visible = false;
@@ -2001,7 +2171,7 @@ function measureFps(rawDt, now) {
   if (t > 6000 && fps.n > 10) {
     fps.done = true;
     const avg = fps.sum / fps.n;
-    if (avg > 0.055) offerLite(`El mapa va a unos ${Math.max(1, Math.round(1 / avg))} fotogramas por segundo en este dispositivo.`);
+    if (avg > 0.055) { const f = Math.max(1, Math.round(1 / avg)); offerLite(f === 1 ? "El mapa va a 1 fotograma por segundo en este dispositivo." : `El mapa va a unos ${f} fotogramas por segundo en este dispositivo.`); }
   }
 }
 // cualquier control del panel fuerza un redibujado
@@ -2030,9 +2200,11 @@ function frame(now) {
   // en modo ligero solo se redibuja si la cámara se mueve o algo cambia (y, como mínimo, una vez por segundo)
   const e0 = camera.matrixWorld.elements, sig = e0[12].toFixed(4) + e0[13].toFixed(4) + e0[14].toFixed(4) + e0[8].toFixed(4) + e0[10].toFixed(4);
   const moving = sig !== lastSig || fly || ctl.tw || ctl.zoomQ || keys.size || playTimer;
-  if (!liteMode || moving || needsRender || now - lastRender > 1000) {
-    renderer.render(scene, camera); updateLabels(); lastRender = now; needsRender = false;
-  }
+  adaptRes(rawDt, now, moving);
+  if (outlineGroup.children.length) { const dd = camera.position.distanceTo(controls.target); for (const m of ribbonMats) m.uniforms.uW.value = dd * m.userData.k; }
+  if (!liteMode || moving || needsRender || now - lastRender > 1000) { renderer.render(scene, camera); lastRender = now; }
+  if (moving || needsRender || now - lastLabels > 500) { updateLabels(); lastLabels = now; }   // rótulos solo si algo cambia
+  needsRender = false;
   lastSig = sig;
   requestAnimationFrame(frame);
 }
