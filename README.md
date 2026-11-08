@@ -6,7 +6,7 @@ Mapa 3D interactivo de la provincia de León con su orografía real, pintado con
 
 ## Fuentes
 
-Todos los datos geográficos proceden de fuentes oficiales; la comarca tradicional que aparece en la ficha de cada municipio es el único dato no oficial:
+Todos los datos proceden de fuentes oficiales españolas o europeas (Copernicus); la comarca tradicional que aparece en la ficha de cada municipio es el único dato no oficial:
 
 | Capa | Fuente |
 |---|---|
@@ -17,13 +17,14 @@ Todos los datos geográficos proceden de fuentes oficiales; la comarca tradicion
 | Localidades (incluidas las que no son municipio), cumbres, sierras, valles, puertos | IGN · Nomenclátor Geográfico Básico de España, WFS `www.ign.es/wfs-inspire/ngbe` (entidades singulares, núcleos, capitales de EATIM y entidades menores) |
 | Población de cada pueblo | INE · Nomenclátor a 1 de enero de 2025 (entidades singulares), cruzado con el IGN por municipio y nombre |
 | Población | INE · Padrón municipal a 1 de enero (tabla 2877) |
+| Cubierta del suelo y bosques | Copernicus · CLC+ Backbone 2021 (10 m, 11 clases), servidor de imágenes de la Agencia Europea de Medio Ambiente (`image.discomap.eea.europa.eu`), reducido a 50 m por clase mayoritaria |
 | Densidad de población | INE · Censo 2021, población en celdas de 1 km² de la rejilla europea (`Poblacion_Rejilla_Europea.csv`) |
 | Población histórica | INE · Alteraciones de los municipios en los Censos de Población desde 1842 (población de derecho 1900–2021; a cada municipio actual se le suman los que absorbió) |
 | El Bierzo | Ley 1/1991 de Castilla y León (38 municipios) |
 | Comarcas agrarias | MAPA · `ComarcasAgrarias.shp` de la IDE del Ministerio de Agricultura (copia distribuida por [rOpenSpain/mapSpain](https://github.com/rOpenSpain/mapSpain)). Cada municipio va a la comarca con la que comparte más superficie |
 | Comarca tradicional (dato secundario en la ficha) | Ficha de cada municipio en es.wikipedia.org, vía Wikidata (código INE P772). No es oficial |
 
-Los datos del IGN se publican bajo licencia CC BY 4.0 (© Instituto Geográfico Nacional). Los del INE, con cita de la fuente.
+Los datos del IGN se publican bajo licencia CC BY 4.0 (© Instituto Geográfico Nacional). Los del INE, con cita de la fuente. Los de Copernicus son de acceso libre (© Unión Europea, Copernicus Land Monitoring Service, Agencia Europea de Medio Ambiente).
 
 Los datos no se guardan en el repositorio: se descargan y se procesan con los scripts.
 
@@ -36,6 +37,7 @@ scripts/descargar_datos.sh        # descarga todo en raw/ (unos 300 MB; se puede
 Rscript R/03_admin.R              # provincia y municipios en ETRS89 / UTM 30N
 Rscript R/10_preparar_web.R       # genera web/data/relieve.png y web/data/leon.json
 Rscript R/11_rejilla_poblacion.R  # genera web/data/poblacion.png (Censo 2021 en celdas de 1 km²)
+Rscript R/12_cobertura_copernicus.R  # descarga CLC+ Backbone y genera web/data/cobertura.png
 cd web && python3 -m http.server  # abrir http://localhost:8000
 ```
 
@@ -61,10 +63,11 @@ scripts/ine_nomenclator.py   población de cada pueblo (Nomenclátor del INE)
 R/03_admin.R                 límites administrativos
 R/10_preparar_web.R          rejilla de alturas, recortes, simplificación y JSON para la web
 R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del visor
+R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 2021)
 web/index.html               visor 3D
 ```
 
 ## Pendiente
 
-- Vegetación y usos del suelo con el Mapa Forestal de España (MFE25, MITECO). Su descarga tiene un captcha y hay que bajarla a mano.
+- Especies arbóreas con el Mapa Forestal de España (MFE25, MITECO): Copernicus distingue coníferas, caducifolias y perennifolias, pero no especies. Su descarga tiene un captcha y hay que bajarla a mano.
 - Precipitación media (AEMET).

@@ -113,6 +113,9 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
   color: var(--ink); cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--moss); border-color: var(--moss); color: var(--panel-solid); font-weight: 700; }
 .seg button:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+.cob-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 10px; padding: 2px 6px 6px 46px; font-size: 11.5px; color: var(--ink-soft); }
+.cob-legend span { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.cob-legend i { width: 10px; height: 10px; border-radius: 3px; flex: none; border: 1px solid var(--line); }
 .tool-btn small { display: block; font-weight: 400; font-size: 11.5px; opacity: .85; }
 .lbl.mon { pointer-events: auto; cursor: pointer; font-weight: 800; font-size: 13px; color: #6a3f12; font-variant: small-caps; letter-spacing: .06em; }
 .lbl.mon:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -281,7 +284,9 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
       <label class="layer"><input type="checkbox" id="l-valles" checked><span class="sw"></span><span class="name">Valles</span><span class="key" style="background:#2f5f3c"></span></label>
       <label class="layer"><input type="checkbox" id="l-puertos" checked><span class="sw"></span><span class="name">Puertos de montaña</span><span class="key" style="background:#5a4632"></span></label>
       <label class="layer"><input type="checkbox" id="l-entorno"><span class="sw"></span><span class="name">Provincias vecinas</span></label>
-      <label class="layer"><input type="checkbox" id="l-arboles" checked><span class="sw"></span><span class="name">Arboleda<span class="note">Ilustrativa, no son datos</span></span></label>
+      <label class="layer" id="l-cob-row" hidden><input type="checkbox" id="l-cob" checked><span class="sw"></span><span class="name">Cubierta del suelo<span class="note">Copernicus CLC+ Backbone 2021</span></span></label>
+      <div id="cob-legend" class="cob-legend" hidden></div>
+      <label class="layer"><input type="checkbox" id="l-arboles" checked><span class="sw"></span><span class="name">Árboles<span class="note" id="arb-note">Ilustrativos, no son datos</span></span></label>
       <label class="layer"><input type="checkbox" id="l-nubes"><span class="sw"></span><span class="name">Nubes</span></label>
     </div>
   </div>
@@ -450,7 +455,7 @@ $("toggle-panel").onclick = () => {
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // ---------------------------------------------------------------- datos
-let data, H, W, R, destacadas = [], HE = null, HP = null, PD = null, PA = null;
+let data, H, W, R, destacadas = [], HE = null, HP = null, PD = null, PA = null, COB = null, CW = 0, CH = 0;
 try {
   const [dest, json, png] = await Promise.all([
     fetch("data/destacados.json").then(r => r.ok ? r.json() : []).catch(() => []),
@@ -481,6 +486,18 @@ try {
       }
     }
   } catch (e) { PD = null; PA = null; }
+  // cubierta del suelo de Copernicus (CLC+ Backbone 2021) a 50 m (opcional)
+  try {
+    const rc = await fetch("data/cobertura.png");
+    if (rc.ok) {
+      const b3 = await createImageBitmap(await rc.blob(), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+      const c3 = document.createElement("canvas"); c3.width = b3.width; c3.height = b3.height;
+      const x3 = c3.getContext("2d", { willReadFrequently: true }); x3.drawImage(b3, 0, 0);
+      const q = x3.getImageData(0, 0, b3.width, b3.height).data;
+      CW = b3.width; CH = b3.height; COB = new Uint8Array(CW * CH);
+      for (let i = 0, j = 0; i < COB.length; i++, j += 4) COB[i] = q[j];
+    }
+  } catch (e) { COB = null; }
 } catch (e) {
   $("loading").querySelector(".box").innerHTML = "No se pudieron cargar los datos del mapa.<small>Recarga la página. Si sigue fallando, el fichero " + e.message + " no se ha publicado.</small>";
   return;
@@ -549,7 +566,7 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
-const layers = { pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+const layers = { cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let selected = null, hovered = null, comarcaSel = null, yearIdx = 13, needsRender = true;
 const px1 = TW / 6144;
 const BIERZO_OFICIAL = "El Bierzo (comarca oficial)";
@@ -925,6 +942,7 @@ const U = {
   uShadeCol: { value: new THREE.Color("#5d6a9c") }, uFog: { value: new THREE.Color("#cfe3ee") },
   uEntorno: { value: 0 }, uCam: { value: camera.position }, uVis: { value: null }, uViewOn: { value: 0 },
   uSnow: { value: 2300 }, uAutumn: { value: 0 }, uWinter: { value: 0 }, uMorph: { value: 0 }, uPop: { value: null },
+  uCover: { value: null }, uCoverOn: { value: 0 }, uCovTexel: { value: new THREE.Vector2(1, 1) }, uCls: { value: Array.from({ length: 12 }, () => new THREE.Color(1, 1, 1)) },
   uLow: { value: new THREE.Color(0.56, 0.75, 0.36) }, uMeadow: { value: new THREE.Color(0.47, 0.70, 0.33) }, uField: { value: new THREE.Color(0.86, 0.76, 0.46) },
   uForA: { value: new THREE.Color(0.24, 0.47, 0.28) }, uForB: { value: new THREE.Color(0.24, 0.47, 0.28) }, uAlpine: { value: new THREE.Color(0.62, 0.70, 0.40) }
 };
@@ -940,7 +958,7 @@ const terrainMat = new THREE.ShaderMaterial({
       gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
     }`,
   fragmentShader: `
-    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow, uMorph; uniform sampler2D uPop;
+    uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow, uMorph, uCoverOn; uniform sampler2D uPop, uCover; uniform vec2 uCovTexel; uniform vec3 uCls[12];
     uniform vec3 uLow, uMeadow, uField, uForA, uForB, uAlpine;
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -967,6 +985,19 @@ const terrainMat = new THREE.ShaderMaterial({
       col = mix(col, forest, forestAmt * smoothstep(0.38, 0.55, nz2));
       col = mix(col, alpine, smoothstep(1650.0, 1900.0, e) * (1.0 - smoothstep(0.15, 0.25, slope)));
       col = mix(col, rock, smoothstep(0.11, 0.2, slope + (nz2 - 0.5) * 0.06));
+      // cubierta real (Copernicus CLC+ Backbone): bordes pictóricos con un poco de ruido en la muestra
+      if (uCoverOn > 0.5) {
+        vec2 uj = vUv + (vec2(noise(wp * 9.0), noise(wp * 9.0 + 17.0)) - 0.5) * uCovTexel * 1.7;
+        int k = int(floor(texture2D(uCover, uj).r * 255.0 + 0.5));
+        if (k > 0 && k < 12) {
+          vec3 cc = uCls[k];
+          if (k == 3) cc = forest;
+          else if (k == 6) cc = mix(mix(lowGreen, meadow, smoothstep(600.0, 1000.0, e)), alpine, smoothstep(1600.0, 1900.0, e));
+          else if (k == 7) cc = wheat;
+          cc *= 0.9 + 0.2 * nz2;
+          col = k == 9 ? mix(cc, col, 0.35) : cc;
+        }
+      }
       // nieve: cota del mes, más baja en laderas orientadas al norte (-z)
       float es = e + nz2 * 150.0 + max(-n.z, 0.0) * 260.0;
       col = mix(col, snow, smoothstep(uSnow - 40.0, uSnow + 160.0, es) * (1.0 - smoothstep(0.24, 0.36, slope)));
@@ -1064,6 +1095,32 @@ if (PD) {
   $("pop-box").hidden = false;
 }
 
+// ---------------------------------------------------------------- cubierta del suelo (Copernicus)
+const COB_BASE = {   // colores base por clase; prados, cultivos y bosque caducifolio se calculan con la estación
+  1: [0.74, 0.68, 0.60], 2: [0.20, 0.38, 0.27], 3: [0.30, 0.52, 0.27], 4: [0.40, 0.47, 0.26], 5: [0.55, 0.52, 0.36], 6: [0.50, 0.70, 0.34],
+  7: [0.80, 0.74, 0.45], 8: [0.62, 0.64, 0.55], 9: [0.64, 0.63, 0.66], 10: [0.42, 0.72, 0.76], 11: [0.96, 0.97, 1.0]
+};
+if (COB) {
+  const ct = new THREE.DataTexture(COB, CW, CH, THREE.RedFormat, THREE.UnsignedByteType);
+  ct.magFilter = THREE.NearestFilter; ct.minFilter = THREE.NearestFilter; ct.needsUpdate = true;
+  U.uCover.value = ct; U.uCovTexel.value.set(1 / CW, 1 / CH); U.uCoverOn.value = 1;
+  $("l-cob-row").hidden = false; $("cob-legend").hidden = false;
+  $("arb-note").textContent = "Donde hay bosque según Copernicus; los árboles son ilustrativos";
+}
+function seasonCoverColors(m, cols) {     // cols: {low, mea, alp, fA, fB, field}
+  const c = Object.assign({}, COB_BASE);
+  const mat = SEASON_SCRUB[m];
+  c[5] = mixc(mixc(COB_BASE[5], [0.82, 0.72, 0.24], mat.broom), [0.56, 0.40, 0.52], mat.heather);
+  c[5] = mixc(c[5], [0.48, 0.42, 0.34], SEASON.win[m] * 0.6);
+  c[2] = mixc(COB_BASE[2], [0.17, 0.32, 0.25], SEASON.win[m] * 0.4);
+  c[3] = mixc(cols.fA, cols.fB, 0.5); c[6] = cols.mea; c[7] = cols.field;
+  for (let k = 1; k <= 11; k++) U.uCls.value[k].setRGB(...c[k]);
+  if (COB) $("cob-legend").innerHTML = [1, 2, 3, 4, 5, 6, 7, 9, 10].map(k =>
+    `<span><i style="background: rgb(${c[k].map(v => Math.round(v * 255)).join(",")})"></i>${COVER_NAMES[k]}</span>`).join("");
+}
+// matorral leonés: escoba en flor (amarillo) a finales de primavera, brezo (morado) a finales de verano
+const SEASON_SCRUB = [0, 0, 0, 0.1, 0.6, 0.7, 0.2, 0.1, 0.1, 0, 0, 0].map((broom, i) => ({ broom, heather: [0, 0, 0, 0, 0, 0, 0.2, 0.5, 0.55, 0.3, 0, 0][i] }));
+
 // ---------------------------------------------------------------- arboleda ilustrativa
 function rnd(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 const treeGeo = (() => {
@@ -1091,39 +1148,76 @@ const treeMat = new THREE.ShaderMaterial({
       gl_FragColor = vec4(mix(c, uFog, fog), 1.0);
     }`
 });
-const trees = [];
+// árboles: si hay cubierta de Copernicus, se colocan donde hay bosque real (coníferas, frondosas caducifolias o perennifolias)
+const COVER_NAMES = ["", "Construido", "Coníferas", "Frondosas caducifolias", "Frondosas perennifolias", "Matorral", "Prados y pastos",
+  "Cultivos", "Líquenes y musgos", "Roca y suelo desnudo", "Agua", "Nieve y hielo"];
+function coverAt(mx, my) {
+  if (!COB) return 0;
+  const x = Math.min(CW - 1, Math.max(0, (mx / M.ancho * CW) | 0)), y = Math.min(CH - 1, Math.max(0, (my / M.alto * CH) | 0));
+  return COB[y * CW + x];
+}
+const trees = [];   // [mx, my, escala, azar, clase]
 {
-  const rand = rnd(24089), N = isPhone ? 9000 : 22000;
+  const rand = rnd(24089), N = isPhone ? 9000 : 24000;
   let tries = 0;
-  while (trees.length < N && tries < N * 30) {
+  while (trees.length < N && tries < N * 40) {
     tries++;
     const mx = rand() * M.ancho, my = rand() * M.alto;
-    const gx = Math.min(W - 1, (mx / M.celda) | 0), gy = Math.min(R - 1, (my / M.celda) | 0), i = gy * W + gx;
-    const h = H[i], s = slope1[i];
-    if (h < 850 || h > 1750 || s < 0.012 || s > 0.2) continue;
-    const patch = Math.sin(mx * 0.00031 + Math.sin(my * 0.00023) * 2.0) * Math.cos(my * 0.00027 - mx * 0.00009) + Math.sin(mx * 0.0011) * 0.35;
-    if (patch < 0.15) continue;
+    let cls = 2;
+    if (COB) { cls = coverAt(mx, my); if (cls < 2 || cls > 4) continue; }
+    else {
+      const gx = Math.min(W - 1, (mx / M.celda) | 0), gy = Math.min(R - 1, (my / M.celda) | 0), i = gy * W + gx;
+      const h = H[i], sl = slope1[i];
+      if (h < 850 || h > 1750 || sl < 0.012 || sl > 0.2) continue;
+      const patch = Math.sin(mx * 0.00031 + Math.sin(my * 0.00023) * 2.0) * Math.cos(my * 0.00027 - mx * 0.00009) + Math.sin(mx * 0.0011) * 0.35;
+      if (patch < 0.15) continue;
+    }
     if (!inProv(mx, my) && rand() > 0.35) continue;
-    trees.push([mx, my, 0.75 + rand() * 0.7, rand()]);
+    trees.push([mx, my, (cls === 2 ? 0.8 : 0.7) + rand() * 0.6, rand(), cls]);
   }
 }
 // primero los árboles de dentro de la provincia: al ocultar las vecinas solo se dibujan esos
 trees.sort((a, b) => (inProv(b[0], b[1]) ? 1 : 0) - (inProv(a[0], a[1]) ? 1 : 0));
-const treesInside = trees.filter(t => inProv(t[0], t[1])).length;
-const treeMesh = new THREE.InstancedMesh(treeGeo, treeMat, trees.length);
-treeMesh.count = layers.entorno ? trees.length : treesInside;
-{
-  const tint = new Float32Array(trees.length * 3), palette = [[0.20, 0.42, 0.25], [0.27, 0.50, 0.28], [0.17, 0.36, 0.27], [0.36, 0.55, 0.30]];
-  trees.forEach((t, k) => { const c = palette[(t[3] * palette.length) | 0]; tint.set(c, k * 3); });
-  treeGeo.setAttribute("tint", new THREE.InstancedBufferAttribute(tint, 3));
-  const kd = new Float32Array(trees.length), hb = new Float32Array(trees.length), rk = rnd(99);
-  trees.forEach((t, k) => { kd[k] = rk(); hb[k] = heightAt(t[0], t[1]); });
-  treeGeo.setAttribute("kd", new THREE.InstancedBufferAttribute(kd, 1)); treeGeo.setAttribute("hb", new THREE.InstancedBufferAttribute(hb, 1));
+const roundGeo = (() => {     // frondosa: copa redondeada sobre un tronco corto
+  const crown = new THREE.IcosahedronGeometry(0.15, 0).translate(0, 0.3, 0).toNonIndexed();
+  const trunk = new THREE.CylinderGeometry(0.025, 0.035, 0.18, 5).translate(0, 0.09, 0).toNonIndexed();
+  const a = crown.attributes.position.array, b = trunk.attributes.position.array, pp = new Float32Array(a.length + b.length);
+  pp.set(a); pp.set(b, a.length);
+  const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pp, 3)); g.computeVertexNormals(); return g;
+})();
+const TREE_PAL = {
+  2: [[0.16, 0.33, 0.24], [0.20, 0.38, 0.27], [0.14, 0.30, 0.25]],                       // pinares
+  3: [[0.30, 0.52, 0.26], [0.36, 0.58, 0.28], [0.26, 0.47, 0.24], [0.40, 0.56, 0.30]],   // robles, hayas, castaños
+  4: [[0.36, 0.44, 0.24], [0.32, 0.40, 0.22]]                                             // encinas
+};
+const treeGroups = [{ cls: [2], geo: treeGeo }, { cls: [3, 4], geo: roundGeo }];
+const treeMesh = new THREE.Group();
+for (const tg of treeGroups) {
+  tg.list = trees.filter(t => tg.cls.includes(t[4]));
+  tg.inside = tg.list.filter(t => inProv(t[0], t[1])).length;
+  if (!tg.list.length) continue;
+  const n = tg.list.length, tint = new Float32Array(n * 3), kd = new Float32Array(n), hb = new Float32Array(n), rk = rnd(99 + tg.cls[0]);
+  tg.list.forEach((t, k) => {
+    const pal = TREE_PAL[t[4]] || TREE_PAL[2];
+    tint.set(pal[(t[3] * pal.length) | 0], k * 3);
+    kd[k] = t[4] === 3 ? rk() * 0.55 : 0.6 + rk() * 0.4;     // kd < 0.55: caducifolio (otoño y desnudo en invierno)
+    hb[k] = heightAt(t[0], t[1]);
+  });
+  tg.geo.setAttribute("tint", new THREE.InstancedBufferAttribute(tint, 3));
+  tg.geo.setAttribute("kd", new THREE.InstancedBufferAttribute(kd, 1));
+  tg.geo.setAttribute("hb", new THREE.InstancedBufferAttribute(hb, 1));
+  tg.mesh = new THREE.InstancedMesh(tg.geo, treeMat, n); tg.mesh.frustumCulled = false;
+  treeMesh.add(tg.mesh);
 }
+function setTreeCount() { for (const tg of treeGroups) if (tg.mesh) tg.mesh.count = layers.entorno ? tg.list.length : tg.inside; }
+setTreeCount();
 function placeTrees() {
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
-  trees.forEach((t, k) => { p.set(sx(t[0]), heightAt(t[0], t[1]) * ZS() - 0.04, sz(t[1])); s.setScalar(t[2]); m.compose(p, q, s); treeMesh.setMatrixAt(k, m); });
-  treeMesh.instanceMatrix.needsUpdate = true;
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3();
+  for (const tg of treeGroups) {
+    if (!tg.mesh) continue;
+    tg.list.forEach((t, k) => { ps.set(sx(t[0]), heightAt(t[0], t[1]) * ZS() - 0.04, sz(t[1])); sc.setScalar(t[2]); m.compose(ps, q, sc); tg.mesh.setMatrixAt(k, m); });
+    tg.mesh.instanceMatrix.needsUpdate = true;
+  }
 }
 placeTrees();
 scene.add(treeMesh);
@@ -1426,6 +1520,7 @@ function applySeason() {
   U.uLow.value.setRGB(...low); U.uMeadow.value.setRGB(...mea); U.uAlpine.value.setRGB(...alp);
   U.uForA.value.setRGB(...fA); U.uForB.value.setRGB(...fB); U.uField.value.setRGB(...SEASON.field[m]);
   U.uSnow.value = SEASON.snow[m]; U.uAutumn.value = aut; U.uWinter.value = win;
+  seasonCoverColors(m, { mea, fA, fB, field: SEASON.field[m] });
   clouds.children.forEach((c, i) => { c.visible = i < SEASON.clouds[m]; });
   $("mes").value = String(m);
   $("mes-o").textContent = MESES[m] + " · " + estacion(m);
@@ -1791,9 +1886,10 @@ function doHover() {
     if (ip) for (const e of data.entidades.concat(data.capitales)) { const d = Math.hypot(e.xy[0] - p.mx, e.xy[1] - p.my); if (d < nd) { nd = d; near = e; } }
     const ci = Math.min(R - 1, Math.max(0, (p.my / M.celda) | 0)) * W + Math.min(W - 1, Math.max(0, (p.mx / M.celda) | 0));
     const hReal = H[ci];
+    const cv = coverAt(p.mx, p.my), covTxt = cv && layers.cob ? ` · ${COVER_NAMES[cv]}` : "";
     const popTxt = PD && morph > 0 ? (PD[ci] > 0 ? ` · <b>${fmt.format(PD[ci])} hab/km²</b> · ${Math.round(PA[ci] * 100)} % con más de 64 años` : " · sin población") : "";
     txt = `${lat.toFixed(3)}° N · ${Math.abs(lon).toFixed(3)}° O · <b>${fmt.format(Math.round(morph > 0 ? hReal : h))} m</b>` + popTxt +
-      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
+      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + covTxt + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
   }
   $("readout").innerHTML = txt;
   hovered = m;
@@ -1803,6 +1899,7 @@ function doHover() {
 const bind = (id, key, fn) => $(id).addEventListener("change", (e) => { layers[key] = e.target.checked; fn && fn(); });
 bind("l-mun", "mun", drawOverlay); bind("l-rios", "rios", drawOverlay); bind("l-aguas", "aguas", drawOverlay); bind("l-pob", "pob", drawOverlay);
 bind("l-picos", "picos");
+bind("l-cob", "cob", () => { U.uCoverOn.value = layers.cob && COB ? 1 : 0; $("cob-legend").hidden = !(layers.cob && COB); });
 if (PD) {
   $("morph").addEventListener("input", (e) => { morph = +e.target.value / 100; applyMorph(false); });
   const seg = (on, off, fn) => $(on).addEventListener("click", () => { $(on).setAttribute("aria-pressed", "true"); $(off).setAttribute("aria-pressed", "false"); fn(); });
@@ -1834,7 +1931,7 @@ if (ANIOS.length) updateHistPanel();
 bind("l-sierras", "sierras"); bind("l-valles", "valles"); bind("l-puertos", "puertos");
 bind("l-carr", "carr", drawOverlay); bind("l-comarcas", "comarcas", drawOverlay);
 bind("l-fav", "fav", () => { favGroup.visible = layers.fav; });
-bind("l-entorno", "entorno", () => { U.uEntorno.value = layers.entorno ? 1 : 0; treeMesh.count = layers.entorno ? trees.length : treesInside; });
+bind("l-entorno", "entorno", () => { U.uEntorno.value = layers.entorno ? 1 : 0; setTreeCount(); });
 bind("l-arboles", "arboles", () => { treeMesh.visible = layers.arboles && morph < 0.5; });
 bind("l-nubes", "nubes", () => { clouds.visible = layers.nubes; });
 let exagTimer = null;
