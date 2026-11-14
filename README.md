@@ -23,10 +23,30 @@ Todos los datos proceden de fuentes oficiales españolas o europeas (Copernicus)
 | El Bierzo | Ley 1/1991 de Castilla y León (38 municipios) |
 | Comarcas agrarias | MAPA · `ComarcasAgrarias.shp` de la IDE del Ministerio de Agricultura (copia distribuida por [rOpenSpain/mapSpain](https://github.com/rOpenSpain/mapSpain)). Cada municipio va a la comarca con la que comparte más superficie |
 | Comarca tradicional (dato secundario en la ficha) | Ficha de cada municipio en es.wikipedia.org, vía Wikidata (código INE P772). No es oficial |
+| Clima (normales 1991-2020) | AEMET · rejilla diaria de 5 km ROCIO_IBEB (precipitación v2, temperaturas máxima y mínima v1); normales y ajuste con la altitud calculados por `scripts/clima_aemet.py` |
+| Red de ríos y afluentes | IGN · red hidrográfica INSPIRE (HY-N) en la OGC API Features de la IDEE (`api-features.idee.es`) |
+| Cuencas | Dirección General del Agua · cuencas de captación con orden Pfafstetter (superficie oficial); la sombra del visor es una aproximación sobre la red del IGN |
+| Caudales y embalses | MITECO · Anuario de Aforos 2021-22 (Red Oficial de Estaciones de Aforo, datos de las confederaciones del Duero, Miño-Sil y Cantábrico); el caudal por tramo es una estimación calibrada con las estaciones |
 
-Los datos del IGN se publican bajo licencia CC BY 4.0 (© Instituto Geográfico Nacional). Los del INE, con cita de la fuente. Los de Copernicus son de acceso libre (© Unión Europea, Copernicus Land Monitoring Service, Agencia Europea de Medio Ambiente).
+## Como app en el móvil
 
-Los datos no se guardan en el repositorio: se descargan y se procesan con los scripts.
+`servidor/servidor.py` sirve `web/` como aplicación instalable (icono en la pantalla de inicio, pantalla completa) y añade el botón ↻ para cargar cambios y el guardado de lugares destacados. `servidor/leon3d-visor.service` lo deja como servicio de usuario de systemd (puerto 8800). La ubicación del dispositivo solo funciona si la app se abre por https.
+
+## Licencias
+
+El código de este repositorio se publica con licencia [MIT](LICENSE). Es un proyecto educativo y divulgativo.
+
+Los datos no se guardan en el repositorio: se descargan de sus fuentes oficiales y se procesan con los scripts. Cada fuente conserva su licencia, y todas permiten reutilizar citando el origen:
+
+- **IGN / CNIG** (relieve, límites, hidrografía, toponimia, carreteras): CC BY 4.0, © Instituto Geográfico Nacional.
+- **INE** (población, censos, nomenclátor): reutilización libre citando la fuente (Ley 37/2007).
+- **AEMET** (clima): reutilización libre, también comercial, citando a AEMET como fuente según su nota legal.
+- **MITECO y Dirección General del Agua** (anuario de aforos, embalses, cuencas): reutilización libre citando la fuente (aviso legal del MITECO, Ley 37/2007 y Real Decreto 1495/2011).
+- **MAPA** (comarcas agrarias): reutilización libre citando la fuente.
+- **Copernicus** (cubierta del suelo): acceso libre y gratuito, © Unión Europea, Copernicus Land Monitoring Service, Agencia Europea de Medio Ambiente.
+- **Wikipedia / Wikidata** (comarca tradicional, dato secundario): CC BY-SA 4.0 y CC0.
+
+Quien publique los datos procesados (por ejemplo, el visor con `web/data/`) debe mantener estas atribuciones; el visor las muestra en «Fuentes oficiales».
 
 ## Cómo construirlo
 
@@ -38,6 +58,11 @@ Rscript R/03_admin.R              # provincia y municipios en ETRS89 / UTM 30N
 Rscript R/10_preparar_web.R       # genera web/data/relieve.png y web/data/leon.json
 Rscript R/11_rejilla_poblacion.R  # genera web/data/poblacion.png (Censo 2021 en celdas de 1 km²)
 Rscript R/12_cobertura_copernicus.R  # descarga CLC+ Backbone y genera web/data/cobertura.png
+scripts/descargar_clima_aemet.sh   # rejilla diaria de 5 km de AEMET, 1991-2020 (unos 800 MB)
+python3 scripts/clima_aemet.py    # normales climáticas -> web/data/clima.png y clima.json
+python3 scripts/rios_red_descargar.py  # red hidrográfica del IGN (HY-N) y cuencas de la DGA -> raw/rios_red/
+# Anuario de Aforos del MITECO (CSV) y listados de estaciones -> raw/rios_mapa/ (ver scripts/rios_red.py)
+python3 scripts/rios_red.py        # afluentes, caudales, estaciones, embalses -> web/data/rios.json y cuencas.png
 ./abrir_visor.sh                  # sirve web/ en http://127.0.0.1:8800 y abre el navegador (--parar para detenerlo)
 ```
 
@@ -64,6 +89,9 @@ R/03_admin.R                 límites administrativos
 R/10_preparar_web.R          rejilla de alturas, recortes, simplificación y JSON para la web
 R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del visor
 R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 2021)
+scripts/clima_aemet.py       normales 1991-2020 de AEMET (temperaturas, precipitación, heladas, días de calor) ajustadas a la altitud
+scripts/rios_red.py          árbol de afluentes, caudal medio estimado por tramo, estaciones de aforo, embalses y cuencas aproximadas
+servidor/servidor.py         servidor de la app (iPhone): cabecera PWA, version.json y guardado de destacados
 web/index.html               visor 3D
 abrir_visor.sh               abre el visor en local (para un acceso directo del escritorio; icono en recursos/icono.svg)
 pruebas/                     pruebas automáticas en Firefox (WebDriver BiDi)
