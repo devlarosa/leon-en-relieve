@@ -1,0 +1,15 @@
+# Visor «León en relieve» como app web (pantalla de inicio del iPhone vía Tailscale).
+# Código: ~/mapas/leon3d/servidor/servidor.py — copia en el repo: servidor/leon3d-visor.service
+[Unit]
+Description=León en relieve: visor 3D como aplicación web (puerto 8800)
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/mapas/leon3d/servidor
+ExecStart=/usr/bin/python3 servidor.py --puerto 8800 --host 0.0.0.0
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

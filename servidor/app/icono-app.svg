@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 56 56" width="512" height="512">
+  <!-- Variante a sangre del icono (recursos/icono.svg) para la pantalla de inicio: iOS redondea las esquinas -->
+  <defs>
+    <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fb6dd"/>
+      <stop offset="1" stop-color="#f6e3c8"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" fill="url(#cielo)"/>
+  <path d="M0 50 L4 46 L18 26 L25 34 L35 16 L44 28 L50 22 L60 40 L64 46 L64 64 L0 64 Z" fill="#4f7d4a"/>
+  <path d="M35 16 L31 23 L34 22 L36 25 L39 22.5 Z" fill="#f4f6fb"/>
+  <path d="M18 26 L15.5 30 L18 29 L20 31 Z" fill="#f4f6fb"/>
+  <path d="M0 51 Q4 50 4 50 Q20 44 32 49 T60 47 L64 47 L64 64 L0 64 Z" fill="#c9b77c"/>
+  <path d="M6 57 Q22 50 30 53 T58 49" fill="none" stroke="#3fa9c9" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -62,6 +62,15 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 #comarca { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line);
   background: var(--panel-solid); color: var(--ink); }
 #comarca:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+.sel { width: 100%; box-sizing: border-box; font: inherit; font-size: 13.5px; padding: 7px 9px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-solid); color: var(--ink); }
+.sel:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+[hidden] { display: none !important; }
+.cl-leg { padding: 8px 6px 0; }
+.cl-bands { display: flex; height: 12px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.cl-bands span { flex: 1; }
+.cl-ticks { position: relative; height: 15px; font-size: 10.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.cl-ticks span { position: absolute; top: 2px; transform: translateX(-50%); white-space: nowrap; }
+.cl-ticks span:first-child { transform: none; } .cl-ticks span:last-child { transform: translateX(-100%); }
 .lbl.sierra { font-style: italic; font-weight: 700; font-size: 13.5px; letter-spacing: .14em; color: #6b4a2b; }
 .lbl.sierra.big { font-size: 16px; letter-spacing: .2em; }
 .lbl.valle { font-style: italic; font-weight: 500; font-size: 12.5px; letter-spacing: .05em; color: #2f5f3c; }
@@ -123,6 +132,38 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .lbl.mon .ic { display: inline-block; width: 8px; height: 8px; background: #c9862b; transform: rotate(45deg); margin-right: 6px; vertical-align: 1px; border: 1.5px solid #fff6e0; }
 .lbl.river { font-style: italic; font-weight: 500; font-size: 13.5px; color: #1d6f8c; letter-spacing: .04em; }
 .lbl.lake { font-style: italic; font-weight: 500; font-size: 12.5px; color: #1d6f8c; }
+.lbl.lake.click, .lbl.st { pointer-events: auto; cursor: pointer; }
+.lbl.lake.click:hover, .lbl.st:hover { text-decoration: underline; text-underline-offset: 3px; }
+.lbl.st { font-family: var(--font-ui); font-weight: 700; font-size: 11px; color: #14557a; }
+.lbl.st .gt { display: inline-block; width: 8px; height: 8px; margin-right: 4px; background: #2a8fd0; border: 1.5px solid #fff; border-radius: 50% 0 50% 50%; transform: rotate(-45deg); vertical-align: 0; }
+#hcard { position: fixed; top: calc(14px + env(safe-area-inset-top, 0px)); right: max(72px, calc(56px + env(safe-area-inset-right, 0px))); width: 300px;
+  max-height: calc(100% - 120px); overflow: auto; padding: 16px; box-sizing: border-box; }
+#hcard h2 { margin: 0 0 2px; font-family: var(--font-display); font-size: 23px; font-weight: 800; line-height: 1.05; padding-right: 26px; text-wrap: balance; }
+#hcard .cap { margin: 0 0 8px; font-size: 12.5px; color: var(--ink-soft); }
+#hcard dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 10px 0 0; font-size: 13.5px; }
+#hcard dt { color: var(--ink-soft); } #hcard dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+#hcard .group-title { margin: 14px 0 4px; }
+#hcard .hint { margin: 10px 0 0; font-size: 11.5px; color: var(--ink-soft); line-height: 1.4; }
+#hcard button.x { position: absolute; top: 10px; right: 10px; border: 0; background: transparent; color: var(--ink-soft); font-size: 20px; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; }
+#hcard button.x:hover { background: var(--moss-soft); }
+.ruta { font-size: 13px; line-height: 1.7; margin: 4px 0 0; }
+.lnk { font: inherit; font-weight: 700; color: #1d6f8c; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(29,111,140,.35); }
+.lnk:hover { text-decoration-color: currentColor; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font: inherit; font-size: 12.5px; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-solid); color: var(--ink); cursor: pointer; }
+.chip:hover { border-color: #2a8fd0; background: #e4f2fb; }
+.chip small { color: var(--ink-soft); margin-left: 4px; }
+.lista-st { display: flex; flex-direction: column; gap: 2px; }
+.lista-st button { display: flex; justify-content: space-between; gap: 8px; font: inherit; font-size: 13px; padding: 5px 6px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
+.lista-st button:hover { background: var(--moss-soft); }
+.lista-st small { color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.barras svg { display: block; width: 100%; height: auto; }
+.barras rect { fill: #8cc3e3; } .barras rect.cur { fill: #1d6f8c; }
+.barras text { font-family: var(--font-ui); font-size: 10px; fill: var(--ink-soft); }
+.barras text.v { fill: var(--ink); font-weight: 700; }
+.leyenda-mini { display: flex; gap: 12px; font-size: 11px; color: var(--ink-soft); margin: 2px 0 0; }
+.leyenda-mini i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; background: #8cc3e3; margin-right: 4px; vertical-align: -1px; }
+.leyenda-mini i.p { border-radius: 50%; background: #c47f12; }
 .lbl .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #fffdf4; border: 2px solid #263a32;
   margin-right: 5px; vertical-align: 1px; }
 .lbl.city .dot { width: 10px; height: 10px; background: #e9b44c; }
@@ -200,6 +241,37 @@ details.src ul { margin: 6px 0 0; padding-left: 16px; }
 #nav button:hover { background: var(--moss-soft); }
 #nav button:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
 #nav-tilt { font-size: 12.5px !important; letter-spacing: .04em; }
+#nav-loc[aria-pressed="true"] { background: #2f7fd6; color: #fff; }
+#nav-loc.buscando svg { animation: girar 1.2s linear infinite; }
+#nav-orbit[aria-pressed="true"], #i-orbit[aria-pressed="true"] { background: var(--moss); border-color: var(--moss); color: var(--panel-solid); }
+/* ficha: compacta por defecto (nombre, resumen y botones); «Más info» despliega el resto */
+#info .sum { margin: 2px 0 0; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+#info:not(.mini) .sum { display: none; }
+#info.mini { width: 320px; padding: 12px 14px; }
+.i-act { white-space: nowrap; }
+#info.mini h2 { font-size: 21px; }
+.i-acts { display: flex; gap: 6px; margin-top: 10px; }
+.i-act { flex: 1; font: inherit; font-size: 13px; font-weight: 700; padding: 7px 8px; border-radius: 10px; cursor: pointer;
+  border: 1.5px solid var(--moss); background: transparent; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.i-act:hover { background: var(--moss-soft); }
+.i-act:focus-visible { outline: 2px solid var(--moss); outline-offset: 2px; }
+.i-act svg { flex: none; }
+#i-fav svg { fill: none; stroke: #c47f12; stroke-width: 2; }
+#i-fav[aria-pressed="true"] { background: #ffe7a8; border-color: #b07a1e; color: #3b2a10; }
+#i-fav[aria-pressed="true"] svg { fill: #c47f12; }
+.i-act:disabled { opacity: .6; cursor: wait; }
+.fav-row { display: flex; align-items: center; gap: 2px; }
+.fav-row .fav-btn { flex: 1; min-width: 0; }
+.fav-del { flex: none; width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--ink-soft); font-size: 18px; cursor: pointer; }
+.fav-del:hover { background: var(--moss-soft); color: var(--ink); }
+.fav-del:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+#i-more svg { transition: transform .2s; }
+#i-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+#nav-upd { position: relative; }
+#nav-upd.nuevo { color: #fff; background: #c47f12; }
+#nav-upd.nuevo::after { content: ""; position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border-radius: 50%; background: #e0452e; border: 1.5px solid var(--panel-solid); }
+#nav-upd.girando svg { animation: girar .8s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
 #nav-needle { transition: none; }
 #help { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(620px, calc(100% - 32px)); max-height: calc(100% - 48px);
   overflow: auto; padding: 18px 20px; box-sizing: border-box; z-index: 4; }
@@ -231,6 +303,10 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   #info { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
     max-height: 40%; overflow: auto; padding: 12px 14px; box-sizing: border-box; }
   #info h2 { font-size: 21px; }
+  #info.mini { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto; padding: 10px 12px; }
+  #info.mini h2 { font-size: 19px; }
+  #hcard { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto; max-height: 42%; padding: 12px 14px; }
+  #hcard h2 { font-size: 20px; }
   #mirador { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
     max-height: 40%; overflow: auto; padding: 12px 14px; box-sizing: border-box; }
   #info .altbar { margin-top: 8px; }
@@ -312,6 +388,42 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
     <div class="ramp" style="padding: 6px 6px 0"><div class="ramp-bar" id="pop-ramp"></div><div class="ramp-ends" id="pop-ends"></div></div>
     <p class="spark-note" style="padding: 0 6px">Censo 2021 del INE en celdas de 1 km². La raíz cuadrada deja ver los pueblos pequeños; la escala proporcional es fiel a la densidad.</p>
   </div>
+  <div id="sea-box">
+    <p class="group-title">Nivel del agua</p>
+    <label class="layer"><input type="checkbox" id="l-sea"><span class="sw"></span><span class="name">Inundar hasta una altitud<span class="note">Lo que queda por debajo se cubre de agua</span></span><span class="key" style="background:#3f86b0"></span></label>
+    <div class="slider"><div class="row"><label for="sea">Altitud</label><output id="sea-o">1.000 m</output></div>
+      <input type="range" id="sea" min="300" max="2600" step="10" value="1000"></div>
+    <p class="spark-note" id="sea-note" style="padding: 0 6px"></p>
+  </div>
+  <div id="clima-box">
+    <p class="group-title">Clima · normales 1991–2020</p>
+    <label class="layer"><input type="checkbox" id="l-clima"><span class="sw"></span><span class="name">Mostrar clima<span class="note">AEMET, ajustado a la altitud del terreno</span></span></label>
+    <div style="padding: 2px 6px"><label class="group-title" for="clima-var" style="display:block">Variable</label>
+      <select id="clima-var" class="sel">
+        <option value="tmed">Temperatura media</option><option value="tmax">Temperatura máxima media</option><option value="tmin">Temperatura mínima media</option>
+        <option value="prec">Precipitación</option><option value="helada">Días de helada (mínima &lt; 0 °C)</option><option value="calor">Días de calor (máxima &gt; 30 °C)</option>
+      </select></div>
+    <div class="seg" role="group" aria-label="Periodo" style="margin-top: 6px"><button id="cl-mes-b" aria-pressed="true">Por meses</button><button id="cl-anio-b" aria-pressed="false">Año completo</button></div>
+    <div class="hist-row" id="cl-mes-row" style="margin-top: 4px">
+      <button class="play" id="cl-play" aria-pressed="false" aria-label="Animar los 12 meses">▶</button>
+      <div class="slider" style="flex:1; padding: 0"><div class="row"><label for="clima-mes">Mes</label><output id="clima-mes-o"></output></div>
+        <input type="range" id="clima-mes" min="0" max="11" step="1" value="10"></div>
+    </div>
+    <div class="cl-leg" id="cl-leg" hidden><div class="cl-bands" id="cl-bands"></div><div class="cl-ticks" id="cl-ticks"></div></div>
+    <p class="spark-note" id="cl-note" style="padding: 0 6px"></p>
+  </div>
+  <div id="rios-box" hidden>
+    <p class="group-title">Ríos y agua</p>
+    <div style="padding: 2px 6px 4px"><input id="rio-search" class="sel" list="riolist" placeholder="Buscar río: Esla, Sil, Porma…" autocomplete="off" aria-label="Buscar río"><datalist id="riolist"></datalist></div>
+    <label class="layer"><input type="checkbox" id="l-caudal" checked><span class="sw"></span><span class="name">Grosor según el caudal<span class="note" id="caudal-note">Caudal medio estimado del mes</span></span></label>
+    <div class="hist-row"><button class="play" id="rio-play" aria-pressed="false" aria-label="Animar el caudal a lo largo del año">▶</button><span class="spark-note" style="margin:0">Animar el año: deshielo en primavera, estiaje en verano</span></div>
+    <label class="layer"><input type="checkbox" id="l-est" checked><span class="sw"></span><span class="name">Estaciones de aforo<span class="note">Anuario de Aforos del MITECO</span></span><span class="key" style="background:#2a8fd0"></span></label>
+    <label class="layer"><input type="checkbox" id="l-calma" checked><span class="sw"></span><span class="name">Paisaje simplificado al ver ríos<span class="note">Oculta árboles, pueblos, carreteras y nombres del relieve</span></span></label>
+    <label class="layer"><input type="checkbox" id="l-cuenca" checked><span class="sw"></span><span class="name">Sombrear la cuenca del río elegido</span></label>
+    <button class="tool-btn" id="gota-btn" aria-pressed="false" style="margin-top: 6px">¿Adónde va esta gota?<small>Toca un punto del mapa y sigue el agua hasta el mar</small></button>
+    <details class="src" id="emb-box" style="padding: 6px 6px 0"><summary>Embalses</summary><div class="lista-st" id="emb-list" style="margin-top:6px"></div></details>
+    <p class="spark-note" style="padding: 4px 6px 0">Toca un río en el mapa para ver sus afluentes y su cuenca. Toca un embalse o una estación para ver sus datos.</p>
+  </div>
   <div>
     <p class="group-title">Mirador</p>
     <button class="tool-btn" id="mirador-btn" aria-pressed="false">¿Qué se ve desde aquí?<small>Toca un punto del mapa o el nombre de una cumbre</small></button>
@@ -335,9 +447,11 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
 </aside>
 <button id="toggle-panel" class="card" aria-controls="panel" aria-expanded="false">Capas</button>
 
-<section id="info" class="card" hidden aria-live="polite">
+<section id="info" class="card mini" hidden aria-live="polite">
   <button class="x" id="info-close" aria-label="Cerrar ficha">×</button>
   <h2 id="i-name"></h2>
+  <p class="sum" id="i-sum"></p>
+  <div id="i-full" hidden>
   <p class="cap" id="i-cap"></p>
   <p class="com" id="i-com"></p>
   <dl>
@@ -357,6 +471,17 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
     <p class="spark-note" id="i-histnote"></p>
   </div>
   <p class="hint" id="i-hint"></p>
+  </div>
+  <div class="i-acts">
+    <button class="i-act" id="i-fav" aria-pressed="false" hidden><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg><span>Destacar</span></button>
+    <button class="i-act" id="i-orbit" aria-pressed="false" title="Vista de dron dando vueltas alrededor del centro"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><ellipse cx="12" cy="14" rx="9" ry="4.5"/><path d="M12 14 L12 6"/><circle cx="12" cy="5" r="1.6" fill="currentColor"/></svg>Sobrevolar</button>
+    <button class="i-act" id="i-more" aria-expanded="false" aria-controls="i-full"><span>Más info</span><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+  </div>
+</section>
+
+<section id="hcard" class="card" hidden aria-live="polite">
+  <button class="x" id="hcard-close" aria-label="Cerrar ficha">×</button>
+  <div id="hcard-body"></div>
 </section>
 
 <section id="mirador" class="card" hidden aria-live="polite">
@@ -384,7 +509,10 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   <button id="nav-out" aria-label="Alejar" title="Alejar (−)">−</button>
   <button id="nav-north" aria-label="Norte arriba" title="Norte arriba (N)"><svg viewBox="0 0 24 24" width="22" height="22" id="nav-needle" aria-hidden="true"><path d="M12 2 L16 12 L12 10.5 L8 12 Z" fill="#c4493a"/><path d="M12 22 L8 12 L12 13.5 L16 12 Z" fill="currentColor" opacity=".55"/></svg></button>
   <button id="nav-tilt" aria-label="Cambiar entre vista inclinada y cenital" title="Vista 2D / 3D">2D</button>
+  <button id="nav-orbit" aria-pressed="false" aria-label="Sobrevuelo circular" title="Sobrevuelo circular (O)"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="14" rx="9" ry="4.5"/><path d="M12 14 L12 6"/><circle cx="12" cy="5" r="1.6" fill="currentColor"/><path d="M19.2 11.3 L21 9.8 M19.2 11.3 L21.4 12.4"/></svg></button>
+  <button id="nav-loc" aria-pressed="false" aria-label="Ir a mi ubicación" title="Mi ubicación (U)"><svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
   <button id="nav-help" aria-label="Ver controles" aria-expanded="false" aria-controls="help" title="Controles (?)">?</button>
+  <button id="nav-upd" aria-label="Actualizar la aplicación" title="Actualizar"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button>
 </div>
 
 <section id="help" class="card" hidden aria-label="Controles de navegación">
@@ -417,6 +545,8 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
         <dt><kbd>Q</kbd> <kbd>E</kbd> o <kbd>Mayús</kbd>+<kbd>←</kbd><kbd>→</kbd></dt><dd>Girar</dd>
         <dt><kbd>R</kbd> <kbd>F</kbd> o <kbd>Mayús</kbd>+<kbd>↑</kbd><kbd>↓</kbd></dt><dd>Inclinar</dd>
         <dt><kbd>N</kbd></dt><dd>Norte arriba</dd>
+        <dt><kbd>O</kbd></dt><dd>Sobrevuelo circular</dd>
+        <dt><kbd>U</kbd></dt><dd>Mi ubicación</dd>
         <dt><kbd>0</kbd></dt><dd>Vista inicial</dd>
         <dt><kbd>Esc</kbd></dt><dd>Cerrar fichas</dd>
         <dt><kbd>?</kbd></dt><dd>Esta ayuda</dd>
@@ -439,6 +569,28 @@ function showFatal(err) {
 addEventListener("error", (e) => showFatal(e.error || e.message));
 addEventListener("unhandledrejection", (e) => showFatal(e.reason));
 if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"));
+// ↻ actualizar: comprueba version.json (lo da servidor/servidor.py; en el artefacto no existe y se ignora)
+// y, al pulsar, vuelve a descargar todo sin caché y recarga. Útil en el iPhone, donde la app no tiene botón de recargar.
+(function () {
+  const btn = document.getElementById("nav-upd"); if (!btn) return;
+  let v0 = null;
+  const leerVersion = () => fetch("version.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => j && j.version).catch(() => null);
+  async function comprobar() {
+    const v = await leerVersion(); if (!v) return;
+    if (!v0) v0 = v;
+    else if (v !== v0) { btn.classList.add("nuevo"); btn.title = "Hay una versión nueva: pulsa para actualizar"; btn.setAttribute("aria-label", btn.title); }
+  }
+  window.leonVersionSync = async () => { const v = await leerVersion(); if (v) v0 = v; };
+  comprobar();
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") comprobar(); });
+  setInterval(comprobar, 5 * 60 * 1000);
+  btn.addEventListener("click", async () => {
+    btn.classList.add("girando");
+    const rec = ["index.html", "data/leon.json", "data/relieve.png", "data/cobertura.png", "data/poblacion.png", "data/destacados.json", "manifest.webmanifest"];
+    await Promise.all(rec.map(u => fetch(u, { cache: "reload" }).then(r => r.arrayBuffer()).catch(() => null)));
+    location.reload();
+  });
+})();
 </script>
 <script>
 (async function () {
@@ -561,7 +713,10 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
-const layers = { cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+const layers = { caudal: true, est: true, cuenca: true, cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+let climaHook = null;   // el clima sigue al mes de la escena
+let riosHook = null;    // y el grosor de los ríos
+let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
 let selected = null, hovered = null, comarcaSel = null, yearIdx = 13, needsRender = true;
 const px1 = TW / 6144;
 const BIERZO_OFICIAL = "El Bierzo (comarca oficial)";
@@ -587,7 +742,8 @@ function drawOverlay() {
       ov.strokeStyle = "rgba(240, 255, 250, 0.9)"; ov.lineWidth = 2.2 * px1; ov.stroke();
     }
   }
-  if (layers.rios) {
+  if (layers.rios && RIO) drawRed();
+  else if (layers.rios) {
     for (const r of data.rios) {
       const w = (r.k > 60 ? 7 : r.k > 25 ? 4.8 : r.k > 10 ? 3.2 : 2.1) * px1;
       ov.beginPath();
@@ -758,7 +914,8 @@ function zoomAt(x, y, f) {
   const nd = clampN(ctl.dist * f, DIST_MIN, DIST_MAX), fe = nd / ctl.dist, T = ctl.target.clone().lerp(P, 1 - fe);
   tweenTo({ tx: T.x, ty: T.y, tz: T.z, dist: nd }, 450);
 }
-function stopNav() { fly = null; ctl.tw = null; ctl.zoomQ = null; }
+let orbit = null;   // sobrevuelo circular en curso: { w: velocidad angular (rad/s) }
+function stopNav() { fly = null; ctl.tw = null; ctl.zoomQ = null; if (orbit) stopOrbit(); }
 
 {
   const el = renderer.domElement, ptrs = new Map();
@@ -822,9 +979,12 @@ addEventListener("keydown", (e) => {
   if (k === "n") { tweenTo({ theta: 0 }); }
   else if (k === "0" || k === "home") { tweenTo(HOME, 900); }
   else if (e.key === "?") { toggleHelp(); }
+  else if (k === "o") { toggleOrbit(); }
+  else if (k === "u") { toggleLoc(); }
   else if (k === "escape") {
     if (!$("help").hidden) toggleHelp(false);
     else if (!$("mirador").hidden || miradorArmed) closeMirador();
+    else if (!$("hcard").hidden) closeHcard();
     else if (!$("info").hidden) $("info-close").click();
     else if (!$("panel").classList.contains("collapsed") && matchMedia("(max-width: 720px)").matches) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
   } else return;
@@ -862,6 +1022,46 @@ $("nav-in").onclick = () => zoomAt(null, null, 0.6);
 $("nav-out").onclick = () => zoomAt(null, null, 1.6);
 $("nav-north").onclick = () => tweenTo({ theta: 0 });
 $("nav-tilt").onclick = () => tweenTo({ phi: ctl.phi > 0.35 ? PHI_MIN : 0.95 });
+
+// ---------------------------------------------------------------- sobrevuelo circular (como un dron)
+// Gira la cámara alrededor del centro del municipio o la comarca de la ficha abierta (o del punto que se mira),
+// inclinada como un dron y a una distancia según su tamaño. Cualquier toque, arrastre o tecla de movimiento lo para;
+// la rueda y los botones + y − siguen funcionando mientras gira.
+const ORBIT_W = 2 * Math.PI / 48;    // una vuelta completa cada 48 s
+function centroid(rings) {           // centro de gravedad del anillo más grande
+  let best = null, ba = 0;
+  for (const r of rings) {
+    let a = 0, cx = 0, cy = 0;
+    for (let i = 0, j = r.length - 2; i < r.length; j = i, i += 2) { const f = r[j] * r[i + 1] - r[i] * r[j + 1]; a += f; cx += (r[j] + r[i]) * f; cy += (r[j + 1] + r[i + 1]) * f; }
+    if (Math.abs(a) > ba) { ba = Math.abs(a); best = [cx / (3 * a), cy / (3 * a)]; }
+  }
+  return best;
+}
+function orbitButtons(on) { for (const id of ["nav-orbit", "i-orbit"]) $(id).setAttribute("aria-pressed", String(on)); }
+function startOrbit() {
+  const zona = selected || comarcaSel;
+  fly = null; ctl.tw = null; ctl.zoomQ = null;
+  if (zona) {
+    let c = selected ? centroid(zona.g) : zona.ctr;
+    if (!c || !inProv(c[0], c[1])) c = [(zona.bb[0] + zona.bb[2]) / 2, (zona.bb[1] + zona.bb[3]) / 2];
+    const size = Math.max(zona.bb[2] - zona.bb[0], zona.bb[3] - zona.bb[1]) / 1000;
+    tweenTo({ tx: sx(c[0]), ty: heightAt(c[0], c[1]) * ZS(), tz: sz(c[1]), dist: clampN(size * 1.5, 7, 140), phi: 0.98 }, 1600);
+  } else if (ctl.phi < 0.6) tweenTo({ phi: 0.98 }, 1000);
+  orbit = { w: ORBIT_W };
+  orbitButtons(true);
+  $("readout").textContent = "Sobrevuelo: toca el mapa o pulsa otra vez el botón para parar";
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+}
+function stopOrbit() { orbit = null; orbitButtons(false); }
+function toggleOrbit() { if (orbit) stopOrbit(); else startOrbit(); }
+$("nav-orbit").onclick = toggleOrbit;
+$("i-orbit").onclick = toggleOrbit;
+// ficha compacta / completa (la elección se mantiene al cambiar de municipio hasta recargar)
+function setInfoFull(on) {
+  $("info").classList.toggle("mini", !on); $("i-full").hidden = !on;
+  $("i-more").setAttribute("aria-expanded", String(on)); $("i-more").querySelector("span").textContent = on ? "Menos" : "Más info";
+}
+$("i-more").onclick = () => setInfoFull($("i-full").hidden);
 
 let exag = 2.5;
 const ZS = () => exag / 1000;   // metros -> km de escena con exageración
@@ -924,27 +1124,36 @@ const U = {
   uSnow: { value: 2300 }, uAutumn: { value: 0 }, uWinter: { value: 0 }, uMorph: { value: 0 }, uPop: { value: null },
   uMunId: { value: null }, uMunState: { value: null }, uMunHist: { value: null }, uComarcaOn: { value: 0 }, uHistOn: { value: 0 }, uNoise: { value: null },
   uCover: { value: null }, uCoverOn: { value: 0 }, uCovTexel: { value: new THREE.Vector2(1, 1) }, uCls: { value: Array.from({ length: 12 }, () => new THREE.Color(1, 1, 1)) },
+  uSea: { value: 1000 }, uSeaOn: { value: 0 }, uCalma: { value: 0 },
+  uClima: { value: null }, uCSize: { value: new THREE.Vector2(1, 1) }, uClimaOn: { value: 0 }, uCMin: { value: 0 }, uCMax: { value: 1 }, uCB: { value: 0 },
+  uCLo: { value: -1e4 }, uCHi: { value: 1e4 }, uCS0: { value: 0 }, uCS1: { value: 1 }, uCStep: { value: 1 }, uCPal: { value: Array.from({ length: 5 }, () => new THREE.Color()) },
   uLow: { value: new THREE.Color(0.56, 0.75, 0.36) }, uMeadow: { value: new THREE.Color(0.47, 0.70, 0.33) }, uField: { value: new THREE.Color(0.86, 0.76, 0.46) },
   uForA: { value: new THREE.Color(0.24, 0.47, 0.28) }, uForB: { value: new THREE.Color(0.24, 0.47, 0.28) }, uAlpine: { value: new THREE.Color(0.62, 0.70, 0.40) }
 };
 const terrainMat = new THREE.ShaderMaterial({
-  uniforms: U,
+  uniforms: U, extensions: { derivatives: true },
   vertexShader: `
-    attribute float h; attribute float hp; uniform float uExag, uMorph;
+    attribute float h; attribute float hp; uniform float uExag, uMorph, uSea, uSeaOn;
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     void main() {
       vUv = uv; vH = h;
-      vec3 p = vec3(position.x, mix(h, hp, uMorph) * uExag, position.z);
+      float hh = mix(h, hp, uMorph); if (uSeaOn > 0.5) hh = max(hh, uSea);   // nivel del agua: superficie plana
+      vec3 p = vec3(position.x, hh * uExag, position.z);
       vWorld = p;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
     }`,
   fragmentShader: `
     uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow, uMorph, uCoverOn, uComarcaOn, uHistOn; uniform sampler2D uPop, uCover, uMunId, uMunState, uMunHist, uNoise; uniform vec2 uCovTexel; uniform vec3 uCls[12];
-    uniform vec3 uLow, uMeadow, uField, uForA, uForB, uAlpine;
+    uniform vec3 uLow, uMeadow, uField, uForA, uForB, uAlpine; uniform float uSea, uSeaOn, uCalma;
+    uniform sampler2D uClima; uniform vec2 uCSize; uniform float uClimaOn, uCMin, uCMax, uCB, uCLo, uCHi, uCS0, uCS1, uCStep; uniform vec3 uCPal[5];
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float noise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
       return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y); }
+    float csamp(vec2 uv) { vec4 c = texture2D(uClima, uv); return (c.r * 65280.0 + c.g * 255.0) / 65535.0; }
+    vec3 cpal(float t) { t = clamp(t, 0.0, 1.0) * 4.0;
+      vec3 c = mix(uCPal[0], uCPal[1], clamp(t, 0.0, 1.0)); c = mix(c, uCPal[2], clamp(t - 1.0, 0.0, 1.0));
+      c = mix(c, uCPal[3], clamp(t - 2.0, 0.0, 1.0)); return mix(c, uCPal[4], clamp(t - 3.0, 0.0, 1.0)); }
     float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * noise(p); p *= 2.03; a *= 0.5; } return s; }
     float fT(vec2 p) { return texture2D(uNoise, p * 0.125).r; }   // ruido fractal precalculado (periodo 8)
     float nT(vec2 p) { return texture2D(uNoise, p * 0.125).g; }
@@ -998,16 +1207,39 @@ const terrainMat = new THREE.ShaderMaterial({
         if (uHistOn > 0.5) { vec4 hc = texture2D(uMunHist, mu); col = mix(col, hc.rgb, hc.a); }
         col = mix(col, vec3(1.0, 0.886, 0.588), st.r * 0.42);
       }
+      // clima: bandas por tramos e isolíneas (rejilla de 1 km interpolada a mano para no perder los 16 bits, más el gradiente con la altitud)
+      if (uClimaOn > 0.5) {
+        vec2 tc = vUv * uCSize - 0.5, fl = floor(tc), fr = tc - fl, px = 1.0 / uCSize, b0 = (fl + 0.5) * px;
+        float q = mix(mix(csamp(b0), csamp(b0 + vec2(px.x, 0.0)), fr.x), mix(csamp(b0 + vec2(0.0, px.y)), csamp(b0 + px), fr.x), fr.y);
+        float cv = clamp(uCMin + q * (uCMax - uCMin) + uCB * vH, uCLo, uCHi);
+        float bc = (floor(cv / uCStep) + 0.5) * uCStep;
+        col = mix(col, cpal((bc - uCS0) / (uCS1 - uCS0)) * (0.95 + 0.1 * brush), 0.86);
+        float u = cv / uCStep, lw = abs(fract(u + 0.5) - 0.5) / max(fwidth(u), 1e-4);
+        col = mix(col, vec3(0.17, 0.2, 0.22), (1.0 - smoothstep(0.0, 1.3, lw)) * 0.6);
+      }
+      // modo agua: terreno en tonos suaves y claros para que destaquen ríos, cuencas y embalses
+      col = mix(col, vec3(dot(col, vec3(0.3, 0.59, 0.11))) * 0.55 + vec3(0.42, 0.41, 0.37), uCalma * 0.7);
       // capas vectoriales
       vec4 ov = texture2D(uOv, vUv);
       col = mix(col, ov.rgb, ov.a);
       if (uComarcaOn > 0.5) col = mix(col, vec3(0.957, 0.941, 0.910), (1.0 - st.g) * 0.62);
+      // nivel del agua: por debajo de la cota, agua más oscura cuanto más profunda y espuma en la orilla
+      float wet = 0.0; vec3 wcol = vec3(0.0);
+      if (uSeaOn > 0.5 && vH < uSea) {
+        float dep = uSea - vH;
+        vec3 w = mix(vec3(0.52, 0.81, 0.85), vec3(0.12, 0.34, 0.56), smoothstep(0.0, 700.0, dep));
+        w = mix(w, vec3(0.94, 0.98, 1.0), (1.0 - smoothstep(0.0, 14.0, dep)) * 0.85);
+        w *= 0.95 + 0.1 * brush;
+        wet = 1.0; wcol = mix(w, col, 0.1);
+        n = vec3(0.0, 1.0, 0.0);
+      }
       // luz por bandas suaves (cel shading con sombras teñidas)
       float l = dot(n, uSun);
       float band = smoothstep(-0.02, 0.06, l) * 0.55 + smoothstep(0.38, 0.48, l) * 0.3 + smoothstep(0.75, 0.82, l) * 0.15;
       vec3 lit = col * mix(uShadeCol * 0.9 + 0.12, uSunCol * 1.08, band);
       float rim = pow(1.0 - max(n.y, 0.0), 2.0) * 0.12;
       lit += rim * uSunCol;
+      if (wet > 0.5) lit = wcol * mix(vec3(0.86, 0.9, 1.0), uSunCol, 0.35) + pow(max(dot(reflect(-uSun, vec3(0.0, 1.0, 0.0)), normalize(uCam - vWorld)), 0.0), 40.0) * uSunCol * 0.35;
       // mirador: lo visible brilla, lo oculto queda en penumbra
       if (uViewOn > 0.5) {
         float v = texture2D(uVis, vUv).r;
@@ -1016,7 +1248,7 @@ const terrainMat = new THREE.ShaderMaterial({
       }
       // bruma atmosférica
       float d = length(vWorld - uCam);
-      float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
+      float fog = 0.0;   // sin bruma por distancia: se veía bonito pero emborronaba el mapa al alejarse
       fog = max(fog, outside * 0.25);
       gl_FragColor = vec4(mix(lit, uFog, fog), 1.0);
     }`,
@@ -1182,7 +1414,7 @@ function applyMorph(full) {
   for (let i = 0; i < HE.length; i++) HE[i] = H[i] + (HP[i] - H[i]) * morph;
   U.uMorph.value = morph;
   treeMesh.visible = layers.arboles && morph < 0.5;
-  placeTrees(); placeTowns(); placeMonuments(); placeFavs(); rebuildOutlines();
+  placeTrees(); placeTowns(); placeMonuments(); placeFavs(); placeMe(); rebuildOutlines();
   clearTimeout(morphTimer);
   morphTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, full ? 0 : 150);
   $("morph-o").textContent = morph === 0 ? "Montañas" : morph === 1 ? "Población" : Math.round(morph * 100) + " % población";
@@ -1253,10 +1485,11 @@ const treeGeo = (() => {
   g.setAttribute("position", new THREE.BufferAttribute(p, 3)); g.computeVertexNormals(); return g;
 })();
 const treeMat = new THREE.ShaderMaterial({
-  uniforms: { uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam, uAutumn: U.uAutumn, uWinter: U.uWinter, uSnow: U.uSnow },
-  vertexShader: `attribute vec3 tint; attribute float kd; attribute float hb; uniform float uAutumn, uWinter, uSnow;
+  uniforms: { uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam, uAutumn: U.uAutumn, uWinter: U.uWinter, uSnow: U.uSnow, uSea: U.uSea, uSeaOn: U.uSeaOn },
+  vertexShader: `attribute vec3 tint; attribute float kd; attribute float hb; uniform float uAutumn, uWinter, uSnow, uSea, uSeaOn;
     varying vec3 vN; varying vec3 vC; varying vec3 vW; varying float vSnowy;
-    void main(){ vec3 tc = tint;
+    void main(){ if (uSeaOn > 0.5 && hb < uSea) { gl_Position = vec4(0.0, 0.0, 2.0, 1.0); return; }
+      vec3 tc = tint;
       if (kd < 0.55) { vec3 aut = mix(vec3(0.86, 0.56, 0.16), vec3(0.72, 0.26, 0.12), kd / 0.55); tc = mix(tc, aut, uAutumn * 0.9); tc = mix(tc, vec3(0.42, 0.36, 0.30), uWinter * 0.75); }
       vC = tc; vSnowy = step(uSnow - 80.0, hb); vN = normalize(mat3(instanceMatrix) * normal); vec4 w = modelMatrix * instanceMatrix * vec4(position,1.0); vW = w.xyz;
       gl_Position = projectionMatrix * viewMatrix * w; }`,
@@ -1264,7 +1497,7 @@ const treeMat = new THREE.ShaderMaterial({
     void main(){ float l = dot(normalize(vN), uSun); float b = smoothstep(0.0, 0.1, l) * 0.7 + smoothstep(0.5, 0.6, l) * 0.3;
       vec3 base = mix(vC, vec3(0.95, 0.97, 1.0), vSnowy * smoothstep(0.1, 0.6, normalize(vN).y) * 0.85);
       vec3 c = base * mix(uShadeCol * 0.9 + 0.1, uSunCol * 1.1, b);
-      float d = length(vW - uCam); float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
+      float d = length(vW - uCam); float fog = 0.0;   // sin bruma por distancia: se veía bonito pero emborronaba el mapa al alejarse
       gl_FragColor = vec4(mix(c, uFog, fog), 1.0);
     }`
 });
@@ -1351,16 +1584,17 @@ function toonMat(color) {
   if (toonCache.has(key)) return toonCache.get(key);
   const m = new THREE.ShaderMaterial({
     defines: key === "vcol" ? { VCOL: "" } : {},
-    uniforms: { uColor: { value: new THREE.Color(color && color[0] === "#" ? color : "#ffffff") }, uSnow: U.uSnow, uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam },
+    uniforms: { uColor: { value: new THREE.Color(color && color[0] === "#" ? color : "#ffffff") }, uSnow: U.uSnow, uSun: U.uSun, uSunCol: U.uSunCol, uShadeCol: U.uShadeCol, uFog: U.uFog, uCam: U.uCam, uSea: U.uSea, uSeaOn: U.uSeaOn },
     vertexShader: `
       #if defined(USE_INSTANCING)
       attribute vec3 tint; attribute float hb;
       #elif defined(VCOL)
       attribute vec3 tint;
       #endif
-      uniform vec3 uColor; varying vec3 vN; varying vec3 vC; varying vec3 vW; varying float vHb;
+      uniform vec3 uColor; uniform float uSea, uSeaOn; varying vec3 vN; varying vec3 vC; varying vec3 vW; varying float vHb;
       void main() {
         #ifdef USE_INSTANCING
+        if (uSeaOn > 0.5 && hb < uSea) { gl_Position = vec4(0.0, 0.0, 2.0, 1.0); return; }
         vC = tint; vHb = hb; mat4 im = instanceMatrix;
         #elif defined(VCOL)
         vC = tint; vHb = -10000.0; mat4 im = mat4(1.0);
@@ -1377,7 +1611,7 @@ function toonMat(color) {
         vec3 base = mix(vC, vec3(0.95, 0.97, 1.0), step(uSnow - 60.0, vHb) * smoothstep(0.35, 0.7, n.y) * 0.9);
         float b = smoothstep(-0.02, 0.08, l) * 0.6 + smoothstep(0.45, 0.55, l) * 0.4;
         vec3 c = base * mix(uShadeCol * 0.85 + 0.15, uSunCol * 1.1, b) + pow(1.0 - abs(n.y), 3.0) * 0.04;
-        float d = length(vW - uCam); float fog = 1.0 - exp(-pow(d * 0.0042, 1.6));
+        float d = length(vW - uCam); float fog = 0.0;   // sin bruma por distancia: se veía bonito pero emborronaba el mapa al alejarse
         gl_FragColor = vec4(mix(c, uFog, fog), 1.0);
       }`
   });
@@ -1669,6 +1903,8 @@ function applySeason() {
   $("mes").value = String(m);
   $("mes-o").textContent = MESES[m] + " · " + estacion(m);
   updateSky();
+  if (climaHook) climaHook();
+  if (riosHook) riosHook();
 }
 // posición real del sol en León (42,6° N, 5,57° O) para el día 15 del mes y la hora oficial
 function updateSky() {
@@ -1709,21 +1945,23 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 const popBy = Object.fromEntries(data.municipios.map(m => [m.c, m.p || 0]));
 // localidades destacadas (se buscan por nombre en el Nomenclátor del IGN)
 // lista privada opcional: data/destacados.json (array de nombres del Nomenclátor). No se sube al repositorio.
-const DESTACADAS = Array.isArray(destacadas) ? destacadas.filter(x => typeof x === "string") : [];
+let DESTACADAS = Array.isArray(destacadas) ? destacadas.filter(x => typeof x === "string") : [];
 const norm = (t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-const favs = DESTACADAS.map(n => {
-  const e = data.capitales.find(x => norm(x.n.split(" / ")[0]) === norm(n)) || data.entidades.find(x => norm(x.n.split(" / ")[0]) === norm(n));
-  return e ? { n: e.n.split(" / ")[0], mx: e.xy[0], my: e.xy[1], mun: munAt(e.xy[0], e.xy[1]) } : null;
-}).filter(Boolean);
-const favSet = new Set(favs.map(f => f.mx + "," + f.my));
-for (const f of favs) { addLabel("fav", '<span class="star">★</span>' + esc(f.n), f.mx, f.my, 5000, 0); labels[labels.length - 1].lift = 2.75; }
+let favs = [], favSet = new Set();   // favSet: "mx,my" de los destacados, para no repetir su rótulo normal
+function computeFavs() {
+  favs = DESTACADAS.map(n => {
+    const e = data.capitales.find(x => norm(x.n.split(" / ")[0]) === norm(n)) || data.entidades.find(x => norm(x.n.split(" / ")[0]) === norm(n));
+    return e ? { n: e.n.split(" / ")[0], key: n, mx: e.xy[0], my: e.xy[1], mun: munAt(e.xy[0], e.xy[1]) } : null;
+  }).filter(Boolean);
+  favSet = new Set(favs.map(f => f.mx + "," + f.my));
+}
+function addFavLabels() { for (const f of favs) { addLabel("fav", '<span class="star">★</span>' + esc(f.n), f.mx, f.my, 5000, 0); labels[labels.length - 1].lift = 2.75; } }
+computeFavs(); addFavLabels();
 for (const e of data.entidades) {       // pueblos sin ayuntamiento: aparecen al acercarse, antes los más poblados
-  if (favSet.has(e.xy[0] + "," + e.xy[1])) continue;
   const p = typeof e.p === "number" ? e.p : 0;
   addLabel("vil loc", esc(e.n.split(" / ")[0]), e.xy[0], e.xy[1], 20 + Math.log10(p + 1) * 8, p >= 500 ? 60 : p >= 100 ? 42 : 30);
 }
 for (const c of data.capitales) {
-  if (favSet.has(c.xy[0] + "," + c.xy[1])) continue;
   const p = popBy[c.c] || 0;
   const kind = c.c === "24089" ? "city" : p >= 3000 ? "town" : "vil";
   const name = c.n.split(" / ")[0];
@@ -1750,30 +1988,134 @@ labels.sort((a, b) => b.prio - a.prio);
 
 // marcadores 3D de las localidades destacadas
 const favGroup = new THREE.Group(); scene.add(favGroup);
-{
-  const beamMat = new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending });
-  const gemMat = new THREE.MeshBasicMaterial({ color: 0xf5b83d });
-  const gemEdge = new THREE.LineBasicMaterial({ color: 0x8a5a10 });
-  const ringMat = new THREE.MeshBasicMaterial({ color: 0xfff1c4, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false });
-  const beamGeo = new THREE.CylinderGeometry(0.05, 0.05, 2.0, 8, 1, true), gemGeo = new THREE.OctahedronGeometry(0.3), ringGeo = new THREE.RingGeometry(0.32, 0.5, 32);
+const FAV3D = {
+  beamMat: new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending }),
+  gemMat: new THREE.MeshBasicMaterial({ color: 0xf5b83d }),
+  gemEdge: new THREE.LineBasicMaterial({ color: 0x8a5a10 }),
+  ringMat: new THREE.MeshBasicMaterial({ color: 0xfff1c4, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false }),
+  beamGeo: new THREE.CylinderGeometry(0.05, 0.05, 2.0, 8, 1, true), gemGeo: new THREE.OctahedronGeometry(0.3), ringGeo: new THREE.RingGeometry(0.32, 0.5, 32)
+};
+FAV3D.edgeGeo = new THREE.EdgesGeometry(FAV3D.gemGeo);
+function buildFavMarkers() {
+  favGroup.clear();
   for (const f of favs) {
     const g = new THREE.Group();
-    const beam = new THREE.Mesh(beamGeo, beamMat); beam.position.y = 1.0;
-    const gem = new THREE.Mesh(gemGeo, gemMat); gem.position.y = 2.25; gem.add(new THREE.LineSegments(new THREE.EdgesGeometry(gemGeo), gemEdge));
-    const ring = new THREE.Mesh(ringGeo, ringMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06;
+    const beam = new THREE.Mesh(FAV3D.beamGeo, FAV3D.beamMat); beam.position.y = 1.0;
+    const gem = new THREE.Mesh(FAV3D.gemGeo, FAV3D.gemMat); gem.position.y = 2.25; gem.add(new THREE.LineSegments(FAV3D.edgeGeo, FAV3D.gemEdge));
+    const ring = new THREE.Mesh(FAV3D.ringGeo, FAV3D.ringMat); ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06;
     g.add(beam, gem, ring); f.group = g; f.gem = gem; favGroup.add(g);
   }
 }
 function placeFavs() { for (const f of favs) f.group.position.set(sx(f.mx), heightAt(f.mx, f.my) * ZS(), sz(f.my)); }
-placeFavs();
-$("favs-box").hidden = !favs.length; $("l-fav-row").hidden = !favs.length;
-$("favs").innerHTML = favs.map((f, i) => `<button class="fav-btn" data-i="${i}"><span><span class="pin">★</span>${esc(f.n)}</span><small>${f.mun && norm(f.mun.n) !== norm(f.n) ? esc(f.mun.n) : ""}</small></button>`).join("");
-$("favs").addEventListener("click", (e) => {
+function renderFavList() {
+  $("favs-box").hidden = !favs.length; $("l-fav-row").hidden = !favs.length;
+  $("favs").innerHTML = favs.map((f, i) => `<div class="fav-row"><button class="fav-btn" data-i="${i}"><span><span class="pin">★</span>${esc(f.n)}</span><small>${f.mun && norm(f.mun.n) !== norm(f.n) ? esc(f.mun.n) : ""}</small></button>` +
+    (favsEditable ? `<button class="fav-del" data-i="${i}" aria-label="Quitar ${esc(f.n)} de destacados" title="Quitar de destacados">×</button>` : "") + `</div>`).join("");
+}
+buildFavMarkers(); placeFavs();
+// guardar la lista: solo con servidor/servidor.py (en el artefacto la lista es de solo lectura)
+let favsEditable = false;
+fetch("destacados", { method: "OPTIONS" }).then(r => { favsEditable = r.ok; renderFavList(); if (selected) updateFavBtn(); }).catch(() => {});
+renderFavList();
+async function saveFavs(list) {
+  const r = await fetch("destacados", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(list) });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  DESTACADAS = await r.json();
+  for (let i = labels.length - 1; i >= 0; i--) if (labels[i].kind === "fav") { labels[i].el.remove(); labels.splice(i, 1); }
+  computeFavs(); addFavLabels(); labels.sort((a, b) => b.prio - a.prio);
+  buildFavMarkers(); placeFavs(); renderFavList(); needsRender = true;
+  if (window.leonVersionSync) window.leonVersionSync();   // el cambio es nuestro: que ↻ no lo marque como novedad
+}
+function favKeyFor(m) {          // un municipio se destaca por su capital (entidad del Nomenclátor)
+  const c = data.capitales.find(x => x.c === m.c);
+  return c ? c.n.split(" / ")[0] : m.n;
+}
+function favIndexFor(m) { const c = data.capitales.find(x => x.c === m.c); return c ? favs.findIndex(f => f.mx === c.xy[0] && f.my === c.xy[1]) : -1; }
+function updateFavBtn() {
+  const b = $("i-fav"), m = selected;
+  b.hidden = !favsEditable || !m || m.t === "condominio";
+  if (b.hidden) return;
+  const on = favIndexFor(m) >= 0;
+  b.setAttribute("aria-pressed", String(on));
+  b.querySelector("span").textContent = on ? "Destacado" : "Destacar";
+  b.title = on ? "Quitar de lugares destacados" : "Añadir a lugares destacados";
+}
+$("i-fav").onclick = async () => {
+  const m = selected; if (!m) return;
+  const i = favIndexFor(m), b = $("i-fav"); b.disabled = true;
+  try { await saveFavs(i >= 0 ? DESTACADAS.filter(n => n !== favs[i].key) : DESTACADAS.concat(favKeyFor(m))); }
+  catch (e) { $("readout").textContent = "No se pudo guardar la lista de destacados (" + e.message + ")"; }
+  b.disabled = false; updateFavBtn();
+};
+$("favs").addEventListener("click", async (e) => {
+  const d = e.target.closest(".fav-del");
+  if (d) {
+    const f = favs[+d.dataset.i];
+    try { await saveFavs(DESTACADAS.filter(n => n !== f.key)); } catch (err) { $("readout").textContent = "No se pudo guardar la lista de destacados (" + err.message + ")"; }
+    updateFavBtn(); return;
+  }
   const b = e.target.closest(".fav-btn"); if (!b) return;
   const f = favs[+b.dataset.i];
   flyToPoint(f.mx, f.my, 10); if (f.mun) showInfo(f.mun);
   if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
 });
+
+// ---------------------------------------------------------------- mi ubicación (GPS del dispositivo)
+// Requiere contexto seguro (https o localhost). Primer toque: centra y sigue la posición; segundo toque: deja de seguirla.
+function latLonToUtm(lat, lon) {     // ETRS89 -> UTM huso 30 (inversa de utmToLatLon)
+  const a = 6378137, f = 1 / 298.257222101, k0 = 0.9996, e2 = f * (2 - f), ep2 = e2 / (1 - e2);
+  const p = lat * Math.PI / 180, l = (lon + 3) * Math.PI / 180;
+  const N = a / Math.sqrt(1 - e2 * Math.sin(p) ** 2), T = Math.tan(p) ** 2, C = ep2 * Math.cos(p) ** 2, A = Math.cos(p) * l;
+  const Mm = a * ((1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 ** 3 / 256) * p - (3 * e2 / 8 + 3 * e2 * e2 / 32 + 45 * e2 ** 3 / 1024) * Math.sin(2 * p)
+    + (15 * e2 * e2 / 256 + 45 * e2 ** 3 / 1024) * Math.sin(4 * p) - (35 * e2 ** 3 / 3072) * Math.sin(6 * p));
+  const E = 500000 + k0 * N * (A + (1 - T + C) * A ** 3 / 6 + (5 - 18 * T + T * T + 72 * C - 58 * ep2) * A ** 5 / 120);
+  const No = k0 * (Mm + N * Math.tan(p) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A ** 4 / 24 + (61 - 58 * T + T * T + 600 * C - 330 * ep2) * A ** 6 / 720));
+  return [E, No];
+}
+const meGroup = new THREE.Group(); meGroup.visible = false; scene.add(meGroup);
+const meAcc = new THREE.Mesh(new THREE.CircleGeometry(1, 48), new THREE.MeshBasicMaterial({ color: 0x2f7fd6, transparent: true, opacity: 0.18, depthWrite: false }));
+meAcc.rotation.x = -Math.PI / 2; meAcc.position.y = 0.05;
+const meDot = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 12), new THREE.MeshBasicMaterial({ color: 0x2f7fd6 }));
+const meHalo = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 12), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }));
+meDot.position.y = meHalo.position.y = 0.45; meHalo.scale.setScalar(1.0); meDot.renderOrder = 2;
+const meStick = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.45, 6), new THREE.MeshBasicMaterial({ color: 0x1d4f86 })); meStick.position.y = 0.22;
+meGroup.add(meAcc, meStick, meHalo, meDot);
+let loc = null, locWatch = null, locFirst = false;
+function placeMe() { if (loc) meGroup.position.set(sx(loc.mx), heightAt(loc.mx, loc.my) * ZS(), sz(loc.my)); }
+function locButton(state) {
+  const b = $("nav-loc"); b.classList.toggle("buscando", state === "buscando"); b.setAttribute("aria-pressed", String(state !== "off"));
+}
+function stopLoc() {
+  if (locWatch != null) navigator.geolocation.clearWatch(locWatch);
+  locWatch = null; loc = null; meGroup.visible = false; locButton("off"); needsRender = true;
+}
+function toggleLoc() {
+  if (locWatch != null) { stopLoc(); $("readout").textContent = "Ubicación desactivada"; return; }
+  if (!("geolocation" in navigator)) { $("readout").textContent = "Este navegador no da la ubicación"; return; }
+  if (!window.isSecureContext) { $("readout").textContent = "La ubicación solo funciona abriendo la app por https"; return; }
+  locFirst = true; locButton("buscando"); $("readout").textContent = "Buscando tu ubicación…";
+  locWatch = navigator.geolocation.watchPosition(onLoc, (err) => {
+    const t = err.code === 1 ? "No hay permiso para usar la ubicación (Ajustes → Privacidad → Localización)" : err.code === 3 ? "La ubicación tarda demasiado; prueba al aire libre" : "No se pudo obtener la ubicación";
+    stopLoc(); $("readout").textContent = t;
+  }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 });
+}
+function onLoc(pos) {
+  const { latitude: lat, longitude: lon, accuracy } = pos.coords;
+  const [E, N] = latLonToUtm(lat, lon), mx = E - M.x0, my = M.y1 - N;
+  locButton("on");
+  if (mx < 0 || my < 0 || mx > M.ancho || my > M.alto) {
+    const dx = Math.max(0, -mx, mx - M.ancho), dy = Math.max(0, -my, my - M.alto);
+    meGroup.visible = false; loc = null;
+    $("readout").textContent = `Estás fuera del mapa, a unos ${fmt.format(Math.round(Math.hypot(dx, dy) / 1000))} km de su borde`;
+    return;
+  }
+  loc = { mx, my, acc: accuracy }; meGroup.visible = true;
+  meAcc.scale.setScalar(Math.max(accuracy, 30) / 1000); placeMe(); needsRender = true;
+  const ip = inProv(mx, my), m = ip ? munAt(mx, my) : null;
+  $("readout").innerHTML = `<b>Estás aquí</b>` + (m ? ` · ${esc(m.n)}` : ip ? "" : " · fuera de la provincia") + ` · ${fmt.format(Math.round(heightAt(mx, my)))} m · precisión ±${fmt.format(Math.round(accuracy))} m`;
+  if (locFirst) { locFirst = false; flyToPoint(mx, my, 14); }
+}
+$("nav-loc").onclick = toggleLoc;
 
 // ---------------------------------------------------------------- mirador (cuenca visual)
 let visData = null, visTex = null, provCells = 0;
@@ -1845,6 +2187,7 @@ function openMirador(mx, my, name, hKnown) {
   $("v-pue").textContent = fmt.format(pueblos);
   $("v-picos").innerHTML = pk.length ? pk.slice(0, 8).map(p => `<li><span>${esc(p.n)}</span><span>${fmt.format(p.e)} m · ${fmt1.format(p.d)} km</span></li>`).join("") +
     (pk.length > 8 ? `<li><span>y ${pk.length - 8} más</span><span></span></li>` : "") : "<li><span>Ninguna de las principales</span><span></span></li>";
+  if (!$("hcard").hidden) closeHcard();
   $("info").hidden = true; selected = null; updateMunState();
   $("mirador").hidden = false;
   $("readout").textContent = "Mirador activo: toca otro punto para cambiarlo";
@@ -1871,9 +2214,11 @@ function updateLabels() {
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
     let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
-      L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (show && L.minDist && camDist > L.minDist) show = false;
+    if (show && L.kind !== "fav" && favSet.has(L.mx + "," + L.my)) show = false;   // ya tiene rótulo de destacado
     if (show && !layers.entorno && !inProv(L.mx, L.my)) show = false;
+    if (show && sea.on && L.kind !== "fav" && L.kind !== "comarca" && H[Math.min(R - 1, (L.my / M.celda) | 0) * W + Math.min(W - 1, (L.mx / M.celda) | 0)] < sea.level) show = false;   // bajo el agua
     if (show) {
       tmpV.set(sx(L.mx), heightAt(L.mx, L.my) * ZS() + (L.lift || 0.15), sz(L.my)).project(camera);
       if (tmpV.z > 1 || Math.abs(tmpV.x) > 1.1 || Math.abs(tmpV.y) > 1.1) show = false;
@@ -1926,7 +2271,8 @@ function pickTerrain(clientX, clientY) {
   return null;
 }
 function showInfo(m) {
-  selected = m; updateMunState();
+  if (m && !$("hcard").hidden) closeHcard();
+  selected = m; updateMunState(); updateFavBtn();
   if (!m) { $("info").hidden = true; return; }
   $("info").hidden = false;
   $("i-name").textContent = m.n;
@@ -1945,6 +2291,7 @@ function showInfo(m) {
   const rank = [...data.municipios].filter(x => x.p != null).sort((a, b) => b.p - a.p).indexOf(m) + 1;
   $("i-hint").textContent = (rank ? "Puesto " + rank + " de 211 por población en la provincia." : "") +
     (comarcaSel ? " Pulsa × para volver a la comarca " + (comarcaSel.n === BIERZO_OFICIAL ? "El Bierzo" : comarcaSel.n) + "." : "");
+  $("i-sum").textContent = [m.p != null ? fmt.format(m.p) + " hab." : null, fmt1.format(m.a) + " km²", fmt.format(m.amed) + " m"].filter(Boolean).join(" · ");
 }
 // cerrar la ficha de un municipio vuelve a la de la comarca seleccionada (si la hay)
 function closeMunicipio() { if (comarcaSel) showComarca(comarcaSel); else showInfo(null); }
@@ -1955,7 +2302,7 @@ $("info-close").onclick = () => {
 };
 
 function showComarca(c) {
-  comarcaSel = c; selected = null; updateMunState();
+  comarcaSel = c; selected = null; updateMunState(); updateFavBtn();
   if (!c) { $("info").hidden = true; return; }
   const muns = c.muns, area = muns.reduce((s, m) => s + m.a, 0);
   $("info").hidden = false;
@@ -1973,6 +2320,7 @@ function showComarca(c) {
   $("i-mk-min").style.left = pct(amin); $("i-mk-med").style.left = pct(amed); $("i-mk-max").style.left = pct(amax);
   $("i-amin").textContent = "mín. " + fmt.format(amin) + " m"; $("i-amed").textContent = "media " + fmt.format(amed) + " m"; $("i-amax").textContent = "máx. " + fmt.format(amax) + " m";
   $("i-hint").textContent = muns.map(m => m.n).sort((a, b) => a.localeCompare(b, "es")).join(", ") + ".";
+  $("i-sum").textContent = fmt.format(c.p) + " hab. · " + muns.length + " municipios · " + fmt.format(Math.round(area)) + " km²";
 }
 {
   const opts = [...data.comarcas].sort((a, b) => a.n === BIERZO_OFICIAL ? -1 : b.n === BIERZO_OFICIAL ? 1 : a.n.localeCompare(b.n, "es"));
@@ -1994,6 +2342,7 @@ function flyTo(m) {
   flyToPoint((m.bb[0] + m.bb[2]) / 2, (m.bb[1] + m.bb[3]) / 2, Math.max(14, size * 2.6));
 }
 function flyToPoint(cx, cy, dist) {
+  if (orbit) stopOrbit();
   const tgt = new THREE.Vector3(sx(cx), heightAt(cx, cy) * ZS(), sz(cy));
   const dir = camera.position.clone().sub(controls.target).normalize();
   dir.y = Math.max(dir.y, 0.55); dir.normalize();
@@ -2022,7 +2371,10 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   if (lastTap && tNow - lastTap.t < 330 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 14) { lastTap = null; zoomAt(e.clientX, e.clientY, 0.45); return; }
   lastTap = { t: tNow, x: e.clientX, y: e.clientY };
   const p = pickTerrain(e.clientX, e.clientY);
+  if (gotaArmed) { if (p) lanzarGota(p.mx, p.my); return; }
   if (miradorArmed || mirador) { if (p) { setArmed(true); openMirador(p.mx, p.my, null, 0); } return; }
+  if (p && RIO && layers.rios) { const c = rioCerca(p.mx, p.my, tolM(14)); if (c) { selectRio(RIO.tramos[c.t].r, false); return; } }
+  if (rioSel >= 0 || gota) closeHcard();
   const m = p && inProv(p.mx, p.my) ? munAt(p.mx, p.my) : null;
   if (m && m !== selected) showInfo(m); else closeMunicipio();
 });
@@ -2046,7 +2398,7 @@ function doHover() {
     const cv = coverAt(p.mx, p.my), covTxt = cv && layers.cob ? ` · ${COVER_NAMES[cv]}` : "";
     const popTxt = PD && morph > 0 ? (PD[ci] > 0 ? ` · <b>${fmt.format(PD[ci])} hab/km²</b> · ${Math.round(PA[ci] / 2.55)} % con más de 64 años` : " · sin población") : "";
     txt = `${lat.toFixed(3)}° N · ${Math.abs(lon).toFixed(3)}° O · <b>${fmt.format(Math.round(morph > 0 ? hReal : h))} m</b>` + popTxt +
-      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + covTxt + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
+      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + covTxt + climaTxt(p.mx, p.my, hReal) + rioTxt(p.mx, p.my) + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
   }
   $("readout").innerHTML = txt;
   hovered = m;
@@ -2056,6 +2408,465 @@ function doHover() {
 const bind = (id, key, fn) => $(id).addEventListener("change", (e) => { layers[key] = e.target.checked; fn && fn(); });
 bind("l-mun", "mun", drawOverlay); bind("l-rios", "rios", drawOverlay); bind("l-aguas", "aguas", drawOverlay); bind("l-pob", "pob", drawOverlay);
 bind("l-picos", "picos");
+// nivel del agua: qué sobresale por encima de una altitud
+const sea = { on: false, level: 1000, hist: null, total: 0 };
+function seaStats() {
+  if (!sea.hist) {              // histograma de altitudes de la provincia en tramos de 10 m (se calcula una vez)
+    sea.hist = new Float64Array(400);
+    for (let i = 0; i < H.length; i++) if (maskA[i] > 127) { sea.hist[Math.max(0, Math.min(399, (H[i] / 10) | 0))]++; sea.total++; }
+  }
+  let above = 0; for (let b = Math.ceil(sea.level / 10); b < 400; b++) above += sea.hist[b];
+  const pue = data.entidades.concat(data.capitales).filter(e => inProv(e.xy[0], e.xy[1]));
+  const arriba = pue.filter(e => H[Math.min(R - 1, (e.xy[1] / M.celda) | 0) * W + Math.min(W - 1, (e.xy[0] / M.celda) | 0)] >= sea.level);
+  const muns = data.municipios.filter(m => m.t === "municipio" && m.amax >= sea.level).length;
+  $("sea-note").textContent = `Por encima de ${fmt.format(sea.level)} m: ${fmt1.format(above / sea.total * 100)} % de la provincia (${fmt.format(Math.round(above * CELL_KM * CELL_KM))} km²), ` +
+    `${fmt.format(arriba.length)} de ${fmt.format(pue.length)} pueblos y ${muns} municipios con alguna cota más alta.`;
+}
+function applySea() {
+  U.uSeaOn.value = sea.on ? 1 : 0; U.uSea.value = sea.level;
+  $("sea-o").textContent = fmt.format(sea.level) + " m";
+  if (sea.on) seaStats(); else $("sea-note").textContent = "";
+  needsRender = true;
+}
+$("l-sea").addEventListener("change", (e) => { sea.on = e.target.checked; applySea(); });
+$("sea").addEventListener("input", (e) => { sea.level = +e.target.value; if (!sea.on) { sea.on = true; $("l-sea").checked = true; } applySea(); });
+
+// ---------------------------------------------------------------- clima (AEMET, normales 1991-2020)
+// data/clima.png: atlas de rejillas de 1 km (filas: variables; columnas: 12 meses y el año), 16 bits en R y G con el valor «a 0 m»;
+// data/clima.json: escalas y gradiente con la altitud b de cada rejilla. Valor en un punto = ref + b · altitud del MDT.
+const CL_PAL = {
+  temp: ["#2d5f9e", "#8fc1dc", "#f2ecc8", "#ee9f4a", "#b3302a"],
+  prec: ["#f3e9cc", "#a8d3b1", "#4ea2c3", "#2b5c9b", "#3a2d74"],
+  helada: ["#f8f8f2", "#cde3f1", "#8eb1df", "#6a6cc2", "#4a2b84"],
+  calor: ["#faf2d4", "#f6cf78", "#ef9349", "#d24e2c", "#8b1e1e"]
+};
+const CL_CORTO = { tmed: "T. media", tmax: "T. máxima", tmin: "T. mínima", prec: "Lluvia", helada: "Heladas", calor: "Días > 30 °C" };
+const clima = { on: false, v: "tmed", anual: false, play: null, meta: null, atlas: null, tex: null, loading: null };
+function ensureClima() {
+  if (clima.meta) return Promise.resolve(true);
+  if (!clima.loading) clima.loading = (async () => {
+    try {
+      $("cl-note").textContent = "Cargando datos de AEMET…";
+      const [mj, im] = await Promise.all([fetch("data/clima.json").then(r => { if (!r.ok) throw new Error("clima.json"); return r.json(); }),
+        fetch("data/clima.png").then(r => { if (!r.ok) throw new Error("clima.png"); return r.blob(); })]);
+      const bmp = await createImageBitmap(im, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+      const c = document.createElement("canvas"); c.width = bmp.width; c.height = bmp.height;
+      const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(bmp, 0, 0);
+      clima.atlas = { d: x.getImageData(0, 0, bmp.width, bmp.height).data, w: bmp.width };
+      clima.meta = mj;
+      clima.tex = new THREE.DataTexture(new Uint8Array(mj.nx * mj.ny * 4), mj.nx, mj.ny, THREE.RGBAFormat);
+      clima.tex.magFilter = THREE.NearestFilter; clima.tex.minFilter = THREE.NearestFilter;
+      U.uClima.value = clima.tex; U.uCSize.value.set(mj.nx, mj.ny);
+      $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(mj.fuente) + "</li>");
+      return true;
+    } catch (e) { $("cl-note").textContent = "No se pudieron cargar los datos del clima (" + e.message + ")."; clima.loading = null; return false; }
+  })();
+  return clima.loading;
+}
+function climaVar() { return clima.meta.variables.find(v => v.id === clima.v); }
+function climaGrid() { return climaVar().rejillas[clima.anual ? 12 : month]; }
+function climaQ(fila, col, i, j) {        // valor de 16 bits de la celda (i, j) de la rejilla (fila, col) del atlas
+  const { nx, ny } = clima.meta, k = ((fila * ny + j) * clima.atlas.w + col * nx + i) * 4;
+  return (clima.atlas.d[k] * 256 + clima.atlas.d[k + 1]) / 65535;
+}
+function climaEscala() {
+  // colores y tramos según el mes que se ve (8–10 tramos), para que cada mes se lea bien; la leyenda da los valores
+  const vr = climaVar(), g = climaGrid();
+  const lo = vr.unidad === "días" ? 0 : g.pmin, hi = Math.max(g.pmax, lo + 1e-6), raw = (hi - lo) / 9;
+  const steps = vr.unidad === "°C" ? [0.5, 1, 2, 5] : [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500];
+  const step = steps.find(x => x >= raw) || steps[steps.length - 1];
+  const b0 = Math.floor(lo / step) * step, b1 = Math.max(b0 + step, Math.ceil(hi / step) * step);
+  return { s0: b0, s1: b1, step, b0, b1 };
+}
+const climaFmt = (v, u) => (u === "°C" ? fmt1.format(Math.round(v * 10) / 10) : fmt.format(Math.round(v))) + (u === "días" ? " días" : " " + u);
+function climaApply() {
+  if (!clima.on || !clima.meta) { U.uClimaOn.value = 0; $("cl-leg").hidden = true; needsRender = true; return; }
+  const vr = climaVar(), g = climaGrid(), fila = clima.meta.variables.indexOf(vr), col = clima.anual ? 12 : month, { nx, ny } = clima.meta;
+  const d = clima.tex.image.data, a = clima.atlas.d, w = clima.atlas.w;
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const k = ((fila * ny + j) * w + col * nx + i) * 4, o = (j * nx + i) * 4;
+    d[o] = a[k]; d[o + 1] = a[k + 1]; d[o + 2] = 0; d[o + 3] = 255;
+  }
+  clima.tex.needsUpdate = true;
+  const esc_ = climaEscala(), pal = CL_PAL[vr.unidad === "°C" ? "temp" : vr.id === "prec" ? "prec" : vr.id];
+  U.uCMin.value = g.min; U.uCMax.value = g.max; U.uCB.value = g.b;
+  U.uCLo.value = vr.unidad === "°C" ? -1e4 : 0; U.uCHi.value = g.tope || 1e4;
+  U.uCS0.value = esc_.s0; U.uCS1.value = esc_.s1; U.uCStep.value = esc_.step;
+  pal.forEach((h, i) => U.uCPal.value[i].set(h));
+  U.uClimaOn.value = 1;
+  // leyenda: una franja por tramo, con el mismo color que en el mapa
+  const n = Math.round((esc_.b1 - esc_.b0) / esc_.step), mixc3 = (t) => { const c = new THREE.Color(); t = Math.max(0, Math.min(1, t)) * 4;
+    const k = Math.min(3, Math.floor(t)); return c.set(pal[k]).lerp(new THREE.Color(pal[k + 1]), t - k).getStyle(); };
+  $("cl-bands").innerHTML = Array.from({ length: n }, (_, i) => `<span style="background:${mixc3((esc_.b0 + (i + 0.5) * esc_.step - esc_.s0) / (esc_.s1 - esc_.s0))}"></span>`).join("");
+  const cada = n > 8 ? 2 : 1;
+  $("cl-ticks").innerHTML = Array.from({ length: n + 1 }, (_, i) => i).filter(i => i % cada === 0)
+    .map(i => `<span style="left:${(i / n * 100).toFixed(2)}%">${fmt1.format(esc_.b0 + i * esc_.step)}</span>`).join("");
+  $("cl-leg").hidden = false;
+  const periodo = clima.anual ? "en el año" : "en " + MESES[month];
+  $("cl-note").textContent = `${vr.nombre} ${periodo}: media de la provincia ${climaFmt(g.media, vr.unidad)}. Tramos de ${fmt.format(esc_.step)} ${vr.unidad === "días" ? "días" : vr.unidad}; ` +
+    (g.b ? `al subir 100 m: ${g.b > 0 ? "+" : "−"}${climaFmt(Math.abs(g.b * 100), vr.unidad)}.` : "sin ajuste por altitud.");
+  needsRender = true;
+}
+function climaValor(mx, my, h) {
+  const { nx, ny } = clima.meta, g = climaGrid(), vr = climaVar(), fila = clima.meta.variables.indexOf(vr), col = clima.anual ? 12 : month;
+  const x = Math.min(Math.max(mx / clima.meta.paso - 0.5, 0), nx - 1.001), y = Math.min(Math.max(my / clima.meta.paso - 0.5, 0), ny - 1.001);
+  const i = x | 0, j = y | 0, tx = x - i, ty = y - j;
+  const q = (climaQ(fila, col, i, j) * (1 - tx) + climaQ(fila, col, i + 1, j) * tx) * (1 - ty) + (climaQ(fila, col, i, j + 1) * (1 - tx) + climaQ(fila, col, i + 1, j + 1) * tx) * ty;
+  let v = g.min + q * (g.max - g.min) + g.b * h;
+  if (vr.unidad !== "°C") v = Math.max(0, Math.min(g.tope || 1e9, v));
+  return v;
+}
+function climaTxt(mx, my, h) {
+  if (!clima.on || !clima.meta) return "";
+  const vr = climaVar();
+  return ` · <b>${CL_CORTO[vr.id]} ${clima.anual ? "anual" : MESES[month].slice(0, 3)}: ${climaFmt(climaValor(mx, my, h), vr.unidad)}</b>`;
+}
+function climaSyncMes() { $("clima-mes").value = String(month); $("clima-mes-o").textContent = MESES[month]; if (clima.on && !clima.anual) climaApply(); }
+climaHook = climaSyncMes; climaSyncMes();
+async function setClima(on) {
+  clima.on = on; $("l-clima").checked = on;
+  if (on && !(await ensureClima())) { clima.on = false; $("l-clima").checked = false; }
+  if (!clima.on) { $("cl-note").textContent = ""; stopClimaPlay(); }
+  climaApply();
+}
+function setAnual(a) {
+  clima.anual = a; $("cl-anio-b").setAttribute("aria-pressed", String(a)); $("cl-mes-b").setAttribute("aria-pressed", String(!a));
+  $("cl-mes-row").hidden = a; if (a) stopClimaPlay();
+  if (!clima.on) setClima(true); else climaApply();
+}
+function stopClimaPlay() { clearInterval(clima.play); clima.play = null; $("cl-play").setAttribute("aria-pressed", "false"); $("cl-play").textContent = "▶"; }
+$("l-clima").addEventListener("change", (e) => setClima(e.target.checked));
+$("clima-var").addEventListener("change", (e) => { clima.v = e.target.value; if (!clima.on) setClima(true); else climaApply(); });
+$("cl-mes-b").onclick = () => setAnual(false);
+$("cl-anio-b").onclick = () => setAnual(true);
+$("clima-mes").addEventListener("input", (e) => { month = +e.target.value; applySeason(); if (!clima.on) setClima(true); });
+$("cl-play").onclick = async () => {
+  if (clima.play) return stopClimaPlay();
+  if (!clima.on) await setClima(true);
+  if (!clima.on) return;
+  $("cl-play").setAttribute("aria-pressed", "true"); $("cl-play").textContent = "❚❚";
+  clima.play = setInterval(() => { month = (month + 1) % 12; applySeason(); }, reduceMotion ? 2200 : 1300);
+};
+
+// ---------------------------------------------------------------- ríos: afluentes, caudal, cuencas, estaciones, embalses y gota
+// data/rios.json (scripts/rios_red.py): red del IGN con el río de destino de cada río, tramos con caudal medio estimado
+// (calibrado con el Anuario de Aforos), estaciones de aforo y embalses. data/cuencas.png: río de destino de cada celda de 100 m.
+let rioSel = -1, rioSet = null, cuencaCv = null, cuencaR = null, gotaArmed = false, gota = null, hcardKind = null, hcardRef = -1, rioPlay = null;
+const RX = { hijos: [], grid: new Map(), G: 2000, porRio: [] };
+const fmtQ = (q) => q >= 10 ? fmt.format(Math.round(q)) : q >= 1 ? fmt1.format(Math.round(q * 10) / 10) : new Intl.NumberFormat("es-ES", { maximumFractionDigits: 2 }).format(q);
+function qMes(t) {
+  const s = t.s >= 0 ? RIO.estaciones[t.s] : null;
+  const f = s && s.q > 0 ? s.m[month] / s.q : (RIO.regimen[RIO.rios[t.r].dm] || [])[month];
+  return t.q * (Number.isFinite(f) && f > 0 ? f : 1);
+}
+function anchoTramo(t) { const q = layers.caudal ? qMes(t) : t.q; return (1.2 + 2.5 * Math.log10(1 + q * 2)) * px1; }
+function trazar(g) { ov.beginPath(); ov.moveTo(g[0] * TS, g[1] * TS); for (let i = 2; i < g.length; i += 2) ov.lineTo(g[i] * TS, g[i + 1] * TS); }
+function drawRed() {
+  if (rioSel >= 0 && layers.cuenca && cuencaCv) { ov.save(); ov.imageSmoothingEnabled = true; ov.drawImage(cuencaCv, 0, 0, TW, TH); ov.restore(); }
+  const sel = rioSel >= 0;
+  for (const t of RX.orden) {
+    const w = anchoTramo(t), en = !sel || rioSet.has(t.r), esSel = sel && t.r === rioSel;
+    trazar(t.g);
+    ov.strokeStyle = en ? "rgba(236, 252, 255, 0.9)" : "rgba(236, 252, 255, 0.25)"; ov.lineWidth = (esSel ? w * 1.8 + 2 * px1 : sel && en ? w * 1.35 + 0.8 * px1 : w * 0.8) + 3 * px1; ov.stroke();
+    ov.strokeStyle = !sel ? "#3fa9c9" : esSel ? "#0b3f78" : en ? "#1570b8" : "rgba(63, 169, 201, 0.3)";
+    ov.lineWidth = esSel ? w * 1.8 + 2 * px1 : sel && en ? w * 1.35 + 0.8 * px1 : w * 0.8; ov.stroke();
+  }
+  if (gota) {
+    const g = gota.pts.flat();
+    trazar(g); ov.strokeStyle = "rgba(255, 255, 255, 0.95)"; ov.lineWidth = 22 * px1; ov.stroke();
+    trazar(g); ov.strokeStyle = "#0f9fd8"; ov.lineWidth = 12 * px1; ov.stroke();
+  }
+}
+// rejilla de búsqueda de tramos (celdas de 2 km)
+function indexarTramos() {
+  RIO.tramos.forEach((t, ti) => {
+    for (let k = 0; k + 3 < t.g.length; k += 2) {
+      const x0 = Math.min(t.g[k], t.g[k + 2]), x1 = Math.max(t.g[k], t.g[k + 2]), y0 = Math.min(t.g[k + 1], t.g[k + 3]), y1 = Math.max(t.g[k + 1], t.g[k + 3]);
+      for (let cx = Math.floor(x0 / RX.G); cx <= Math.floor(x1 / RX.G); cx++) for (let cy = Math.floor(y0 / RX.G); cy <= Math.floor(y1 / RX.G); cy++) {
+        const key = cx * 4096 + cy; let a = RX.grid.get(key); if (!a) RX.grid.set(key, a = []); a.push(ti, k);
+      }
+    }
+  });
+}
+function rioCerca(mx, my, tol, soloRio) {
+  let best = null;
+  for (let cx = Math.floor((mx - tol) / RX.G); cx <= Math.floor((mx + tol) / RX.G); cx++) for (let cy = Math.floor((my - tol) / RX.G); cy <= Math.floor((my + tol) / RX.G); cy++) {
+    const a = RX.grid.get(cx * 4096 + cy); if (!a) continue;
+    for (let n = 0; n < a.length; n += 2) {
+      const t = RIO.tramos[a[n]], k = a[n + 1];
+      if (soloRio != null && t.r !== soloRio) continue;
+      const ax = t.g[k], ay = t.g[k + 1], dx = t.g[k + 2] - ax, dy = t.g[k + 3] - ay, L2 = dx * dx + dy * dy || 1;
+      const u = Math.max(0, Math.min(1, ((mx - ax) * dx + (my - ay) * dy) / L2)), d = Math.hypot(ax + u * dx - mx, ay + u * dy - my);
+      if (d <= tol && (!best || d < best.d)) best = { t: a[n], k, u, d };
+    }
+  }
+  return best;
+}
+function tolM(px) { return Math.max(60, 2 * ctl.dist * Math.tan(19 * Math.PI / 180) * 1000 / host.clientHeight * px); }
+function rioTxt(mx, my) {
+  if (!RIO || !layers.rios) return "";
+  const c = rioCerca(mx, my, tolM(8)); if (!c) return "";
+  const t = RIO.tramos[c.t];
+  return ` · <b>${esc(RIO.rios[t.r].n)}</b> ≈ ${fmtQ(qMes(t))} m³/s en ${MESES[month]}`;
+}
+function descendientes(i) { const s = new Set([i]), pila = [i]; while (pila.length) for (const h of RX.hijos[pila.pop()]) if (!s.has(h)) { s.add(h); pila.push(h); } return s; }
+function construirCuenca() {
+  cuencaCv = null; if (!cuencaR || rioSel < 0) return null;
+  const c = document.createElement("canvas"); c.width = W; c.height = R;
+  const x = c.getContext("2d"), im = x.createImageData(W, R), d = im.data;
+  let prov = 0, total = 0; const mun = new Map();
+  for (let i = 0; i < cuencaR.length; i++) {
+    const r = cuencaR[i] - 1;
+    if (r >= 0 && rioSet.has(r)) {
+      d[i * 4] = 30; d[i * 4 + 1] = 125; d[i * 4 + 2] = 205; d[i * 4 + 3] = 105; total++;
+      if (maskA[i] > 127) {
+        prov++;
+        const y = (i / W) | 0, xx = i - y * W, id = munId[(2 * y) * IW + 2 * xx];
+        if (id) mun.set(id, (mun.get(id) || 0) + 1);
+      }
+    }
+  }
+  x.putImageData(im, 0, 0); cuencaCv = c;
+  const cel = (M.celda / 1000) ** 2, muns = data.municipios.filter(m => (mun.get(m.idx) || 0) * cel >= Math.min(2, m.a * 0.25));
+  return { km2: total * cel, prov: prov * cel, pct: prov / provCellsCount() * 100, muns: muns.sort((a, b) => (mun.get(b.idx) || 0) - (mun.get(a.idx) || 0)) };
+}
+let _provCells = 0;
+function provCellsCount() { if (!_provCells) for (let i = 0; i < maskA.length; i++) if (maskA[i] > 127) _provCells++; return _provCells; }
+// modo agua: mientras hay una ficha de ríos abierta se apagan las capas que distraen y se restauran al cerrarla
+const AGUA_OCULTA = ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-picos", "l-sierras", "l-valles", "l-puertos", "l-nubes"];
+let aguaGuardado = null;
+function modoAgua(on) {
+  on = on && $("l-calma").checked;
+  if (on && !aguaGuardado) {
+    aguaGuardado = {};
+    for (const id of AGUA_OCULTA) { const el = $(id); aguaGuardado[id] = el.checked; if (el.checked) { el.checked = false; el.dispatchEvent(new Event("change")); } }
+    U.uCalma.value = 1; needsRender = true;
+  } else if (!on && aguaGuardado) {
+    for (const id of AGUA_OCULTA) { const el = $(id); if (el.checked !== aguaGuardado[id]) { el.checked = aguaGuardado[id]; el.dispatchEvent(new Event("change")); } }
+    aguaGuardado = null; U.uCalma.value = 0; needsRender = true;
+  }
+}
+$("l-calma").addEventListener("change", () => modoAgua(!$("hcard").hidden && $("l-calma").checked));
+function showHcard(html, kind, ref) {
+  modoAgua(true);
+  $("info").hidden = true; $("mirador").hidden = true; selected = null; updateMunState();
+  $("hcard-body").innerHTML = html; $("hcard").hidden = false; $("hcard").scrollTop = 0; hcardKind = kind; hcardRef = ref;
+}
+function closeHcard() {
+  modoAgua(false);
+  $("hcard").hidden = true; hcardKind = null; rioSel = -1; rioSet = null; cuencaCv = null;
+  if (gota) { gota = null; gotaMesh.visible = false; }
+  drawOverlay();
+}
+$("hcard-close").onclick = closeHcard;
+const DEM = { ES020: "Cuenca del Duero", ES010: "Cuenca del Miño-Sil", ES018: "Cuenca del Cantábrico occidental", ES017: "Cuenca del Cantábrico oriental" };
+function rutaHtml(i) {
+  const pasos = []; let j = RIO.rios[i].p, guard = 0;
+  while (j >= 0 && guard++ < 30) { pasos.push(`<button class="lnk" data-rio="${j}">${esc(RIO.rios[j].n)}</button>`); if (RIO.rios[j].p < 0) break; j = RIO.rios[j].p; }
+  const fin = (j >= 0 ? RIO.rios[j].fin : RIO.rios[i].fin) || "el mar";
+  return pasos.length ? pasos.join(" → ") + " → " + esc(fin) : esc(fin);
+}
+function selectRio(i, volar) {
+  if (i < 0 || !RIO.rios[i]) return;
+  stopGota(); rioSel = i; rioSet = descendientes(i);
+  const cu = construirCuenca(); drawOverlay();
+  const r = RIO.rios[i], hijos = RX.hijos[i].slice().sort((a, b) => RIO.rios[b].Am - RIO.rios[a].Am);
+  const ests = RIO.estaciones.map((e, k) => [e, k]).filter(([e]) => e.r === i).sort((a, b) => b[0].q - a[0].q);
+  const visibles = hijos.slice(0, 14);
+  let h = `<h2>${esc(r.n)}</h2><p class="cap">${DEM[r.dm] || ""}</p>
+    <p class="ruta"><span style="color:var(--ink-soft)">Desemboca en</span> ${rutaHtml(i)}</p>
+    <dl><dt>Longitud</dt><dd>${fmt1.format(r.L)} km</dd>
+    <dt>Cuenca</dt><dd>${r.A ? fmt.format(Math.round(r.A)) + " km²" : "≈ " + fmt.format(Math.round(r.Am)) + " km²"}</dd>` +
+    (cu ? `<dt>En la provincia</dt><dd>${fmt.format(Math.round(cu.prov))} km² · ${fmt1.format(cu.pct)} %</dd>` : "") +
+    (r.q != null ? `<dt>Caudal medio</dt><dd>≈ ${fmtQ(r.q)} m³/s</dd>` : "") + `</dl>`;
+  if (hijos.length) h += `<p class="group-title">Afluentes (${hijos.length})</p><div class="chips">` +
+    visibles.map(k => `<button class="chip" data-rio="${k}">${esc(RIO.rios[k].n)}<small>${RIO.rios[k].q != null ? fmtQ(RIO.rios[k].q) + " m³/s" : ""}</small></button>`).join("") +
+    (hijos.length > visibles.length ? `<span class="hint" style="margin:4px 0 0">y ${hijos.length - visibles.length} arroyos más</span>` : "") + `</div>`;
+  if (ests.length) h += `<p class="group-title">Estaciones de aforo</p><div class="lista-st">` +
+    ests.map(([e, k]) => `<button data-st="${k}"><span>${esc(e.n)}</span><small>${fmtQ(e.q)} m³/s</small></button>`).join("") + `</div>`;
+  if (cu && cu.muns.length) h += `<p class="group-title">Municipios de la cuenca (${cu.muns.length})</p><p class="hint" style="margin-top:0">${cu.muns.slice(0, 18).map(m => esc(m.n)).join(", ")}${cu.muns.length > 18 ? "…" : ""}</p>`;
+  h += `<p class="hint">Cuenca: superficie oficial de la DGA${r.A ? "" : " no disponible (estimada en el mapa)"}; la sombra es aproximada, asignando cada celda al cauce más cercano de la red del IGN. Caudal: estimación en el punto más bajo del río dentro del mapa, calibrada con las estaciones de aforo.</p>`;
+  showHcard(h, "rio", i);
+  if (volar) {
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const t of RIO.tramos) if (rioSet.has(t.r)) for (let k = 0; k < t.g.length; k += 2) { x0 = Math.min(x0, t.g[k]); x1 = Math.max(x1, t.g[k]); y0 = Math.min(y0, t.g[k + 1]); y1 = Math.max(y1, t.g[k + 1]); }
+    if (x0 < 1e9) flyToPoint((x0 + x1) / 2, (y0 + y1) / 2, Math.max(12, Math.max(x1 - x0, y1 - y0) / 1000 * 1.6));
+  }
+}
+const INI = ["E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+function barrasSvg(vals, unidad, fmtV, otro) {
+  const w = 260, h = 96, max = Math.max(...vals.concat(otro || []).filter(v => v != null), 1e-6), bw = w / 12;
+  return `<div class="barras"><svg viewBox="0 0 ${w} ${h + 14}" role="img" aria-label="Valores medios por mes">` + vals.map((v, i) => {
+    const bh = v == null ? 0 : v / max * (h - 18);
+    return `<rect class="${i === month ? "cur" : ""}" x="${i * bw + 2}" y="${h - bh}" width="${bw - 4}" height="${bh}" rx="2"><title>${MESES[i]}: ${v == null ? "sin datos" : fmtV(v) + " " + unidad}</title></rect>` +
+      `<text x="${i * bw + bw / 2}" y="${h + 11}" text-anchor="middle">${INI[i]}</text>` +
+      (i === month && v != null ? `<text class="v" x="${Math.min(Math.max(i * bw + bw / 2, 22), w - 22)}" y="${Math.max(10, h - bh - 4)}" text-anchor="middle">${fmtV(v)}</text>` : "") +
+      (otro && otro[i] != null ? `<circle cx="${i * bw + bw / 2}" cy="${h - otro[i] / max * (h - 18)}" r="3.2" fill="#c47f12" stroke="#fff" stroke-width="1.2"><title>${MESES[i]} del último año: ${fmtV(otro[i])} ${unidad}</title></circle>` : "");
+  }).join("") + `</svg></div>`;
+}
+function serieSvg(serie) {
+  if (!serie || serie.length < 3) return "";
+  const w = 260, h = 60, xs = serie.map(s => s[0]), ys = serie.map(s => s[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), mx = Math.max(...ys) * 1.08 || 1;
+  const X = (x) => 2 + (x - x0) / (x1 - x0 || 1) * (w - 4), Y = (y) => 6 + (1 - y / mx) * (h - 18);
+  const d = serie.map((s, i) => (i && s[0] - serie[i - 1][0] > 1 ? "M" : i ? "L" : "M") + X(s[0]).toFixed(1) + " " + Y(s[1]).toFixed(1)).join(" ");
+  return `<div class="spark"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Caudal medio de cada año de ${x0} a ${x1}"><line class="base" x1="2" x2="${w - 2}" y1="${h - 12}" y2="${h - 12}"/><path class="ln" d="${d}"/>` +
+    `<text x="2" y="${h - 1}">${x0}</text><text x="${w - 2}" y="${h - 1}" text-anchor="end">${x1}</text></svg></div>`;
+}
+function showStation(k) {
+  const e = RIO.estaciones[k];
+  const rio = e.r >= 0 ? `<button class="lnk" data-rio="${e.r}">${esc(RIO.rios[e.r].n)}</button>` : esc(e.rio);
+  const h = `<h2>${esc(e.n)}</h2><p class="cap">Estación de aforo ${e.c} · ${rio}</p>
+    <dl><dt>Caudal medio</dt><dd>${fmtQ(e.q)} m³/s</dd><dt>En ${MESES[month]}</dt><dd>${fmtQ(e.m[month])} m³/s</dd>
+    ${e.A ? `<dt>Cuenca vertiente</dt><dd>${fmt.format(e.A)} km²</dd>` : ""}<dt>Datos</dt><dd>${e.a0}–${e.a1} (${e.anos} años)</dd>
+    ${e.q5 != null ? `<dt>Crecidas (Q5)</dt><dd>${fmtQ(e.q5)} m³/s</dd><dt>Estiaje (Q95)</dt><dd>${fmtQ(e.q95)} m³/s</dd>` : ""}</dl>
+    <p class="group-title">Caudal medio por mes (m³/s)</p>${barrasSvg(e.m, "m³/s", fmtQ)}
+    ${e.serie.length > 2 ? `<p class="group-title">Caudal medio de cada año</p>${serieSvg(e.serie)}` : ""}
+    <p class="hint">${e.emb ? "Está a la salida de un embalse: el caudal es el que suelta la presa. " : ""}Q5: caudal que solo se supera el 5 % de los días; Q95: el que se supera el 95 % (aguas bajas). Fuente: Anuario de Aforos del MITECO.</p>`;
+  showHcard(h, "st", k);
+}
+function showEmbalse(k) {
+  const e = RIO.embalses[k], cap = e.cap, P = (v) => v != null && cap ? v / cap * 100 : null, pct = e.m.map(P);
+  const fechaAm = (am) => MESES[am % 100 - 1] + " de " + Math.floor(am / 100);
+  // último año del anuario, colocado en su mes del calendario
+  const ult = Array(12).fill(null); let ultAno = null;
+  for (const [am, v] of e.ult || []) { ult[am % 100 - 1] = P(v); ultAno = Math.floor(am / 100); }
+  const serie = (e.anual || []).map(([y, v]) => [y, cap ? Math.round(v / cap * 1000) / 10 : v]);
+  let h = `<h2>Embalse de ${esc(e.n)}</h2><p class="cap">${esc(e.rio || "")}${e.a0 ? ` · datos desde ${e.a0}` : ""}</p>
+    <dl>${cap ? `<dt>Capacidad</dt><dd>${fmt.format(cap)} hm³</dd>` : ""}
+    ${pct[month] != null ? `<dt>Llenado medio en ${MESES[month]}</dt><dd>${fmt.format(Math.round(pct[month]))} %</dd>` : ""}
+    ${e.entA != null ? `<dt>Entradas al año</dt><dd>${fmt.format(Math.round(e.entA))} hm³</dd>` : ""}
+    ${e.entA != null && cap ? `<dt>Renovación</dt><dd>${fmt1.format(e.entA / cap)} veces al año</dd>` : ""}
+    ${e.max ? `<dt>Máximo registrado</dt><dd>${fmt.format(Math.round(P(e.max[0]) ?? e.max[0]))}${cap ? " %" : " hm³"} · ${fechaAm(e.max[1])}</dd>` : ""}
+    ${e.min ? `<dt>Mínimo registrado</dt><dd>${fmt.format(Math.round(P(e.min[0]) ?? e.min[0]))}${cap ? " %" : " hm³"} · ${fechaAm(e.min[1])}</dd>` : ""}</dl>`;
+  if (pct.some(v => v != null)) h += `<p class="group-title">Llenado por mes (% de la capacidad)</p>${barrasSvg(pct, "%", (v) => fmt.format(Math.round(v)), ult)}
+    <p class="leyenda-mini"><span><i></i>media desde 1991</span>${ultAno ? `<span><i class="p"></i>año ${ultAno - 1}-${String(ultAno).slice(2)}</span>` : ""}</p>`;
+  if (e.ent && e.sal) h += `<p class="group-title">Entra y sale por mes (hm³)</p>${barrasSvg(e.ent, "hm³ entran", (v) => fmt.format(Math.round(v)), e.sal)}
+    <p class="leyenda-mini"><span><i></i>entradas medias</span><span><i class="p"></i>salidas medias</span></p>`;
+  if (serie.length > 2) h += `<p class="group-title">Llenado medio de cada año (%)</p>${serieSvg(serie)}`;
+  h += `<p class="hint">Anuario de Aforos del MITECO (último año publicado: 2021-22). Las entradas y salidas medias muestran cómo el embalse guarda el agua del invierno y la primavera y la suelta en verano para el riego. El nivel de hoy está en el SAIH de la confederación.</p>`;
+  showHcard(h, "emb", k);
+}
+$("hcard-body").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-rio],[data-st]"); if (!b) return;
+  if (b.dataset.rio != null) selectRio(+b.dataset.rio, true);
+  else { const e = RIO.estaciones[+b.dataset.st]; showStation(+b.dataset.st); flyToPoint(e.xy[0], e.xy[1], 14); }
+});
+// la gota: del punto tocado al cauce más cercano de su cuenca y, de tramo en tramo, aguas abajo hasta salir del mapa
+const gotaMesh = new THREE.Mesh(new THREE.SphereGeometry(0.55, 18, 12), new THREE.MeshBasicMaterial({ color: 0x1fb3e6 }));
+gotaMesh.add(new THREE.Mesh(new THREE.SphereGeometry(0.72, 18, 12), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide })));
+gotaMesh.visible = false; scene.add(gotaMesh);
+function setGotaArmed(on) {
+  gotaArmed = on; $("gota-btn").setAttribute("aria-pressed", String(on));
+  if (on) { if (miradorArmed) setArmed(false); $("readout").textContent = "Toca un punto del mapa para soltar una gota de agua"; if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } }
+}
+$("gota-btn").onclick = () => setGotaArmed(!gotaArmed);
+function stopGota() { if (gota) { gota = null; gotaMesh.visible = false; } }
+function lanzarGota(mx, my) {
+  const ci = Math.min(R - 1, Math.max(0, (my / M.celda) | 0)) * W + Math.min(W - 1, Math.max(0, (mx / M.celda) | 0));
+  const r0 = cuencaR ? cuencaR[ci] - 1 : -1;
+  let c = null;
+  for (let tol = 1500; !c && tol <= 48000; tol *= 2) c = rioCerca(mx, my, tol, r0 >= 0 ? r0 : null) || (r0 < 0 ? null : rioCerca(mx, my, tol));
+  if (!c) { $("readout").textContent = "No hay ningún río cerca de ese punto"; return; }
+  const pts = [[mx, my]], visto = new Set(), rios = [];
+  let t = c.t, k = c.k;
+  const tr0 = RIO.tramos[t]; pts.push([tr0.g[k] + c.u * (tr0.g[k + 2] - tr0.g[k]), tr0.g[k + 1] + c.u * (tr0.g[k + 3] - tr0.g[k + 1])]); k += 2;
+  while (t >= 0 && !visto.has(t) && visto.size < 3000) {
+    visto.add(t); const tr = RIO.tramos[t];
+    if (rios[rios.length - 1] !== tr.r) rios.push(tr.r);
+    for (let i = k; i < tr.g.length; i += 2) pts.push([tr.g[i], tr.g[i + 1]]);
+    t = tr.a; k = 0;
+  }
+  const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const total = cum[cum.length - 1];
+  rioSel = -1; rioSet = null; cuencaCv = null;
+  gota = { pts, cum, total, t0: performance.now(), dur: reduceMotion ? 1 : Math.min(30000, Math.max(8000, total / 8)) };
+  gotaMesh.visible = true; drawOverlay(); setGotaArmed(false);
+  const ult = rios[rios.length - 1];
+  const h = `<h2>El viaje de una gota</h2><p class="cap">${fmt.format(Math.round(total / 1000))} km de recorrido dentro del mapa</p>
+    <p class="ruta">${rios.map(i => `<button class="lnk" data-rio="${i}">${esc(RIO.rios[i].n)}</button>`).join(" → ")}${ult >= 0 && RIO.rios[ult].p >= 0 ? " → " + rutaHtml(ult) : " → " + esc(RIO.rios[ult].fin || "el mar")}</p>
+    <p class="hint">Desde el punto tocado la gota baja al cauce más cercano de su cuenca y sigue la red del IGN aguas abajo. Toca otro punto con «¿Adónde va esta gota?» para soltar otra.</p>`;
+  showHcard(h, "gota", -1);
+  $("readout").textContent = `La gota recorre ${fmt.format(Math.round(total / 1000))} km por ${rios.length} cauces dentro del mapa`;
+}
+function stepGota(now) {
+  const g = gota, f = Math.min(1, (now - g.t0) / g.dur), e = f < 1 ? 1 - Math.pow(1 - f, 1.6) : 1, s = e * g.total;
+  let i = 1; while (i < g.cum.length - 1 && g.cum[i] < s) i++;
+  const a = g.pts[i - 1], b = g.pts[i], u = (s - g.cum[i - 1]) / (g.cum[i] - g.cum[i - 1] || 1), x = a[0] + (b[0] - a[0]) * u, y = a[1] + (b[1] - a[1]) * u;
+  gotaMesh.position.set(sx(x), heightAt(x, y) * ZS() + 0.45, sz(y));
+  if (!reduceMotion) gotaMesh.scale.setScalar(1 + 0.08 * Math.sin(now / 180));
+  if (f < 1) needsRender = true;
+}
+function stopRioPlay() { clearInterval(rioPlay); rioPlay = null; $("rio-play").setAttribute("aria-pressed", "false"); $("rio-play").textContent = "▶"; }
+$("rio-play").onclick = () => {
+  if (rioPlay) return stopRioPlay();
+  if (!layers.caudal) { layers.caudal = true; $("l-caudal").checked = true; }
+  $("rio-play").setAttribute("aria-pressed", "true"); $("rio-play").textContent = "❚❚";
+  rioPlay = setInterval(() => { month = (month + 1) % 12; applySeason(); }, reduceMotion ? 2200 : 1300);
+};
+riosHook = () => {
+  $("caudal-note").textContent = "Caudal medio estimado de " + MESES[month];
+  if (RIO && layers.rios && layers.caudal) drawOverlay();
+  if (hcardKind === "st") showStation(hcardRef); else if (hcardKind === "emb") showEmbalse(hcardRef);
+  if (RIO) listaEmbalses();
+};
+function listaEmbalses() {
+  const xs = RIO.embalses.map((e, k) => [e, k]).filter(([e]) => e.cap >= 5).sort((a, b) => b[0].cap - a[0].cap);
+  $("emb-list").innerHTML = xs.map(([e, k]) => { const p = e.m[month] != null && e.cap ? Math.round(e.m[month] / e.cap * 100) : null;
+    return `<button data-emb="${k}"><span>${esc(e.n)}</span><small>${fmt.format(e.cap)} hm³${p != null ? " · " + p + " % en " + MESES[month].slice(0, 3) : ""}</small></button>`; }).join("");
+}
+$("emb-list").addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-emb]"); if (!b) return;
+  const e = RIO.embalses[+b.dataset.emb]; showEmbalse(+b.dataset.emb); flyToPoint(e.xy[0], e.xy[1], 20);
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+});
+bind("l-caudal", "caudal", drawOverlay);
+bind("l-cuenca", "cuenca", drawOverlay);
+bind("l-est", "est");
+async function cargarRios() {
+  let rj, cb;
+  try {
+    [rj, cb] = await Promise.all([fetch("data/rios.json").then(r => { if (!r.ok) throw new Error("rios.json"); return r.json(); }),
+      fetch("data/cuencas.png").then(r => r.ok ? r.blob() : null).catch(() => null)]);
+  } catch (e) { return; }
+  RIO = rj;
+  RX.hijos = RIO.rios.map(() => []);
+  RIO.rios.forEach((r, i) => { if (r.p >= 0) RX.hijos[r.p].push(i); });
+  RX.orden = RIO.tramos.slice().sort((a, b) => a.q - b.q);   // los grandes encima
+  indexarTramos();
+  if (cb) try {
+    const bmp = await createImageBitmap(cb, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+    const c = document.createElement("canvas"); c.width = bmp.width; c.height = bmp.height;
+    const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(bmp, 0, 0);
+    const d = x.getImageData(0, 0, bmp.width, bmp.height).data; cuencaR = new Uint16Array(bmp.width * bmp.height);
+    for (let i = 0; i < cuencaR.length; i++) cuencaR[i] = d[i * 4] * 256 + d[i * 4 + 1];
+  } catch (e) { cuencaR = null; }
+  // buscador: nombre y, si se repite, a qué río va
+  const cuenta = new Map(); RIO.rios.forEach(r => { if (r.d) cuenta.set(r.n, (cuenta.get(r.n) || 0) + 1); });
+  RX.etiquetas = new Map();
+  RIO.rios.forEach((r, i) => { if (!r.d) return; const et = cuenta.get(r.n) > 1 && r.p >= 0 ? `${r.n} (al ${RIO.rios[r.p].n.replace(/^Río /, "")})` : r.n; if (!RX.etiquetas.has(et)) RX.etiquetas.set(et, i); });
+  $("riolist").innerHTML = [...RX.etiquetas.keys()].sort((a, b) => a.localeCompare(b, "es")).map(n => `<option value="${esc(n)}">`).join("");
+  // estaciones de aforo y embalses en el mapa
+  RIO.estaciones.forEach((e, k) => {
+    addLabel("st", '<span class="gt"></span>' + esc(e.n) + ` <small>${fmtQ(e.q)} m³/s</small>`, e.xy[0], e.xy[1], 130 + Math.log10(1 + e.q) * 30, e.q > 10 ? 70 : 40);
+    labels[labels.length - 1].el.addEventListener("click", () => showStation(k));
+  });
+  RIO.embalses.forEach((e, k) => {
+    const L = labels.find(L => L.kind === "lake" && Math.hypot(L.mx - e.xy[0], L.my - e.xy[1]) < 5000);
+    if (L) { L.el.classList.add("click"); L.el.addEventListener("click", () => showEmbalse(k)); }
+    else { addLabel("lake click", esc("Embalse de " + e.n), e.xy[0], e.xy[1], 150, 140); labels[labels.length - 1].el.addEventListener("click", () => showEmbalse(k)); }
+  });
+  labels.sort((a, b) => b.prio - a.prio);
+  $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(RIO.fuente) + "</li>");
+  $("rios-box").hidden = false; riosHook(); drawOverlay();
+}
+$("rio-search").addEventListener("change", (e) => {
+  if (!RIO) return;
+  const q = norm(e.target.value); if (!q) return;
+  let i = RX.etiquetas.get(e.target.value);
+  if (i == null) { const hit = [...RX.etiquetas.entries()].find(([n]) => norm(n).includes(q)); i = hit ? hit[1] : null; }
+  if (i != null) { selectRio(i, true); if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } }
+});
+cargarRios();
 bind("l-cob", "cob", () => { U.uCoverOn.value = layers.cob && COB ? 1 : 0; $("cob-legend").hidden = !(layers.cob && COB); });
 {
   $("morph").addEventListener("input", async (e) => { const v = +e.target.value / 100; if (!(await ensurePop())) { e.target.value = 0; return; } morph = v; applyMorph(false); });
@@ -2095,7 +2906,7 @@ let exagTimer = null;
 $("exag").addEventListener("input", (e) => {
   exag = +e.target.value; U.uExag.value = exag / 1000;
   $("exag-o").textContent = "×" + String(exag).replace(".", ",");
-  placeTrees(); placeFavs(); placeTowns(); placeMonuments(); rebuildOutlines(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
+  placeTrees(); placeFavs(); placeMe(); placeTowns(); placeMonuments(); rebuildOutlines(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
   clearTimeout(exagTimer); exagTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, 120);
 });
 $("hora").addEventListener("input", (e) => { hour = +e.target.value; updateSky(); });
@@ -2189,11 +3000,14 @@ function frame(now) {
     if (k >= 1) fly = null;
   }
   stepTween(now); stepKeys(dt); stepWheel(dt);
+  if (orbit && !ctl.tw && !fly) ctl.theta += orbit.w * dt;
   controls.update();
   $("nav-needle").style.transform = `rotate(${ctl.theta}rad)`;
   $("nav-tilt").textContent = ctl.phi > 0.35 ? "2D" : "3D";
   U.uCam.value = camera.position;
   if (layers.nubes && !reduceMotion) for (const c of clouds.children) { c.position.x += c.userData.v * dt; if (c.position.x > 140) c.position.x = -140; }
+  if (meGroup.visible) { const k = reduceMotion ? 1 : 1 + 0.12 * Math.sin(now / 300); meHalo.scale.setScalar(k); }
+  if (gota) stepGota(now);
   if (!reduceMotion && eyeGroup.visible) { eyeGroup.userData.gem.rotation.y += dt * 1.2; }
   if (!reduceMotion) favs.forEach((f, i) => { f.gem.rotation.y += dt * 1.2; f.gem.position.y = 2.25 + Math.sin(now / 650 + i) * 0.12; });
   if ((hoverTick = (hoverTick + 1) % (liteMode ? 6 : 3)) === 0) doHover();
