@@ -15,7 +15,7 @@ completo() {  # fichero GML/XML que termina bien
 bajar() {     # bajar URL fichero [comprobación]
   local url="$1" out="$2" check="${3:-}"
   for i in 1 2 3 4 5 6; do
-    if curl -s -m 600 -A "$UA" "$url" -o "$out"; then
+    if curl -sfL -m 600 -A "$UA" "$url" -o "$out" && [ -s "$out" ]; then   # -L: sigue redirecciones (GitHub); -f: falla con errores HTTP
       if [ -z "$check" ] || $check "$out"; then echo "  ok $out"; return 0; fi
     fi
     echo "  reintento $i: $out"; sleep $((i * 6))

@@ -196,6 +196,18 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .layer .name { flex: 1; }
 .layer .key { width: 16px; height: 4px; border-radius: 2px; flex: none; }
 .layer .note { font-size: 10.5px; color: var(--ink-soft); display: block; line-height: 1.2; }
+.cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.cat-b { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 2px 6px; border-radius: 10px; border: 1px solid var(--line);
+  background: transparent; color: var(--ink); font: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+.cat-b:hover { background: var(--moss-soft); }
+.cat-b[aria-selected="true"] { background: var(--moss); border-color: var(--moss); color: var(--panel-solid); }
+.cat-b:focus-visible { outline: 2px solid var(--moss); outline-offset: 2px; }
+.cat { display: flex; flex-direction: column; gap: 14px; }
+.fav-det summary { cursor: pointer; list-style-position: inside; }
+.fav-det summary span { font-weight: 600; letter-spacing: 0; }
+.layer.enfoque { margin-top: -6px; }
+.tool-btn.paisaje { border-color: #c47f12; }
+.tool-btn.paisaje:hover { background: #c47f12; color: #fff; }
 .soon { font-size: 12px; color: var(--ink-soft); padding: 2px 6px; line-height: 1.45; }
 .slider { display: flex; flex-direction: column; gap: 4px; padding: 2px 6px; font-size: 13px; }
 .slider .row { display: flex; justify-content: space-between; }
@@ -298,6 +310,11 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   #panel { width: auto; right: max(16px, env(safe-area-inset-right, 0px)); top: auto; bottom: calc(56px + env(safe-area-inset-bottom, 0px));
     max-height: 52%; }
   #panel.collapsed { display: none; }
+  #panel { right: 70px; padding: 12px 12px 10px; gap: 10px; }
+  #panel > div:first-child { display: none; }      /* en el móvil, sin título: las pestañas van arriba */
+  .cats { grid-template-columns: repeat(6, 1fr); gap: 3px; }
+  .cat-b { font-size: 9.5px; padding: 6px 0 4px; gap: 1px; }
+  .cat-b svg { width: 18px; height: 18px; }
   #toggle-panel { display: block; position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     padding: 9px 14px; font: inherit; font-weight: 700; font-size: 14px; color: var(--ink); cursor: pointer; }
   #info { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
@@ -321,53 +338,78 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
 
 <div id="loading"><div class="box">Levantando las montañas…<small id="loading-msg">Cargando el MDT25 del IGN</small></div></div>
 
-<aside id="panel" class="card collapsed" aria-label="Capas del mapa">
+<aside id="panel" class="card collapsed" aria-label="Panel del mapa">
   <div>
     <h1>León en relieve</h1>
-    <p class="sub">La provincia con su orografía real (MDT25 del IGN), sus 211 municipios, ríos, embalses y cumbres.</p>
+    <p class="sub">La provincia en 3D con datos oficiales: relieve, población, clima y agua.</p>
   </div>
-  <div class="facts">
+  <nav class="cats" role="tablist" aria-label="Categorías de datos">
+    <button class="cat-b" role="tab" id="tab-mapa" data-cat="mapa" aria-selected="true" aria-controls="cat-mapa"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
+    <button class="cat-b" role="tab" id="tab-relieve" data-cat="relieve" aria-selected="false" aria-controls="cat-relieve"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 19l7-12 4 6 2-3 7 9z"/><path d="M7.5 9.5l1.5 1 1.3-1.2"/></svg>Relieve</button>
+    <button class="cat-b" role="tab" id="tab-poblacion" data-cat="poblacion" aria-selected="false" aria-controls="cat-poblacion"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20v-8l5-4 5 4v8z"/><path d="M14 20v-6l3-2.5 3 2.5v6"/><path d="M8 20v-4h2v4"/></svg>Población</button>
+    <button class="cat-b" role="tab" id="tab-clima" data-cat="clima" aria-selected="false" aria-controls="cat-clima"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1"/><path d="M10 19h8a3 3 0 0 0 0-6 4.5 4.5 0 0 0-8.6-1A3.5 3.5 0 0 0 10 19z"/></svg>Clima</button>
+    <button class="cat-b" role="tab" id="tab-agua" data-cat="agua" aria-selected="false" aria-controls="cat-agua"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z"/></svg>Agua</button>
+    <button class="cat-b" role="tab" id="tab-escena" data-cat="escena" aria-selected="false" aria-controls="cat-escena"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>Escena</button>
+  </nav>
+  <label class="layer enfoque"><input type="checkbox" id="l-enfoque" checked><span class="sw"></span><span class="name">Enfocar en esta categoría<span class="note" id="enfoque-note">Oculta lo que no ayuda a leer estos datos</span></span></label>
+  <section class="cat" id="cat-mapa" role="tabpanel" aria-labelledby="tab-mapa">
+    <button class="tool-btn paisaje" id="vista-paisaje">✦ Vista paisaje<small>Árboles, pueblos y luz de la tarde, como al abrir</small></button>
+    <div class="facts">
     <div class="fact"><b id="f-pop">–</b><span>habitantes</span></div>
     <div class="fact"><b id="f-area">–</b><span>km²</span></div>
     <div class="fact"><b>211</b><span>municipios</span></div>
   </div>
-  <div>
+    <div>
     <label class="group-title" for="search">Buscar municipio</label>
     <input id="search" list="munlist" placeholder="Ej.: Riaño, Astorga…" autocomplete="off">
     <datalist id="munlist"></datalist>
-  </div>
-  <div>
+    </div>
+    <div>
     <label class="group-title" for="comarca">Comarca agraria</label>
     <select id="comarca"><option value="">Toda la provincia</option></select>
+    </div>
+    <div id="favs-box" hidden>
+    <details class="fav-det" open><summary class="group-title">Lugares destacados <span id="favs-n"></span></summary>
+    <div class="favs" id="favs"></div></details>
   </div>
-  <div id="favs-box" hidden>
-    <p class="group-title">Lugares destacados</p>
-    <div class="favs" id="favs"></div>
-  </div>
-  <div>
-    <p class="group-title">Capas</p>
-    <div class="layers">
+    <div><p class="group-title">Capas</p><div class="layers">
       <label class="layer" id="l-fav-row" hidden><input type="checkbox" id="l-fav" checked><span class="sw"></span><span class="name">Lugares destacados</span><span class="key" style="background:#f2b53a"></span></label>
       <label class="layer"><input type="checkbox" id="l-mun" checked><span class="sw"></span><span class="name">Límites municipales</span><span class="key" style="background:#fff7df;box-shadow:0 0 0 1px #8a7a52"></span></label>
       <label class="layer"><input type="checkbox" id="l-comarcas"><span class="sw"></span><span class="name">Comarcas agrarias<span class="note">Oficiales del MAPA</span></span><span class="key" style="background:#7a4d8c"></span></label>
       <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
-      <label class="layer"><input type="checkbox" id="l-rios" checked><span class="sw"></span><span class="name">Ríos</span><span class="key" style="background:#3fa9c9"></span></label>
-      <label class="layer"><input type="checkbox" id="l-aguas" checked><span class="sw"></span><span class="name">Embalses y lagos</span><span class="key" style="background:#7fd0d8"></span></label>
-      <label class="layer"><input type="checkbox" id="l-pueblos" checked><span class="sw"></span><span class="name">Pueblos ilustrados<span class="note">Casas orientativas, no reales</span></span><span class="key" style="background:#b8643d"></span></label>
-      <label class="layer"><input type="checkbox" id="l-mon" checked><span class="sw"></span><span class="name">Monumentos</span><span class="key" style="background:#c9862b"></span></label>
       <label class="layer"><input type="checkbox" id="l-pob" checked><span class="sw"></span><span class="name">Poblaciones</span><span class="key" style="background:#e9b44c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-entorno"><span class="sw"></span><span class="name">Provincias vecinas</span></label>
+    </div></div>
+    <div><p class="group-title">Mirador</p>
+    <button class="tool-btn" id="mirador-btn" aria-pressed="false">¿Qué se ve desde aquí?<small>Toca un punto del mapa o el nombre de una cumbre</small></button></div>
+  </section>
+  <section class="cat" id="cat-relieve" role="tabpanel" aria-labelledby="tab-relieve" hidden>
+    <div><p class="group-title">Capas</p><div class="layers">
       <label class="layer"><input type="checkbox" id="l-picos" checked><span class="sw"></span><span class="name">Cumbres</span><span class="key" style="background:#6a5a8c"></span></label>
       <label class="layer"><input type="checkbox" id="l-sierras" checked><span class="sw"></span><span class="name">Sierras y montes</span><span class="key" style="background:#6b4a2b"></span></label>
       <label class="layer"><input type="checkbox" id="l-valles" checked><span class="sw"></span><span class="name">Valles</span><span class="key" style="background:#2f5f3c"></span></label>
       <label class="layer"><input type="checkbox" id="l-puertos" checked><span class="sw"></span><span class="name">Puertos de montaña</span><span class="key" style="background:#5a4632"></span></label>
-      <label class="layer"><input type="checkbox" id="l-entorno"><span class="sw"></span><span class="name">Provincias vecinas</span></label>
       <label class="layer" id="l-cob-row" hidden><input type="checkbox" id="l-cob" checked><span class="sw"></span><span class="name">Cubierta del suelo<span class="note">Copernicus CLC+ Backbone 2021</span></span></label>
       <div id="cob-legend" class="cob-legend" hidden></div>
       <label class="layer"><input type="checkbox" id="l-arboles" checked><span class="sw"></span><span class="name">Árboles<span class="note" id="arb-note">Ilustrativos, no son datos</span></span></label>
-      <label class="layer"><input type="checkbox" id="l-nubes"><span class="sw"></span><span class="name">Nubes</span></label>
-    </div>
+    </div></div>
+    <div><p class="group-title">Forma del terreno</p>
+    <div class="slider"><div class="row"><label for="exag">Exageración vertical</label><output id="exag-o">×2,5</output></div>
+      <input type="range" id="exag" min="1" max="5" step="0.5" value="2.5"></div></div>
+    <div id="sea-box">
+    <p class="group-title">Nivel del agua</p>
+    <label class="layer"><input type="checkbox" id="l-sea"><span class="sw"></span><span class="name">Inundar hasta una altitud<span class="note">Lo que queda por debajo se cubre de agua</span></span><span class="key" style="background:#3f86b0"></span></label>
+    <div class="slider"><div class="row"><label for="sea">Altitud</label><output id="sea-o">1.000 m</output></div>
+      <input type="range" id="sea" min="300" max="2600" step="10" value="1000"></div>
+    <p class="spark-note" id="sea-note" style="padding: 0 6px"></p>
   </div>
-  <div id="hist-box">
+  </section>
+  <section class="cat" id="cat-poblacion" role="tabpanel" aria-labelledby="tab-poblacion" hidden>
+    <div><p class="group-title">Capas</p><div class="layers">
+      <label class="layer"><input type="checkbox" id="l-pueblos" checked><span class="sw"></span><span class="name">Pueblos ilustrados<span class="note">Casas orientativas, no reales</span></span><span class="key" style="background:#b8643d"></span></label>
+      <label class="layer"><input type="checkbox" id="l-mon" checked><span class="sw"></span><span class="name">Monumentos</span><span class="key" style="background:#c9862b"></span></label>
+    </div></div>
+    <div id="hist-box">
     <p class="group-title">Población en el tiempo</p>
     <label class="layer"><input type="checkbox" id="l-hist"><span class="sw"></span><span class="name">Colorear municipios<span class="note">Población del año respecto a su máximo histórico</span></span></label>
     <div class="slider"><div class="row"><label for="anio">Año</label><output id="anio-o">2025</output></div>
@@ -379,7 +421,7 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
     <div class="spark" id="prov-spark" style="padding: 8px 6px 0"></div>
     <p class="spark-note" id="prov-note" style="padding: 0 6px"></p>
   </div>
-  <div id="pop-box" hidden>
+    <div id="pop-box" hidden>
     <p class="group-title">Relieve de población</p>
     <div class="slider"><div class="row"><label for="morph">Montañas ↔ población</label><output id="morph-o">Montañas</output></div>
       <input type="range" id="morph" min="0" max="100" step="1" value="0"></div>
@@ -388,14 +430,9 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
     <div class="ramp" style="padding: 6px 6px 0"><div class="ramp-bar" id="pop-ramp"></div><div class="ramp-ends" id="pop-ends"></div></div>
     <p class="spark-note" style="padding: 0 6px">Censo 2021 del INE en celdas de 1 km². La raíz cuadrada deja ver los pueblos pequeños; la escala proporcional es fiel a la densidad.</p>
   </div>
-  <div id="sea-box">
-    <p class="group-title">Nivel del agua</p>
-    <label class="layer"><input type="checkbox" id="l-sea"><span class="sw"></span><span class="name">Inundar hasta una altitud<span class="note">Lo que queda por debajo se cubre de agua</span></span><span class="key" style="background:#3f86b0"></span></label>
-    <div class="slider"><div class="row"><label for="sea">Altitud</label><output id="sea-o">1.000 m</output></div>
-      <input type="range" id="sea" min="300" max="2600" step="10" value="1000"></div>
-    <p class="spark-note" id="sea-note" style="padding: 0 6px"></p>
-  </div>
-  <div id="clima-box">
+  </section>
+  <section class="cat" id="cat-clima" role="tabpanel" aria-labelledby="tab-clima" hidden>
+    <div id="clima-box">
     <p class="group-title">Clima · normales 1991–2020</p>
     <label class="layer"><input type="checkbox" id="l-clima"><span class="sw"></span><span class="name">Mostrar clima<span class="note">AEMET, ajustado a la altitud del terreno</span></span></label>
     <div style="padding: 2px 6px"><label class="group-title" for="clima-var" style="display:block">Variable</label>
@@ -412,38 +449,42 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
     <div class="cl-leg" id="cl-leg" hidden><div class="cl-bands" id="cl-bands"></div><div class="cl-ticks" id="cl-ticks"></div></div>
     <p class="spark-note" id="cl-note" style="padding: 0 6px"></p>
   </div>
-  <div id="rios-box" hidden>
+  </section>
+  <section class="cat" id="cat-agua" role="tabpanel" aria-labelledby="tab-agua" hidden>
+    <div><p class="group-title">Capas</p><div class="layers">
+      <label class="layer"><input type="checkbox" id="l-rios" checked><span class="sw"></span><span class="name">Ríos</span><span class="key" style="background:#3fa9c9"></span></label>
+      <label class="layer"><input type="checkbox" id="l-aguas" checked><span class="sw"></span><span class="name">Embalses y lagos</span><span class="key" style="background:#7fd0d8"></span></label>
+    </div></div>
+    <p class="spark-note" id="rios-cargando" style="padding: 0 6px">Cargando la red de ríos…</p>
+    <div id="rios-box" hidden>
     <p class="group-title">Ríos y agua</p>
     <div style="padding: 2px 6px 4px"><input id="rio-search" class="sel" list="riolist" placeholder="Buscar río: Esla, Sil, Porma…" autocomplete="off" aria-label="Buscar río"><datalist id="riolist"></datalist></div>
     <label class="layer"><input type="checkbox" id="l-caudal" checked><span class="sw"></span><span class="name">Grosor según el caudal<span class="note" id="caudal-note">Caudal medio estimado del mes</span></span></label>
     <div class="hist-row"><button class="play" id="rio-play" aria-pressed="false" aria-label="Animar el caudal a lo largo del año">▶</button><span class="spark-note" style="margin:0">Animar el año: deshielo en primavera, estiaje en verano</span></div>
     <label class="layer"><input type="checkbox" id="l-est" checked><span class="sw"></span><span class="name">Estaciones de aforo<span class="note">Anuario de Aforos del MITECO</span></span><span class="key" style="background:#2a8fd0"></span></label>
-    <label class="layer"><input type="checkbox" id="l-calma" checked><span class="sw"></span><span class="name">Paisaje simplificado al ver ríos<span class="note">Oculta árboles, pueblos, carreteras y nombres del relieve</span></span></label>
     <label class="layer"><input type="checkbox" id="l-cuenca" checked><span class="sw"></span><span class="name">Sombrear la cuenca del río elegido</span></label>
     <button class="tool-btn" id="gota-btn" aria-pressed="false" style="margin-top: 6px">¿Adónde va esta gota?<small>Toca un punto del mapa y sigue el agua hasta el mar</small></button>
     <details class="src" id="emb-box" style="padding: 6px 6px 0"><summary>Embalses</summary><div class="lista-st" id="emb-list" style="margin-top:6px"></div></details>
     <p class="spark-note" style="padding: 4px 6px 0">Toca un río en el mapa para ver sus afluentes y su cuenca. Toca un embalse o una estación para ver sus datos.</p>
   </div>
-  <div>
-    <p class="group-title">Mirador</p>
-    <button class="tool-btn" id="mirador-btn" aria-pressed="false">¿Qué se ve desde aquí?<small>Toca un punto del mapa o el nombre de una cumbre</small></button>
-  </div>
-  <div>
-    <p class="group-title">Escena</p>
-    <div class="slider"><div class="row"><label for="exag">Exageración vertical</label><output id="exag-o">×2,5</output></div>
-      <input type="range" id="exag" min="1" max="5" step="0.5" value="2.5"></div>
+  </section>
+  <section class="cat" id="cat-escena" role="tabpanel" aria-labelledby="tab-escena" hidden>
+    <button class="tool-btn paisaje" id="vista-paisaje-2">✦ Vista paisaje<small>Vuelve a la vista inicial con todo el paisaje</small></button>
+    <div><p class="group-title">Luz y estación</p>
     <div class="slider"><div class="row"><label for="mes">Mes</label><output id="mes-o"></output></div>
       <input type="range" id="mes" min="0" max="11" step="1" value="10"></div>
     <div class="slider"><div class="row"><label for="hora">Hora</label><output id="hora-o">17:00</output></div>
       <input type="range" id="hora" min="6" max="23" step="0.25" value="17"></div>
-    <label class="layer"><input type="checkbox" id="l-lite"><span class="sw"></span><span class="name">Modo ligero<span class="note">Menos detalle, más fluidez</span></span></label>
-    <p class="spark-note" style="padding: 0 6px">Sol calculado para León según mes y hora. Nieve y colores orientativos según la climatología típica de cada mes.</p>
-  </div>
-  <p class="soon"><b>Próximamente:</b> comarcas agrarias (MAPA) y precipitación media (AEMET).</p>
-  <details class="src">
+    <p class="spark-note" style="padding: 0 6px">Sol calculado para León según mes y hora. Nieve y colores orientativos según la climatología típica de cada mes.</p></div>
+    <div><p class="group-title">Ambiente y rendimiento</p><div class="layers">
+      <label class="layer"><input type="checkbox" id="l-nubes"><span class="sw"></span><span class="name">Nubes</span></label>
+      <label class="layer"><input type="checkbox" id="l-lite"><span class="sw"></span><span class="name">Modo ligero<span class="note">Menos detalle, más fluidez</span></span></label>
+    </div></div>
+    <details class="src">
     <summary>Fuentes oficiales</summary>
     <ul id="src-list"></ul>
   </details>
+  </section>
 </aside>
 <button id="toggle-panel" class="card" aria-controls="panel" aria-expanded="false">Capas</button>
 
@@ -2009,6 +2050,7 @@ function buildFavMarkers() {
 function placeFavs() { for (const f of favs) f.group.position.set(sx(f.mx), heightAt(f.mx, f.my) * ZS(), sz(f.my)); }
 function renderFavList() {
   $("favs-box").hidden = !favs.length; $("l-fav-row").hidden = !favs.length;
+  $("favs-n").textContent = favs.length ? "(" + favs.length + ")" : "";
   $("favs").innerHTML = favs.map((f, i) => `<div class="fav-row"><button class="fav-btn" data-i="${i}"><span><span class="pin">★</span>${esc(f.n)}</span><small>${f.mun && norm(f.mun.n) !== norm(f.n) ? esc(f.mun.n) : ""}</small></button>` +
     (favsEditable ? `<button class="fav-del" data-i="${i}" aria-label="Quitar ${esc(f.n)} de destacados" title="Quitar de destacados">×</button>` : "") + `</div>`).join("");
 }
@@ -2535,7 +2577,7 @@ function setAnual(a) {
   if (!clima.on) setClima(true); else climaApply();
 }
 function stopClimaPlay() { clearInterval(clima.play); clima.play = null; $("cl-play").setAttribute("aria-pressed", "false"); $("cl-play").textContent = "▶"; }
-$("l-clima").addEventListener("change", (e) => setClima(e.target.checked));
+$("l-clima").addEventListener("change", (e) => { clima.visto = true; setClima(e.target.checked); });
 $("clima-var").addEventListener("change", (e) => { clima.v = e.target.value; if (!clima.on) setClima(true); else climaApply(); });
 $("cl-mes-b").onclick = () => setAnual(false);
 $("cl-anio-b").onclick = () => setAnual(true);
@@ -2632,21 +2674,56 @@ function construirCuenca() {
 }
 let _provCells = 0;
 function provCellsCount() { if (!_provCells) for (let i = 0; i < maskA.length; i++) if (maskA[i] > 127) _provCells++; return _provCells; }
-// modo agua: mientras hay una ficha de ríos abierta se apagan las capas que distraen y se restauran al cerrarla
-const AGUA_OCULTA = ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-picos", "l-sierras", "l-valles", "l-puertos", "l-nubes"];
-let aguaGuardado = null;
-function modoAgua(on) {
-  on = on && $("l-calma").checked;
-  if (on && !aguaGuardado) {
-    aguaGuardado = {};
-    for (const id of AGUA_OCULTA) { const el = $(id); aguaGuardado[id] = el.checked; if (el.checked) { el.checked = false; el.dispatchEvent(new Event("change")); } }
-    U.uCalma.value = 1; needsRender = true;
-  } else if (!on && aguaGuardado) {
-    for (const id of AGUA_OCULTA) { const el = $(id); if (el.checked !== aguaGuardado[id]) { el.checked = aguaGuardado[id]; el.dispatchEvent(new Event("change")); } }
-    aguaGuardado = null; U.uCalma.value = 0; needsRender = true;
+// enfoque: cada categoría oculta lo que estorba para leer sus datos, y lo devuelve al salir.
+// Las fichas de ríos, estaciones, embalses y la gota usan el enfoque «agua» mientras están abiertas.
+const ENFOQUE = {
+  agua: { ocultar: ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-picos", "l-sierras", "l-valles", "l-puertos", "l-nubes"], calma: 1,
+    nota: "Oculta árboles, pueblos, carreteras y nombres del relieve" },
+  clima: { ocultar: ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-sierras", "l-valles", "l-puertos", "l-nubes"], calma: 0,
+    nota: "Oculta árboles, pueblos, carreteras y cubierta del suelo" },
+  poblacion: { ocultar: ["l-arboles", "l-cob", "l-sierras", "l-valles", "l-puertos", "l-nubes"], calma: 0.35,
+    nota: "Oculta árboles, cubierta del suelo y nombres del relieve" },
+  relieve: { ocultar: ["l-pueblos", "l-mon", "l-carr", "l-nubes"], calma: 0, nota: "Oculta pueblos, monumentos y carreteras" }
+};
+const CAT_ENFOQUE = { mapa: null, relieve: "relieve", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
+const TODAS_OCULTABLES = [...new Set(Object.values(ENFOQUE).flatMap(e => e.ocultar))];
+let enfoqueAct = null, enfoqueGuardado = null, catAct = "mapa";
+function setEnfoque(f) {
+  if (!$("l-enfoque").checked) f = null;
+  if (f === enfoqueAct) return;
+  // estado «propio» de cada capa: el guardado si la ocultó el enfoque anterior; si no, el actual
+  const base = {};
+  for (const id of TODAS_OCULTABLES) base[id] = enfoqueGuardado && id in enfoqueGuardado ? enfoqueGuardado[id] : $(id).checked;
+  const ocultar = new Set(f ? ENFOQUE[f].ocultar : []);
+  enfoqueGuardado = f ? Object.fromEntries([...ocultar].map(id => [id, base[id]])) : null;
+  for (const id of TODAS_OCULTABLES) {
+    const el = $(id), quiero = ocultar.has(id) ? false : base[id];
+    if (el.checked !== quiero) { el.checked = quiero; el.dispatchEvent(new Event("change")); }
   }
+  enfoqueAct = f; U.uCalma.value = f ? ENFOQUE[f].calma : 0; needsRender = true;
 }
-$("l-calma").addEventListener("change", () => modoAgua(!$("hcard").hidden && $("l-calma").checked));
+function modoAgua(on) { setEnfoque(on ? "agua" : CAT_ENFOQUE[catAct]); }
+// si se toca a mano una capa que el enfoque había ocultado, se respeta al salir
+for (const id of TODAS_OCULTABLES) $(id).addEventListener("change", (e) => { if (e.isTrusted && enfoqueGuardado && id in enfoqueGuardado) enfoqueGuardado[id] = e.target.checked; });
+function setCat(k, guardar) {
+  catAct = k;
+  for (const b of document.querySelectorAll(".cat-b")) b.setAttribute("aria-selected", String(b.dataset.cat === k));
+  for (const c of document.querySelectorAll(".cat")) c.hidden = c.id !== "cat-" + k;
+  const f = CAT_ENFOQUE[k];
+  $("enfoque-note").textContent = f ? ENFOQUE[f].nota : "Esta categoría muestra el mapa completo";
+  if ($("hcard").hidden) setEnfoque(f);
+  if (k === "clima" && !clima.on && !clima.visto) { clima.visto = true; setClima(true); }   // la primera vez, el clima se enciende solo
+  $("panel").scrollTop = 0;
+  if (guardar) { try { localStorage.setItem("leon3d-cat", k); } catch (e) { /* sin almacenamiento */ } }
+}
+document.querySelector(".cats").addEventListener("click", (e) => { const b = e.target.closest(".cat-b"); if (b) setCat(b.dataset.cat, true); });
+document.querySelector(".cats").addEventListener("keydown", (e) => {   // flechas para moverse entre pestañas
+  if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+  const bs = [...document.querySelectorAll(".cat-b")], i = bs.findIndex(b => b.dataset.cat === catAct);
+  const n = bs[(i + (e.key === "ArrowLeft" || e.key === "ArrowUp" ? bs.length - 1 : 1)) % bs.length];
+  setCat(n.dataset.cat, true); n.focus(); e.preventDefault(); e.stopPropagation();
+});
+$("l-enfoque").addEventListener("change", () => setEnfoque(!$("hcard").hidden ? "agua" : CAT_ENFOQUE[catAct]));
 function showHcard(html, kind, ref) {
   modoAgua(true);
   $("info").hidden = true; $("mirador").hidden = true; selected = null; updateMunState();
@@ -2827,7 +2904,7 @@ async function cargarRios() {
   try {
     [rj, cb] = await Promise.all([fetch("data/rios.json").then(r => { if (!r.ok) throw new Error("rios.json"); return r.json(); }),
       fetch("data/cuencas.png").then(r => r.ok ? r.blob() : null).catch(() => null)]);
-  } catch (e) { return; }
+  } catch (e) { $("rios-cargando").textContent = "No se pudo cargar la red de ríos."; return; }
   RIO = rj;
   RX.hijos = RIO.rios.map(() => []);
   RIO.rios.forEach((r, i) => { if (r.p >= 0) RX.hijos[r.p].push(i); });
@@ -2857,7 +2934,7 @@ async function cargarRios() {
   });
   labels.sort((a, b) => b.prio - a.prio);
   $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(RIO.fuente) + "</li>");
-  $("rios-box").hidden = false; riosHook(); drawOverlay();
+  $("rios-box").hidden = false; $("rios-cargando").hidden = true; riosHook(); drawOverlay();
 }
 $("rio-search").addEventListener("change", (e) => {
   if (!RIO) return;
@@ -2867,6 +2944,32 @@ $("rio-search").addEventListener("change", (e) => {
   if (i != null) { selectRio(i, true); if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } }
 });
 cargarRios();
+setCat("mapa", false);   // siempre se abre con el paisaje completo
+// vista paisaje: todo como al abrir (árboles, pueblos, luz de la tarde, cámara inicial), sin capas de datos ni fichas
+const CAPAS_INICIO = { "l-fav": true, "l-mun": true, "l-comarcas": false, "l-carr": true, "l-pob": true, "l-entorno": false, "l-picos": true, "l-sierras": true,
+  "l-valles": true, "l-puertos": true, "l-cob": true, "l-arboles": true, "l-pueblos": true, "l-mon": true, "l-rios": true, "l-aguas": true, "l-nubes": false,
+  "l-hist": false, "l-sea": false };
+function vistaPaisaje() {
+  if (orbit) stopOrbit();
+  if (playTimer) stopPlay();
+  if (clima.play) stopClimaPlay();
+  if (rioPlay) stopRioPlay();
+  if (!$("hcard").hidden || gota) closeHcard();
+  if (!$("mirador").hidden || miradorArmed) closeMirador();
+  if (gotaArmed) setGotaArmed(false);
+  showInfo(null); if (comarcaSel) { $("comarca").value = ""; showComarca(null); }
+  setCat("mapa", false);
+  if (clima.on) setClima(false);
+  if (morph > 0) { $("morph").value = 0; $("morph").dispatchEvent(new Event("input")); }
+  for (const [id, v] of Object.entries(CAPAS_INICIO)) { const el = $(id); if (el && el.checked !== v) { el.checked = v; el.dispatchEvent(new Event("change")); } }
+  const pon = (id, v) => { const el = $(id); if (String(el.value) !== String(v)) { el.value = v; el.dispatchEvent(new Event("input")); } };
+  pon("exag", 2.5); pon("hora", 17); pon("mes", new Date().getMonth());
+  tweenTo(HOME, 1400);
+  $("readout").textContent = "Vista paisaje";
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+}
+$("vista-paisaje").onclick = vistaPaisaje;
+$("vista-paisaje-2").onclick = vistaPaisaje;
 bind("l-cob", "cob", () => { U.uCoverOn.value = layers.cob && COB ? 1 : 0; $("cob-legend").hidden = !(layers.cob && COB); });
 {
   $("morph").addEventListener("input", async (e) => { const v = +e.target.value / 100; if (!(await ensurePop())) { e.target.value = 0; return; } morph = v; applyMorph(false); });

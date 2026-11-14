@@ -275,7 +275,7 @@ def main():
 
     # ---------------------------------------------------------------- tramos dibujables: cadenas del mismo río entre confluencias
     tramos = []
-    for k in dibujar:
+    for k in sorted(dibujar):         # orden fijo: mismo fichero en cada reconstrucción
         r = rios[k]; idx = set(i for i in r["idx"] if dentro[i])
         siguiente = {i: abajo[i] for i in idx if abajo[i] in idx}
         previos = defaultdict(list)
