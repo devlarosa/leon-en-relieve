@@ -50,7 +50,7 @@ Quien publique los datos procesados (por ejemplo, el visor con `web/data/`) debe
 
 ## Cómo construirlo
 
-Requisitos: `bash`, `curl`, `python3`, R con los paquetes `sf`, `terra`, `dplyr` y `jsonlite`.
+Requisitos: `bash`, `curl`, `python3` con `numpy`, `scipy` y `Pillow`, y R con los paquetes `sf`, `terra`, `dplyr` y `jsonlite`. Todas las fuentes se descargan sin registro.
 
 ```bash
 scripts/descargar_datos.sh        # descarga todo en raw/ (unos 300 MB; se puede relanzar)
@@ -60,8 +60,7 @@ Rscript R/11_rejilla_poblacion.R  # genera web/data/poblacion.png (Censo 2021 en
 Rscript R/12_cobertura_copernicus.R  # descarga CLC+ Backbone y genera web/data/cobertura.png
 scripts/descargar_clima_aemet.sh   # rejilla diaria de 5 km de AEMET, 1991-2020 (unos 800 MB)
 python3 scripts/clima_aemet.py    # normales climáticas -> web/data/clima.png y clima.json
-python3 scripts/rios_red_descargar.py  # red hidrográfica del IGN (HY-N) y cuencas de la DGA -> raw/rios_red/
-# Anuario de Aforos del MITECO (CSV) y listados de estaciones -> raw/rios_mapa/ (ver scripts/rios_red.py)
+python3 scripts/rios_red_descargar.py  # red del IGN (HY-N), cuencas de la DGA y Anuario de Aforos (unos 200 MB)
 python3 scripts/rios_red.py        # afluentes, caudales, estaciones, embalses -> web/data/rios.json y cuencas.png
 ./abrir_visor.sh                  # sirve web/ en http://127.0.0.1:8800 y abre el navegador (--parar para detenerlo)
 ```
@@ -104,4 +103,4 @@ pruebas/                     pruebas automáticas en Firefox (WebDriver BiDi)
 ## Pendiente
 
 - Especies arbóreas con el Mapa Forestal de España (MFE25, MITECO): Copernicus distingue coníferas, caducifolias y perennifolias, pero no especies. Su descarga tiene un captcha y hay que bajarla a mano.
-- Precipitación media (AEMET).
+- Datos de ríos y embalses en tiempo real (SAIH del Duero y del Miño-Sil): sus servidores usan la raíz de certificados de la FNMT.

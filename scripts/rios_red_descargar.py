@@ -8,7 +8,10 @@ Además sigue aguas abajo, fuera de la zona, los ríos que salen de ella (Esla h
 para poder decir dónde desemboca cada uno.
 
 Los identificadores de nodo solo son únicos dentro de cada demarcación: la clave es (demarcación, nodo).
-Salida: raw/rios_red/*.jsonl (caché; se puede relanzar).
+Además descarga el Anuario de Aforos del MITECO (CSV de las confederaciones del Duero, Miño-Sil y Cantábrico)
+y los listados de situación de las estaciones, que usa scripts/rios_red.py para caudales y embalses.
+
+Salida: raw/rios_red/*.jsonl y raw/rios_mapa/ (caché; se puede relanzar).
 """
 import json
 import time
@@ -23,6 +26,9 @@ OUT = RAIZ / "raw" / "rios_red"
 API = "https://api-features.idee.es/collections"
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
 BBOX = "-7.15,41.95,-4.65,43.30"   # la misma caja que el resto de descargas del visor
+AFOROS = "https://www.miteco.gob.es/content/dam/miteco/es/agua/temas/evaluacion-de-los-recursos-hidricos/sistema-informacion-anuario-aforos/"
+AFOROS_ZIP = "Anuario-21-22-csv.zip"      # último anuario publicado; al salir uno nuevo, cambiar aquí el nombre
+CUENCAS_AFOROS = ("DUERO/", "MIÑO-SIL/", "CANTABRICO/")
 
 
 def get(url, intentos=5):
@@ -100,8 +106,31 @@ def leer(nombre):
     return [json.loads(l) for l in open(p, encoding="utf-8")] if p.exists() else None
 
 
+def anuario_aforos():
+    import zipfile
+    dest = RAIZ / "raw" / "rios_mapa"; dest.mkdir(parents=True, exist_ok=True)
+    for nombre, solo in ((AFOROS_ZIP, CUENCAS_AFOROS), ("listado-estaciones-aforo.zip", None)):
+        z = dest / nombre
+        if not z.exists() or not zipfile.is_zipfile(z):
+            print("Descargando", nombre, "…", flush=True)
+            req = urllib.request.Request(AFOROS + nombre, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=1800) as r, open(str(z) + ".part", "wb") as fh:
+                while True:
+                    b = r.read(1 << 20)
+                    if not b:
+                        break
+                    fh.write(b)
+            Path(str(z) + ".part").rename(z)
+        with zipfile.ZipFile(z) as zf:
+            for m in zf.namelist():
+                if not m.endswith("/") and (solo is None or m.startswith(solo)) and not (dest / m).exists():
+                    zf.extract(m, dest)
+    print("Anuario de Aforos en", dest)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    anuario_aforos()
     tramos = leer("tramos.jsonl")
     if tramos is None:
         print("Tramos de la red (watercourselink)…")
