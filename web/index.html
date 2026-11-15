@@ -337,6 +337,38 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   #readout { left: auto; right: max(16px, env(safe-area-inset-right, 0px)); transform: none; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 140px); }
 }
+/* tutorial: foco, mano animada y bocadillo */
+#tour { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
+#tour-bloq { position: absolute; inset: 0; pointer-events: auto; background: transparent; }
+#tour-foco { position: absolute; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(18, 28, 30, 0.5), 0 0 0 3px #f2b53a inset;
+  transition: left .5s ease, top .5s ease, width .5s ease, height .5s ease, opacity .3s; pointer-events: none; }
+#tour-foco.libre { box-shadow: 0 0 0 9999px rgba(18, 28, 30, 0.18); width: 0 !important; height: 0 !important; }
+#tour-mano { position: absolute; left: 0; top: 0; width: 38px; height: 38px; transition: transform .75s cubic-bezier(.45, .05, .3, 1); pointer-events: none;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.35)); }
+#tour-mano svg { transition: transform .12s; transform-origin: 30% 10%; }
+#tour-mano.pulsa svg { transform: scale(.82); }
+.tour-onda { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 3px solid #f2b53a; pointer-events: none;
+  animation: tour-onda .6s ease-out forwards; }
+@keyframes tour-onda { from { transform: scale(.4); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
+#tour-card { position: absolute; width: min(340px, calc(100% - 32px)); box-sizing: border-box; padding: 14px 16px 12px; pointer-events: auto;
+  transition: left .45s ease, top .45s ease; z-index: 2; }
+#tour-card .paso { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #b07a1e; margin: 0 0 4px; }
+#tour-card h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 21px; font-weight: 800; line-height: 1.1; }
+#tour-card p.txt { margin: 0; font-size: 13.5px; line-height: 1.5; }
+#tour-card .barra { height: 3px; border-radius: 2px; background: var(--line); margin: 12px 0 10px; overflow: hidden; }
+#tour-card .barra i { display: block; height: 100%; width: 0; background: #c47f12; }
+#tour-card .bts { display: flex; gap: 6px; align-items: center; }
+#tour-card .bts button { font: inherit; font-size: 13px; font-weight: 700; padding: 7px 11px; border-radius: 9px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+#tour-card .bts button.prim { background: var(--moss); border-color: var(--moss); color: var(--panel-solid); }
+#tour-card .bts button:focus-visible { outline: 2px solid var(--moss); outline-offset: 2px; }
+#tour-card .bts .sp { flex: 1; }
+#tour-invita { position: fixed; z-index: 7; left: 50%; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; align-items: center; gap: 10px;
+  padding: 8px 8px 8px 14px; font-size: 13.5px; white-space: nowrap; }
+#tour-invita button { font: inherit; font-weight: 700; font-size: 13px; padding: 7px 12px; border-radius: 9px; border: 0; cursor: pointer; }
+#tour-invita .ver { background: #c47f12; color: #fff; }
+#tour-invita .no { background: transparent; color: var(--ink-soft); font-size: 18px; padding: 4px 8px; }
+.tour-btn { font: inherit; font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; border: 1.5px solid #c47f12; background: transparent; color: var(--ink); cursor: pointer; margin-top: 8px; }
+.tour-btn:hover { background: #c47f12; color: #fff; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -349,6 +381,7 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   <div>
     <h1>León en relieve</h1>
     <p class="sub">La provincia en 3D con datos oficiales: relieve, población, clima y agua.</p>
+    <button class="tour-btn" id="tour-abrir">▶ Tutorial: cómo se usa</button>
   </div>
   <nav class="cats" role="tablist" aria-label="Categorías de datos">
     <button class="cat-b" role="tab" id="tab-mapa" data-cat="mapa" aria-selected="true" aria-controls="cat-mapa"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
@@ -494,6 +527,7 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   </div>
   </section>
   <section class="cat" id="cat-escena" role="tabpanel" aria-labelledby="tab-escena" hidden>
+    <button class="tool-btn" id="tour-abrir-2">▶ Tutorial guiado<small>Dos minutos para aprender a usar el mapa</small></button>
     <button class="tool-btn paisaje" id="vista-paisaje-2">✦ Vista paisaje<small>Vuelve a la vista inicial con todo el paisaje</small></button>
     <div><p class="group-title">Luz y estación</p>
     <div class="slider"><div class="row"><label for="mes">Mes</label><output id="mes-o"></output></div>
@@ -581,9 +615,24 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   <button id="nav-upd" aria-label="Actualizar la aplicación" title="Actualizar"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button>
 </div>
 
+<div id="tour" hidden>
+  <div id="tour-bloq"></div>
+  <div id="tour-foco" class="libre"></div>
+  <div id="tour-mano" aria-hidden="true"><svg viewBox="0 0 24 24" width="38" height="38"><path d="M9 11V4.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v3.5c0 4-2.5 7-6.5 7-3 0-4.5-1.5-6-4l-2.2-3.6a1.4 1.4 0 0 1 2.3-1.6L9 13"
+    fill="#fffdf4" stroke="#263a32" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+  <section id="tour-card" class="card" role="dialog" aria-live="polite" aria-label="Tutorial">
+    <p class="paso" id="tour-paso"></p><h3 id="tour-tit"></h3><p class="txt" id="tour-txt"></p>
+    <div class="barra"><i id="tour-barra"></i></div>
+    <div class="bts"><button id="tour-ant" aria-label="Paso anterior">‹</button><button id="tour-pausa" aria-label="Pausar">❚❚</button>
+      <button id="tour-sig" class="prim">Siguiente ›</button><span class="sp"></span><button id="tour-salir">Salir</button></div>
+  </section>
+</div>
+<div id="tour-invita" class="card" hidden role="status"><span>¿Primera vez aquí?</span><button class="ver" id="tour-invita-ver">▶ Ver el tutorial (2 min)</button><button class="no" id="tour-invita-no" aria-label="No, gracias">×</button></div>
+
 <section id="help" class="card" hidden aria-label="Controles de navegación">
   <button class="x" id="help-close" aria-label="Cerrar ayuda">×</button>
   <h2>Cómo moverse</h2>
+  <button class="tour-btn" id="tour-abrir-3" style="margin: 0 0 12px">▶ Ver el tutorial guiado</button>
   <div class="help-grid">
     <div>
       <p class="group-title">Ratón</p>
@@ -1122,7 +1171,7 @@ function startOrbit() {
   $("readout").textContent = "Sobrevuelo: toca el mapa o pulsa otra vez el botón para parar";
   if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
 }
-function stopOrbit() { orbit = null; orbitButtons(false); }
+function stopOrbit() { orbit = null; orbitButtons(false); if ($("readout").textContent.startsWith("Sobrevuelo")) $("readout").textContent = "Pasa el cursor por el mapa"; }
 function toggleOrbit() { if (orbit) stopOrbit(); else startOrbit(); }
 $("nav-orbit").onclick = toggleOrbit;
 $("i-orbit").onclick = toggleOrbit;
@@ -3348,5 +3397,179 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 $("loading").classList.add("done");
+
+// ---------------------------------------------------------------- tutorial guiado
+// Cada paso enfoca un elemento, mueve una mano hasta él, «hace clic» (con la acción real) y explica qué pasa.
+// Cada acción comprueba que el paso sigue siendo el actual: si se salta o se sale, se corta sin dejar nada a medias.
+const tour = { on: false, i: 0, tok: 0, pausa: false, objetivo: null, raf: 0 };
+const PARAR = Symbol("parar");
+const vivo = (tk) => { if (!tour.on || tk !== tour.tok) throw PARAR; };
+const espera = (ms, tk) => new Promise((ok, ko) => setTimeout(() => { try { vivo(tk); ok(); } catch (e) { ko(e); } }, reduceMotion ? Math.min(ms, 300) : ms));
+function rectDe(o) {
+  if (!o) return null;
+  if (o instanceof Element) { const r = o.getBoundingClientRect(); return r.width ? { x: r.left, y: r.top, w: r.width, h: r.height } : null; }
+  if (o.mx != null) {              // punto del mapa (metros)
+    tmpV.set(sx(o.mx), heightAt(o.mx, o.my) * ZS(), sz(o.my)).project(camera);
+    const r = renderer.domElement.getBoundingClientRect(), x = r.left + (tmpV.x * 0.5 + 0.5) * r.width, y = r.top + (-tmpV.y * 0.5 + 0.5) * r.height, rad = o.r || 46;
+    return { x: x - rad, y: y - rad, w: rad * 2, h: rad * 2, redondo: true };
+  }
+  return o;
+}
+function colocar() {      // foco y bocadillo siguen al objetivo aunque se mueva la cámara o el panel
+  const r = rectDe(tour.objetivo), f = $("tour-foco"), c = $("tour-card"), vw = innerWidth, vh = innerHeight, cw = c.offsetWidth, ch = c.offsetHeight, m = 12;
+  if (r) {
+    f.classList.remove("libre"); const p = 6;
+    Object.assign(f.style, { left: r.x - p + "px", top: r.y - p + "px", width: r.w + 2 * p + "px", height: r.h + 2 * p + "px", borderRadius: r.redondo ? "50%" : "14px" });
+  } else f.classList.add("libre");
+  let x, y;
+  if (!r) { x = (vw - cw) / 2; y = vw < 720 ? m + 8 : (vh - ch) / 2; }   // en el móvil, arriba: deja ver el mapa
+  else if (vw < 720) { x = (vw - cw) / 2; y = r.y + r.h / 2 > vh / 2 ? m + 8 : vh - ch - m - 8; }
+  else {
+    const opciones = [[r.x + r.w + 18, r.y], [r.x - cw - 18, r.y], [r.x, r.y + r.h + 18], [r.x, r.y - ch - 18]];
+    const cabe = ([a, b]) => a >= m && b >= m && a + cw <= vw - m && b + ch <= vh - m;
+    [x, y] = opciones.find(cabe) || [vw - cw - m, vh - ch - m];
+  }
+  c.style.left = Math.max(m, Math.min(vw - cw - m, x)) + "px"; c.style.top = Math.max(m, Math.min(vh - ch - m, y)) + "px";
+  tour.raf = requestAnimationFrame(colocar);
+}
+let manoXY = [innerWidth / 2, innerHeight / 2];
+async function mano(o, tk, dx = 0.5, dy = 0.5) {
+  const r = rectDe(o); if (!r) return;
+  const x = r.x + r.w * dx, y = r.y + r.h * dy; manoXY = [x, y];
+  $("tour-mano").style.transform = `translate(${x - 9}px, ${y - 3}px)`;
+  await espera(800, tk);
+}
+async function clic(o, tk, accion) {
+  await mano(o, tk);
+  const h = $("tour-mano"); h.classList.add("pulsa");
+  const onda = document.createElement("span"); onda.className = "tour-onda"; onda.style.left = manoXY[0] + "px"; onda.style.top = manoXY[1] + "px";
+  $("tour").appendChild(onda); setTimeout(() => onda.remove(), 700);
+  await espera(160, tk); h.classList.remove("pulsa");
+  if (accion) accion(); else if (o instanceof Element) o.click();
+  await espera(350, tk);
+}
+async function deslizar(el, desde, hasta, ms, tk) {   // mueve una barra como si se arrastrara
+  const pasos = Math.max(8, Math.round(ms / 70));
+  for (let k = 0; k <= pasos; k++) { el.value = desde + (hasta - desde) * k / pasos; el.dispatchEvent(new Event("input")); await espera(ms / pasos, tk); }
+}
+async function escribir(el, texto, tk) {
+  el.focus(); el.value = "";
+  for (const ch of texto) { el.value += ch; el.dispatchEvent(new Event("input")); await espera(85, tk); }
+  el.dispatchEvent(new Event("change")); el.blur();
+}
+const abrirPanel = () => { if (isPhone) { $("panel").classList.remove("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "true"); } };
+const cerrarPanel = () => { if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } };
+const verEn = (el) => { el.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" }); return el; };
+const capLeon = data.capitales.find(c => c.c === "24089"), munLeon = data.municipios.find(m => m.c === "24089");
+const PASOS = [
+  { t: "Bienvenido a León en relieve", x: "La provincia en 3D con datos oficiales. En dos minutos te enseño a moverte, a consultar cualquier lugar y a usar las capas de datos. Puedes pausar o saltar pasos cuando quieras.",
+    f: async (tk) => { tour.objetivo = null; cerrarPanel(); tweenTo(HOME, 900); await espera(900, tk); } },
+  { t: "Moverse por el mapa", x: "Arrastra para desplazarte. Con la rueda o pellizcando con dos dedos te acercas. Con el botón derecho, o girando dos dedos, cambias el ángulo y la orientación.",
+    f: async (tk) => {
+      tour.objetivo = null; const c = renderer.domElement.getBoundingClientRect(), cx = c.left + c.width / 2, cy = c.top + c.height / 2;
+      await mano({ x: cx, y: cy, w: 0, h: 0 }, tk); $("tour-mano").classList.add("pulsa");
+      $("tour-mano").style.transform = `translate(${cx - 130}px, ${cy - 3}px)`; tweenTo({ tx: ctl.target.x + 25 }, 900); await espera(1000, tk);
+      $("tour-mano").classList.remove("pulsa"); tweenTo({ dist: ctl.dist * 0.55, phi: 0.85 }, 1200); await espera(1400, tk);
+      tweenTo({ theta: ctl.theta + 0.7 }, 1300); await espera(1500, tk); tweenTo(HOME, 1300); await espera(1300, tk);
+    } },
+  { t: "Los controles", x: "Aquí tienes zoom, la brújula (norte arriba), la vista cenital 2D o inclinada 3D, el sobrevuelo de dron, tu ubicación, la ayuda y ↻ para cargar cambios.",
+    f: async (tk) => { tour.objetivo = $("nav"); await espera(700, tk); await clic($("nav-tilt"), tk); await espera(1300, tk); await clic($("nav-tilt"), tk); } },
+  { t: "Toca un municipio", x: "Al tocar el mapa aparece la ficha del municipio con su población, superficie y altitud. Probemos con León.",
+    f: async (tk) => {
+      cerrarPanel(); flyToPoint(capLeon.xy[0], capLeon.xy[1], 32); await espera(1600, tk);
+      tour.objetivo = { mx: capLeon.xy[0], my: capLeon.xy[1] }; await espera(400, tk);
+      await clic(tour.objetivo, tk, () => showInfo(munLeon)); await espera(500, tk); tour.objetivo = $("info");
+    } },
+  { t: "Más información", x: "La ficha sale pequeña para no tapar el mapa. «Más info» la despliega: comarca, altitud y la población desde 1900.",
+    f: async (tk) => { tour.objetivo = $("info"); await clic($("i-more"), tk); await espera(2200, tk); await clic($("i-more"), tk); } },
+  { t: "Sobrevolar como un dron", x: "«Sobrevolar» da vueltas alrededor del municipio, como un dron. Toca el mapa para parar.",
+    f: async (tk) => { tour.objetivo = $("i-orbit"); await clic($("i-orbit"), tk); tour.objetivo = null; await espera(4500, tk); if (orbit) stopOrbit(); showInfo(null); } },
+  { t: "Las categorías", x: "El panel se organiza por temas: Mapa, Relieve, Geología, Población, Clima, Agua y Escena. Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
+    f: async (tk) => { abrirPanel(); await espera(400, tk); tour.objetivo = document.querySelector(".cats"); $("panel").scrollTop = 0; await espera(1200, tk); } },
+  { t: "Nivel del agua", x: "En Relieve puedes inundar el terreno hasta una altitud y ver qué cotas sobresalen. Aquí, todo lo que queda por debajo de 1.000 m.",
+    f: async (tk) => {
+      abrirPanel(); await clic($("tab-relieve"), tk); tour.objetivo = verEn($("sea-box")); await espera(600, tk);
+      if (!$("l-sea").checked) await clic($("l-sea").parentElement, tk); await mano($("sea"), tk, 0.25); await deslizar($("sea"), 600, 1000, 1800, tk);
+      cerrarPanel(); tweenTo(HOME, 900); await espera(2200, tk); abrirPanel(); await clic($("l-sea").parentElement, tk);
+    } },
+  { t: "Geología", x: "Colorea el terreno por tipo de roca, edad o permeabilidad. Toca un color de la leyenda para verlo solo, o toca el terreno para ver qué roca hay.",
+    f: async (tk) => {
+      abrirPanel(); await clic($("tab-geologia"), tk); await espera(2200, tk); tour.objetivo = verEn($("geo-leg")); await espera(1200, tk);
+      if (geol.listo) { const b = $("geo-leg").querySelector('[data-k="6"]') || $("geo-leg").firstElementChild; if (b) { await clic(b, tk); await espera(1800, tk); await clic(b, tk); } }
+    } },
+  { t: "El clima", x: "Normales de AEMET de 1991 a 2020: temperaturas, lluvia, heladas… Con ▶ se anima el año y se ve el frío bajar de la montaña en invierno.",
+    f: async (tk) => {
+      abrirPanel(); await clic($("tab-clima"), tk); if (!clima.on) await setClima(true); tour.objetivo = verEn($("clima-box")); await espera(800, tk);
+      await clic($("cl-play"), tk); await espera(4200, tk); if (clima.play) await clic($("cl-play"), tk);
+    } },
+  { t: "Ríos y afluentes", x: "En Agua, busca un río para ver su cuenca, sus afluentes, el caudal y las estaciones de aforo.",
+    f: async (tk) => {
+      abrirPanel(); await clic($("tab-agua"), tk); await espera(600, tk);
+      if (RIO) { tour.objetivo = verEn($("rio-search")); await mano($("rio-search"), tk, 0.3); await escribir($("rio-search"), "Río Bernesga", tk); cerrarPanel(); await espera(900, tk); tour.objetivo = $("hcard"); await espera(2500, tk); }
+    } },
+  { t: "¿Adónde va esta gota?", x: "Suelta una gota en cualquier punto y mira el camino del agua, río a río, hasta el mar.",
+    f: async (tk) => {
+      if (!RIO) return; closeHcard(); abrirPanel(); tour.objetivo = verEn($("gota-btn")); await clic($("gota-btn"), tk);
+      cerrarPanel(); tweenTo(HOME, 700); await espera(900, tk);
+      const pto = { mx: 95000, my: 42000 }; tour.objetivo = pto; await clic(pto, tk, () => lanzarGota(pto.mx, pto.my)); tour.objetivo = $("hcard"); await espera(5000, tk);
+    } },
+  { t: "Luz y estación", x: "En Escena eliges el mes y la hora: el sol, la nieve y los colores del paisaje cambian con ellos.",
+    f: async (tk) => {
+      if (!$("hcard").hidden) closeHcard(); abrirPanel(); await clic($("tab-escena"), tk); tour.objetivo = verEn($("hora").closest(".slider")); await mano($("hora"), tk, 0.6);
+      await deslizar($("hora"), 17, 20.5, 1800, tk); await espera(900, tk); await deslizar($("hora"), 20.5, 17, 1200, tk);
+    } },
+  { t: "Volver al paisaje", x: "Cuando quieras, «Vista paisaje» lo deja todo como al principio. Y el botón ? te recuerda los controles. ¡A explorar!",
+    f: async (tk) => { abrirPanel(); tour.objetivo = verEn($("vista-paisaje-2")); await clic($("vista-paisaje-2"), tk); tour.objetivo = null; $("tour-sig").textContent = "Terminar"; } }
+];
+async function correrPaso(i) {
+  const tk = ++tour.tok; tour.i = i;
+  // lo que el paso anterior dejó en marcha se para al cambiar de paso
+  if (orbit) stopOrbit();
+  if (clima.play) stopClimaPlay();
+  if (rioPlay) stopRioPlay();
+  $("tour-mano").classList.remove("pulsa");
+  const P = PASOS[i];
+  $("tour-paso").textContent = `Paso ${i + 1} de ${PASOS.length}`; $("tour-tit").textContent = P.t; $("tour-txt").textContent = P.x;
+  $("tour-sig").textContent = i === PASOS.length - 1 ? "Terminar" : "Siguiente ›"; $("tour-ant").disabled = i === 0;
+  const barra = $("tour-barra"); barra.style.transition = "none"; barra.style.width = "0";
+  try {
+    await P.f(tk);
+    // tiempo de lectura antes de avanzar solo
+    const lectura = Math.max(2500, P.x.length * 38);
+    barra.offsetWidth; barra.style.transition = `width ${lectura}ms linear`; barra.style.width = "100%";
+    await espera(lectura, tk);
+    while (tour.pausa) await espera(250, tk);
+    if (i < PASOS.length - 1) correrPaso(i + 1);
+  } catch (e) { if (e !== PARAR) { console.warn("tutorial:", e); } }
+}
+function empezarTour() {
+  if (tour.on) return;
+  $("tour-invita").hidden = true; try { localStorage.setItem("leon3d-tour", "visto"); } catch (e) { /* sin almacenamiento */ }
+  if (!$("help").hidden) toggleHelp(false);
+  vistaPaisaje();
+  tour.on = true; tour.pausa = false; $("tour-pausa").textContent = "❚❚"; $("tour").hidden = false;
+  $("tour-mano").style.transform = `translate(${innerWidth / 2}px, ${innerHeight * 0.6}px)`;
+  cancelAnimationFrame(tour.raf); colocar(); correrPaso(0);
+}
+function salirTour() {
+  if (!tour.on) return;
+  tour.on = false; tour.tok++; cancelAnimationFrame(tour.raf); $("tour").hidden = true;
+  if (clima.play) stopClimaPlay();
+  vistaPaisaje();
+}
+$("tour-sig").onclick = () => { if (tour.i >= PASOS.length - 1) salirTour(); else correrPaso(tour.i + 1); };
+$("tour-ant").onclick = () => { if (tour.i > 0) correrPaso(tour.i - 1); };
+$("tour-salir").onclick = salirTour;
+$("tour-pausa").onclick = () => { tour.pausa = !tour.pausa; $("tour-pausa").textContent = tour.pausa ? "▶" : "❚❚"; $("tour-pausa").setAttribute("aria-label", tour.pausa ? "Seguir" : "Pausar"); };
+for (const id of ["tour-abrir", "tour-abrir-2", "tour-abrir-3", "tour-invita-ver"]) $(id).onclick = empezarTour;
+$("tour-invita-no").onclick = () => { $("tour-invita").hidden = true; try { localStorage.setItem("leon3d-tour", "visto"); } catch (e) { /* sin almacenamiento */ } };
+addEventListener("keydown", (e) => {          // durante el tutorial, el teclado lo maneja él
+  if (!tour.on) return;
+  if (e.key === "Escape") salirTour(); else if (e.key === "ArrowRight") $("tour-sig").click(); else if (e.key === "ArrowLeft") $("tour-ant").click();
+  else if (e.key === " ") $("tour-pausa").click(); else return;
+  e.preventDefault(); e.stopImmediatePropagation();
+}, true);
+{ let visto = null; try { visto = localStorage.getItem("leon3d-tour"); } catch (e) { visto = "visto"; }
+  if (!visto) setTimeout(() => { if (!tour.on) $("tour-invita").hidden = false; }, 2500); }
 })();
 </script>
