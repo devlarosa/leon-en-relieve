@@ -153,6 +153,9 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .chip { font: inherit; font-size: 12.5px; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-solid); color: var(--ink); cursor: pointer; }
 .chip:hover { border-color: #2a8fd0; background: #e4f2fb; }
 .chip small { color: var(--ink-soft); margin-left: 4px; }
+.chips.leg { padding: 2px 6px 4px; }
+.chip i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.15); }
+.lbl.cuenca { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: #134b6e; }
 .lista-st { display: flex; flex-direction: column; gap: 2px; }
 .lista-st button { display: flex; justify-content: space-between; gap: 8px; font: inherit; font-size: 13px; padding: 5px 6px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
 .lista-st button:hover { background: var(--moss-soft); }
@@ -376,6 +379,8 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
       <label class="layer" id="l-fav-row" hidden><input type="checkbox" id="l-fav" checked><span class="sw"></span><span class="name">Lugares destacados</span><span class="key" style="background:#f2b53a"></span></label>
       <label class="layer"><input type="checkbox" id="l-mun" checked><span class="sw"></span><span class="name">Límites municipales</span><span class="key" style="background:#fff7df;box-shadow:0 0 0 1px #8a7a52"></span></label>
       <label class="layer"><input type="checkbox" id="l-comarcas"><span class="sw"></span><span class="name">Comarcas agrarias<span class="note">Oficiales del MAPA</span></span><span class="key" style="background:#7a4d8c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-comcolor"><span class="sw"></span><span class="name">Colorear todas las comarcas<span class="note">Cada comarca agraria de un color</span></span></label>
+      <div class="chips leg" id="com-leg" hidden></div>
       <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
       <label class="layer"><input type="checkbox" id="l-pob" checked><span class="sw"></span><span class="name">Poblaciones</span><span class="key" style="background:#e9b44c"></span></label>
       <label class="layer"><input type="checkbox" id="l-entorno"><span class="sw"></span><span class="name">Provincias vecinas</span></label>
@@ -458,7 +463,12 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
     <p class="spark-note" id="rios-cargando" style="padding: 0 6px">Cargando la red de ríos…</p>
     <div id="rios-box" hidden>
     <p class="group-title">Ríos y agua</p>
+    <div style="padding: 2px 6px 4px"><label class="group-title" for="cuenca-sel" style="display:block">Cuenca hidrográfica</label>
+      <select id="cuenca-sel" class="sel"><option value="">Elige una cuenca…</option></select></div>
     <div style="padding: 2px 6px 4px"><input id="rio-search" class="sel" list="riolist" placeholder="Buscar río: Esla, Sil, Porma…" autocomplete="off" aria-label="Buscar río"><datalist id="riolist"></datalist></div>
+    <label class="layer"><input type="checkbox" id="l-cucolor"><span class="sw"></span><span class="name">Colorear todas las cuencas<span class="note">Cada cuenca de un color; las vecinas, distintas</span></span></label>
+    <div class="seg" role="group" aria-label="Nivel de las cuencas" id="cu-nivel" hidden><button id="cu-sub" aria-pressed="true">Subcuencas</button><button id="cu-dem" aria-pressed="false">Demarcaciones</button></div>
+    <div class="chips leg" id="cu-leg" hidden></div>
     <label class="layer"><input type="checkbox" id="l-caudal" checked><span class="sw"></span><span class="name">Grosor según el caudal<span class="note" id="caudal-note">Caudal medio estimado del mes</span></span></label>
     <div class="hist-row"><button class="play" id="rio-play" aria-pressed="false" aria-label="Animar el caudal a lo largo del año">▶</button><span class="spark-note" style="margin:0">Animar el año: deshielo en primavera, estiaje en verano</span></div>
     <label class="layer"><input type="checkbox" id="l-est" checked><span class="sw"></span><span class="name">Estaciones de aforo<span class="note">Anuario de Aforos del MITECO</span></span><span class="key" style="background:#2a8fd0"></span></label>
@@ -754,7 +764,7 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
-const layers = { caudal: true, est: true, cuenca: true, cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+const layers = { comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
@@ -776,6 +786,8 @@ for (const c of data.comarcas) {
 }
 function drawOverlay() {
   ov.clearRect(0, 0, TW, TH);
+  if (layers.comcolor) pintarComarcas();
+  if (layers.cucolor && RIO) pintarCuencas();
   ov.lineJoin = "round"; ov.lineCap = "round";
   if (layers.aguas) {
     for (const a of data.aguas) {
@@ -2256,7 +2268,7 @@ function updateLabels() {
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
     let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
-      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (show && L.minDist && camDist > L.minDist) show = false;
     if (show && L.kind !== "fav" && favSet.has(L.mx + "," + L.my)) show = false;   // ya tiene rótulo de destacado
     if (show && !layers.entorno && !inProv(L.mx, L.my)) show = false;
@@ -2731,7 +2743,7 @@ function showHcard(html, kind, ref) {
 }
 function closeHcard() {
   modoAgua(false);
-  $("hcard").hidden = true; hcardKind = null; rioSel = -1; rioSet = null; cuencaCv = null;
+  $("hcard").hidden = true; hcardKind = null; rioSel = -1; rioSet = null; cuencaCv = null; $("cuenca-sel").value = "";
   if (gota) { gota = null; gotaMesh.visible = false; }
   drawOverlay();
 }
@@ -2934,7 +2946,7 @@ async function cargarRios() {
   });
   labels.sort((a, b) => b.prio - a.prio);
   $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(RIO.fuente) + "</li>");
-  $("rios-box").hidden = false; $("rios-cargando").hidden = true; riosHook(); drawOverlay();
+  $("rios-box").hidden = false; $("rios-cargando").hidden = true; llenarSelectorCuencas(); riosHook(); actualizarCuencas();
 }
 $("rio-search").addEventListener("change", (e) => {
   if (!RIO) return;
@@ -2942,6 +2954,100 @@ $("rio-search").addEventListener("change", (e) => {
   let i = RX.etiquetas.get(e.target.value);
   if (i == null) { const hit = [...RX.etiquetas.entries()].find(([n]) => norm(n).includes(q)); i = hit ? hit[1] : null; }
   if (i != null) { selectRio(i, true); if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } }
+});
+// ---------------------------------------------------------------- todas las comarcas y todas las cuencas, cada una de un color
+const PAL_CAT = ["#e2a54f", "#7fb069", "#6b9bd2", "#d77f8f", "#9d82c8", "#55b0a2", "#d9c255", "#c98a5e", "#8fb6dc", "#a9c25f", "#d69bd0", "#e07b5a"];
+const conAlfa = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${a})`;
+const comarcasColor = data.comarcas.filter(c => c.n !== BIERZO_OFICIAL).sort((a, b) => a.n.localeCompare(b.n, "es"));
+function pintarComarcas() {
+  comarcasColor.forEach((c, i) => {
+    ringPath(ov, c.g); ov.fillStyle = conAlfa(PAL_CAT[i % PAL_CAT.length], 0.58); ov.fill("evenodd");
+    ov.strokeStyle = "rgba(255, 250, 238, 0.9)"; ov.lineWidth = 3 * px1; ov.stroke();
+  });
+}
+$("com-leg").innerHTML = comarcasColor.map((c, i) => `<button class="chip" data-com="${esc(c.n)}"><i style="background:${PAL_CAT[i % PAL_CAT.length]}"></i>${esc(c.n)}</button>`).join("");
+$("com-leg").addEventListener("click", (e) => { const b = e.target.closest("[data-com]"); if (!b) return; $("comarca").value = b.dataset.com; $("comarca").dispatchEvent(new Event("change")); });
+bind("l-comcolor", "comcolor", () => { $("com-leg").hidden = !layers.comcolor; drawOverlay(); });
+
+let cuNivel = "sub", cuCache = {}, cuLabels = [];
+function raizDe(i) { let g = 0; while (RIO.rios[i].p >= 0 && g++ < 40) i = RIO.rios[i].p; return i; }
+function gruposCuencas(nivel) {
+  if (cuCache[nivel]) return cuCache[nivel];
+  const n = RIO.rios.length, grupo = new Int32Array(n).fill(-1), grupos = [], clave = new Map();
+  const nuevo = (k, g) => { if (!clave.has(k)) { clave.set(k, grupos.length); grupos.push(g); } return clave.get(k); };
+  const grande = (i) => RIO.rios[i].Am >= 250;
+  for (let i = 0; i < n; i++) {
+    if (nivel === "dem") { const dm = RIO.rios[i].dm; grupo[i] = nuevo(dm, { n: (DEM[dm] || dm), r: -1, dm }); continue; }
+    let j = i, g = 0; while (!grande(j) && RIO.rios[j].p >= 0 && g++ < 40) j = RIO.rios[j].p;   // primer antepasado (o él mismo) con cuenca grande
+    if (!grande(j)) j = raizDe(i);
+    grupo[i] = nuevo(j, { n: RIO.rios[j].n, r: j, dm: RIO.rios[j].dm });
+  }
+  // celdas de cada grupo, vecindad entre grupos y centro para el rótulo
+  const G = grupos.length, cuenta = new Float64Array(G), sx_ = new Float64Array(G), sy_ = new Float64Array(G), prov = new Float64Array(G), vecinos = grupos.map(() => new Set());
+  const gc = new Int32Array(cuencaR.length).fill(-1);
+  for (let i = 0; i < cuencaR.length; i++) { const r = cuencaR[i] - 1; if (r >= 0) gc[i] = grupo[r]; }
+  for (let y = 0; y < R; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x, g = gc[i]; if (g < 0) continue;
+    cuenta[g]++; if (maskA[i] > 127) { prov[g]++; sx_[g] += x; sy_[g] += y; }
+    if (x + 1 < W) { const h = gc[i + 1]; if (h >= 0 && h !== g) { vecinos[g].add(h); vecinos[h].add(g); } }
+    if (y + 1 < R) { const h = gc[i + W]; if (h >= 0 && h !== g) { vecinos[g].add(h); vecinos[h].add(g); } }
+  }
+  // colores: de mayor a menor, el primero de la paleta que no use ningún vecino
+  const color = new Int32Array(G).fill(-1);
+  [...grupos.keys()].sort((a, b) => cuenta[b] - cuenta[a]).forEach(g => {
+    const usados = new Set([...vecinos[g]].map(h => color[h]));
+    let k = 0; while (usados.has(k) && k < PAL_CAT.length - 1) k++; color[g] = k;
+  });
+  // rótulo: la celda del grupo más cercana al centro de su parte en la provincia
+  const centro = grupos.map((_, g) => prov[g] ? [sx_[g] / prov[g], sy_[g] / prov[g]] : null), mejor = grupos.map(() => [1e18, -1]);
+  for (let i = 0; i < gc.length; i++) { const g = gc[i]; if (g < 0 || !centro[g] || maskA[i] <= 127) continue; const y = (i / W) | 0, x = i - y * W, d = (x - centro[g][0]) ** 2 + (y - centro[g][1]) ** 2; if (d < mejor[g][0]) mejor[g] = [d, i]; }
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = R;
+  const cx = cv.getContext("2d"), im = cx.createImageData(W, R), d = im.data;
+  const rgb = PAL_CAT.map(h => [1, 3, 5].map(o => parseInt(h.slice(o, o + 2), 16)));
+  for (let i = 0; i < gc.length; i++) { const g = gc[i]; if (g < 0) continue; const c = rgb[color[g]]; d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 135; }
+  cx.putImageData(im, 0, 0);
+  const res = { grupos: grupos.map((g, k) => Object.assign(g, { color: PAL_CAT[color[k]], km2: prov[k] * (M.celda / 1000) ** 2, cel: mejor[k][1] })), cv };
+  return (cuCache[nivel] = res);
+}
+function pintarCuencas() { if (!cuencaR) return; ov.save(); ov.imageSmoothingEnabled = true; ov.drawImage(gruposCuencas(cuNivel).cv, 0, 0, TW, TH); ov.restore(); }
+function actualizarCuencas() {
+  for (const L of cuLabels) { L.el.remove(); const k = labels.indexOf(L); if (k >= 0) labels.splice(k, 1); }
+  cuLabels = [];
+  $("cu-nivel").hidden = $("cu-leg").hidden = !layers.cucolor;
+  if (layers.cucolor && RIO && cuencaR) {
+    const { grupos } = gruposCuencas(cuNivel), vis = grupos.filter(g => g.km2 >= (cuNivel === "dem" ? 1 : 40)).sort((a, b) => b.km2 - a.km2);
+    for (const g of vis) {
+      if (g.cel < 0) continue;
+      const y = (g.cel / W) | 0, x = g.cel - y * W, nom = cuNivel === "dem" ? g.n : g.n.replace(/^Río /, "");
+      addLabel("cuenca", esc(nom), (x + 0.5) * M.celda, (y + 0.5) * M.celda, 380 + Math.log10(1 + g.km2) * 20, cuNivel === "dem" ? 0 : g.km2 > 600 ? 0 : 140);
+      cuLabels.push(labels[labels.length - 1]);
+    }
+    labels.sort((a, b) => b.prio - a.prio);
+    $("cu-leg").innerHTML = vis.map(g => `<button class="chip" ${g.r >= 0 ? `data-rio="${g.r}"` : ""}><i style="background:${g.color}"></i>${esc(cuNivel === "dem" ? g.n : g.n.replace(/^Río /, ""))}<small>${fmt.format(Math.round(g.km2))} km²</small></button>`).join("");
+  }
+  drawOverlay();
+}
+bind("l-cucolor", "cucolor", actualizarCuencas);
+const segCu = (on, off, v) => $(on).addEventListener("click", () => { $(on).setAttribute("aria-pressed", "true"); $(off).setAttribute("aria-pressed", "false"); cuNivel = v; actualizarCuencas(); });
+segCu("cu-sub", "cu-dem", "sub"); segCu("cu-dem", "cu-sub", "dem");
+$("cu-leg").addEventListener("click", (e) => { const b = e.target.closest("[data-rio]"); if (b) selectRio(+b.dataset.rio, true); });
+// selector de cuencas: por demarcación y en jerarquía (cada afluente bajo su río)
+function llenarSelectorCuencas() {
+  const porDm = new Map();
+  const visitar = (i, nivel, dm) => {
+    const r = RIO.rios[i]; if (r.Am < 60 && nivel > 0) return;
+    porDm.get(dm).push(`<option value="${i}">${"  ".repeat(nivel)}${nivel ? "· " : ""}${esc(r.n.replace(/^Río /, ""))} · ${fmt.format(Math.round(r.Am))} km²</option>`);
+    RX.hijos[i].slice().sort((a, b) => RIO.rios[b].Am - RIO.rios[a].Am).forEach(h => visitar(h, nivel + 1, dm));
+  };
+  RIO.rios.map((r, i) => i).filter(i => RIO.rios[i].p < 0 && RIO.rios[i].Am >= 30).sort((a, b) => RIO.rios[b].Am - RIO.rios[a].Am).forEach(i => {
+    const dm = RIO.rios[i].dm; if (!porDm.has(dm)) porDm.set(dm, []); visitar(i, 0, dm);
+  });
+  $("cuenca-sel").innerHTML = '<option value="">Elige una cuenca…</option>' + [...porDm.entries()].map(([dm, ops]) => `<optgroup label="${esc(DEM[dm] || dm)}">${ops.join("")}</optgroup>`).join("");
+}
+$("cuenca-sel").addEventListener("change", (e) => {
+  if (e.target.value === "") return;
+  const v = e.target.value; selectRio(+v, true); $("cuenca-sel").value = v;
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
 });
 cargarRios();
 setCat("mapa", false);   // siempre se abre con el paisaje completo
