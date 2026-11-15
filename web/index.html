@@ -155,6 +155,10 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .chip small { color: var(--ink-soft); margin-left: 4px; }
 .chips.leg { padding: 2px 6px 4px; }
 .chip i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1px solid rgba(0,0,0,.15); }
+.lbl.lig { pointer-events: auto; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 11px; color: #6b3416; }
+.lbl.lig:hover { text-decoration: underline; text-underline-offset: 3px; }
+.lbl.lig .ic { display: inline-block; width: 9px; height: 9px; margin-right: 4px; background: #a0522d; border: 1.5px solid #fff3e6; transform: rotate(45deg); vertical-align: 0; }
+.chip.off { opacity: .45; }
 .lbl.cuenca { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: #134b6e; }
 .lista-st { display: flex; flex-direction: column; gap: 2px; }
 .lista-st button { display: flex; justify-content: space-between; gap: 8px; font: inherit; font-size: 13px; padding: 5px 6px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
@@ -199,7 +203,7 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .layer .name { flex: 1; }
 .layer .key { width: 16px; height: 4px; border-radius: 2px; flex: none; }
 .layer .note { font-size: 10.5px; color: var(--ink-soft); display: block; line-height: 1.2; }
-.cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
 .cat-b { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 7px 2px 6px; border-radius: 10px; border: 1px solid var(--line);
   background: transparent; color: var(--ink); font: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer; }
 .cat-b:hover { background: var(--moss-soft); }
@@ -315,8 +319,8 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   #panel.collapsed { display: none; }
   #panel { right: 70px; padding: 12px 12px 10px; gap: 10px; }
   #panel > div:first-child { display: none; }      /* en el móvil, sin título: las pestañas van arriba */
-  .cats { grid-template-columns: repeat(6, 1fr); gap: 3px; }
-  .cat-b { font-size: 9.5px; padding: 6px 0 4px; gap: 1px; }
+  .cats { grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cat-b { font-size: 8.5px; padding: 6px 0 4px; gap: 1px; letter-spacing: -.01em; }
   .cat-b svg { width: 18px; height: 18px; }
   #toggle-panel { display: block; position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     padding: 9px 14px; font: inherit; font-weight: 700; font-size: 14px; color: var(--ink); cursor: pointer; }
@@ -349,6 +353,7 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   <nav class="cats" role="tablist" aria-label="Categorías de datos">
     <button class="cat-b" role="tab" id="tab-mapa" data-cat="mapa" aria-selected="true" aria-controls="cat-mapa"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
     <button class="cat-b" role="tab" id="tab-relieve" data-cat="relieve" aria-selected="false" aria-controls="cat-relieve"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 19l7-12 4 6 2-3 7 9z"/><path d="M7.5 9.5l1.5 1 1.3-1.2"/></svg>Relieve</button>
+    <button class="cat-b" role="tab" id="tab-geologia" data-cat="geologia" aria-selected="false" aria-controls="cat-geologia"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg>Geología</button>
     <button class="cat-b" role="tab" id="tab-poblacion" data-cat="poblacion" aria-selected="false" aria-controls="cat-poblacion"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20v-8l5-4 5 4v8z"/><path d="M14 20v-6l3-2.5 3 2.5v6"/><path d="M8 20v-4h2v4"/></svg>Población</button>
     <button class="cat-b" role="tab" id="tab-clima" data-cat="clima" aria-selected="false" aria-controls="cat-clima"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1"/><path d="M10 19h8a3 3 0 0 0 0-6 4.5 4.5 0 0 0-8.6-1A3.5 3.5 0 0 0 10 19z"/></svg>Clima</button>
     <button class="cat-b" role="tab" id="tab-agua" data-cat="agua" aria-selected="false" aria-controls="cat-agua"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z"/></svg>Agua</button>
@@ -408,6 +413,16 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
       <input type="range" id="sea" min="300" max="2600" step="10" value="1000"></div>
     <p class="spark-note" id="sea-note" style="padding: 0 6px"></p>
   </div>
+  </section>
+  <section class="cat" id="cat-geologia" role="tabpanel" aria-labelledby="tab-geologia" hidden>
+    <div><label class="group-title" for="geo-modo" style="display:block">Colorear el terreno por</label>
+      <select id="geo-modo" class="sel"><option value="">Nada (paisaje)</option><option value="roca">Tipo de roca · MAGNA 1:50.000</option>
+        <option value="edad">Edad de las rocas · estratos</option><option value="perm">Permeabilidad · hidrogeológico</option></select></div>
+    <div class="chips leg" id="geo-leg"></div>
+    <p class="spark-note" id="geo-note" style="padding: 0 6px">Toca un color de la leyenda para verlo solo. Toca el terreno para ver qué roca hay.</p>
+    <div><p class="group-title">Capas</p><div class="layers">
+      <label class="layer"><input type="checkbox" id="l-lig" checked><span class="sw"></span><span class="name">Lugares de interés geológico<span class="note">Inventario del IGME</span></span><span class="key" style="background:#a0522d"></span></label>
+    </div></div>
   </section>
   <section class="cat" id="cat-poblacion" role="tabpanel" aria-labelledby="tab-poblacion" hidden>
     <div><p class="group-title">Capas</p><div class="layers">
@@ -764,10 +779,11 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
-const layers = { comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+const layers = { lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
+const geol = { modo: "", listo: false, cargando: null, visto: false, mg: null, g1: null, pm: null, J: null, solo: null, cv: null, cvClave: "" };   // geología (IGME), al abrir su pestaña
 let selected = null, hovered = null, comarcaSel = null, yearIdx = 13, needsRender = true;
 const px1 = TW / 6144;
 const BIERZO_OFICIAL = "El Bierzo (comarca oficial)";
@@ -788,6 +804,7 @@ function drawOverlay() {
   ov.clearRect(0, 0, TW, TH);
   if (layers.comcolor) pintarComarcas();
   if (layers.cucolor && RIO) pintarCuencas();
+  if (geol.modo && geol.listo) pintarGeo();
   ov.lineJoin = "round"; ov.lineCap = "round";
   if (layers.aguas) {
     for (const a of data.aguas) {
@@ -2268,7 +2285,7 @@ function updateLabels() {
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
     let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
-      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (show && L.minDist && camDist > L.minDist) show = false;
     if (show && L.kind !== "fav" && favSet.has(L.mx + "," + L.my)) show = false;   // ya tiene rótulo de destacado
     if (show && !layers.entorno && !inProv(L.mx, L.my)) show = false;
@@ -2427,6 +2444,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   const p = pickTerrain(e.clientX, e.clientY);
   if (gotaArmed) { if (p) lanzarGota(p.mx, p.my); return; }
   if (miradorArmed || mirador) { if (p) { setArmed(true); openMirador(p.mx, p.my, null, 0); } return; }
+  if (p && geol.modo && geol.listo && catAct === "geologia" && inProv(p.mx, p.my)) { showGeo(p.mx, p.my); return; }
   if (p && RIO && layers.rios) { const c = rioCerca(p.mx, p.my, tolM(14)); if (c) { selectRio(RIO.tramos[c.t].r, false); return; } }
   if (rioSel >= 0 || gota) closeHcard();
   const m = p && inProv(p.mx, p.my) ? munAt(p.mx, p.my) : null;
@@ -2452,7 +2470,7 @@ function doHover() {
     const cv = coverAt(p.mx, p.my), covTxt = cv && layers.cob ? ` · ${COVER_NAMES[cv]}` : "";
     const popTxt = PD && morph > 0 ? (PD[ci] > 0 ? ` · <b>${fmt.format(PD[ci])} hab/km²</b> · ${Math.round(PA[ci] / 2.55)} % con más de 64 años` : " · sin población") : "";
     txt = `${lat.toFixed(3)}° N · ${Math.abs(lon).toFixed(3)}° O · <b>${fmt.format(Math.round(morph > 0 ? hReal : h))} m</b>` + popTxt +
-      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + covTxt + climaTxt(p.mx, p.my, hReal) + rioTxt(p.mx, p.my) + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
+      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + covTxt + climaTxt(p.mx, p.my, hReal) + geoTxt(p.mx, p.my) + rioTxt(p.mx, p.my) + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
   }
   $("readout").innerHTML = txt;
   hovered = m;
@@ -2695,9 +2713,10 @@ const ENFOQUE = {
     nota: "Oculta árboles, pueblos, carreteras y cubierta del suelo" },
   poblacion: { ocultar: ["l-arboles", "l-cob", "l-sierras", "l-valles", "l-puertos", "l-nubes"], calma: 0.35,
     nota: "Oculta árboles, cubierta del suelo y nombres del relieve" },
-  relieve: { ocultar: ["l-pueblos", "l-mon", "l-carr", "l-nubes"], calma: 0, nota: "Oculta pueblos, monumentos y carreteras" }
+  relieve: { ocultar: ["l-pueblos", "l-mon", "l-carr", "l-nubes"], calma: 0, nota: "Oculta pueblos, monumentos y carreteras" },
+  geologia: { ocultar: ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-nubes"], calma: 0.45, nota: "Oculta árboles, pueblos, carreteras y cubierta del suelo" }
 };
-const CAT_ENFOQUE = { mapa: null, relieve: "relieve", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
+const CAT_ENFOQUE = { mapa: null, relieve: "relieve", geologia: "geologia", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
 const TODAS_OCULTABLES = [...new Set(Object.values(ENFOQUE).flatMap(e => e.ocultar))];
 let enfoqueAct = null, enfoqueGuardado = null, catAct = "mapa";
 function setEnfoque(f) {
@@ -2724,7 +2743,8 @@ function setCat(k, guardar) {
   const f = CAT_ENFOQUE[k];
   $("enfoque-note").textContent = f ? ENFOQUE[f].nota : "Esta categoría muestra el mapa completo";
   if ($("hcard").hidden) setEnfoque(f);
-  if (k === "clima" && !clima.on && !clima.visto) { clima.visto = true; setClima(true); }   // la primera vez, el clima se enciende solo
+  if (k === "clima" && !clima.on && !clima.visto) { clima.visto = true; setClima(true); }
+  if (k === "geologia" && !geol.visto) { geol.visto = true; setGeoModo("roca"); }   // la primera vez, el clima se enciende solo
   $("panel").scrollTop = 0;
   if (guardar) { try { localStorage.setItem("leon3d-cat", k); } catch (e) { /* sin almacenamiento */ } }
 }
@@ -2737,7 +2757,7 @@ document.querySelector(".cats").addEventListener("keydown", (e) => {   // flecha
 });
 $("l-enfoque").addEventListener("change", () => setEnfoque(!$("hcard").hidden ? "agua" : CAT_ENFOQUE[catAct]));
 function showHcard(html, kind, ref) {
-  modoAgua(true);
+  if (kind !== "geo" && kind !== "lig") modoAgua(true);
   $("info").hidden = true; $("mirador").hidden = true; selected = null; updateMunState();
   $("hcard-body").innerHTML = html; $("hcard").hidden = false; $("hcard").scrollTop = 0; hcardKind = kind; hcardRef = ref;
 }
@@ -3049,6 +3069,101 @@ $("cuenca-sel").addEventListener("change", (e) => {
   const v = e.target.value; selectRio(+v, true); $("cuenca-sel").value = v;
   if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
 });
+// ---------------------------------------------------------------- geología (IGME-CSIC)
+// data/geologia.png: unidad MAGNA (R,G) y unidad del mapa 1:1M (B) por celda de 100 m; data/permeab.png: clase de permeabilidad.
+function ensureGeo() {
+  if (geol.listo) return Promise.resolve(true);
+  if (!geol.cargando) geol.cargando = (async () => {
+    try {
+      $("geo-note").textContent = "Cargando la geología del IGME…";
+      const leerPng = async (u) => { const b = await (await fetch(u)).blob(); const bm = await createImageBitmap(b, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+        const c = document.createElement("canvas"); c.width = bm.width; c.height = bm.height; const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(bm, 0, 0);
+        return x.getImageData(0, 0, bm.width, bm.height).data; };
+      const [J, a, b] = await Promise.all([fetch("data/geologia.json").then(r => { if (!r.ok) throw new Error("geologia.json"); return r.json(); }), leerPng("data/geologia.png"), leerPng("data/permeab.png")]);
+      const n = W * R; geol.mg = new Uint16Array(n); geol.g1 = new Uint8Array(n); geol.pm = new Uint8Array(n);
+      for (let i = 0; i < n; i++) { geol.mg[i] = a[i * 4] * 256 + a[i * 4 + 1]; geol.g1[i] = a[i * 4 + 2]; geol.pm[i] = b[i * 4]; }
+      geol.J = J; geol.listo = true;
+      J.ligs.forEach((g, k) => { addLabel("lig", '<span class="ic"></span>' + esc(g.n), g.xy[0], g.xy[1], 120, 55); labels[labels.length - 1].el.addEventListener("click", () => showLig(k)); });
+      labels.sort((x, y) => y.prio - x.prio);
+      $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(J.fuente) + "</li>");
+      $("geo-note").textContent = "Toca un color de la leyenda para verlo solo. Toca el terreno para ver qué roca hay.";
+      return true;
+    } catch (e) { $("geo-note").textContent = "No se pudo cargar la geología (" + e.message + ")."; geol.cargando = null; return false; }
+  })();
+  return geol.cargando;
+}
+function claseEn(i) {          // clase que se colorea en la celda i según el modo
+  if (geol.modo === "roca") { const m = geol.mg[i]; return m ? geol.J.descs[m - 1][1] : -1; }
+  if (geol.modo === "edad") { const u = geol.g1[i]; return u ? geol.J.unidades[u - 1].e : -1; }
+  if (geol.modo === "perm") return geol.pm[i] - 1;
+  return -1;
+}
+function clasesModo() {
+  const J = geol.J;
+  if (geol.modo === "roca") return J.rocas.map((r, k) => ({ k, n: r.n, color: r.color, km2: r.km2 }));
+  if (geol.modo === "edad") return J.edades.map((e, k) => ({ k, n: e.n, color: e.color, km2: e.km2, ma: e.ma }))
+    .filter(c => c.km2 > 0).sort((a, b) => (b.ma || 0) - (a.ma || 0));
+  return J.perm.map((p, k) => ({ k, n: p.n, color: p.color, km2: p.km2 }));
+}
+function pintarGeo() {
+  const clave = geol.modo + "|" + geol.solo;
+  if (geol.cvClave !== clave) {
+    const cls = geol.modo === "edad" ? geol.J.edades.map(e => e.color) : geol.modo === "roca" ? geol.J.rocas.map(r => r.color) : geol.J.perm.map(p => p.color);
+    const rgb = cls.map(h => [1, 3, 5].map(o => parseInt(h.slice(o, o + 2), 16)));
+    const c = document.createElement("canvas"); c.width = W; c.height = R;
+    const x = c.getContext("2d"), im = x.createImageData(W, R), d = im.data;
+    for (let i = 0; i < W * R; i++) {
+      const k = claseEn(i); if (k < 0 || !rgb[k]) continue;
+      const fuera = geol.solo != null && k !== geol.solo, col = fuera ? [235, 230, 220] : rgb[k];
+      d[i * 4] = col[0]; d[i * 4 + 1] = col[1]; d[i * 4 + 2] = col[2]; d[i * 4 + 3] = fuera ? 90 : 205;
+    }
+    x.putImageData(im, 0, 0); geol.cv = c; geol.cvClave = clave;
+  }
+  ov.save(); ov.imageSmoothingEnabled = true; ov.drawImage(geol.cv, 0, 0, TW, TH); ov.restore();
+}
+function leyendaGeo() {
+  if (!geol.modo || !geol.listo) { $("geo-leg").innerHTML = ""; return; }
+  $("geo-leg").innerHTML = clasesModo().filter(c => c.km2 > 0).map(c => `<button class="chip${geol.solo != null && geol.solo !== c.k ? " off" : ""}" data-k="${c.k}"><i style="background:${c.color}"></i>${esc(c.n)}<small>${fmt.format(c.km2)} km²</small></button>`).join("");
+}
+async function setGeoModo(m) {
+  $("geo-modo").value = m;
+  if (m && !(await ensureGeo())) { $("geo-modo").value = ""; m = ""; }
+  geol.modo = m; geol.solo = null; leyendaGeo(); drawOverlay();
+}
+$("geo-modo").addEventListener("change", (e) => { geol.visto = true; setGeoModo(e.target.value); });
+$("geo-leg").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-k]"); if (!b) return;
+  const k = +b.dataset.k; geol.solo = geol.solo === k ? null : k; leyendaGeo(); drawOverlay();
+});
+bind("l-lig", "lig");
+function geoEn(mx, my) {
+  const x = Math.min(W - 1, Math.max(0, (mx / M.celda) | 0)), y = Math.min(R - 1, Math.max(0, (my / M.celda) | 0)), i = y * W + x, J = geol.J;
+  const m = geol.mg[i], u = geol.g1[i], p = geol.pm[i];
+  return { d: m ? J.descs[m - 1] : null, u: u ? J.unidades[u - 1] : null, p: p ? J.perm[p - 1] : null };
+}
+function geoTxt(mx, my) {
+  if (!geol.listo || !(geol.modo || catAct === "geologia") || !inProv(mx, my)) return "";
+  const g = geoEn(mx, my);
+  return (g.d ? ` · <b>${esc(g.d[0].length > 70 ? g.d[0].slice(0, 68) + "…" : g.d[0])}</b>` : "") + (g.u ? ` · ${esc(g.u.sis)}` : "");
+}
+function showGeo(mx, my) {
+  const g = geoEn(mx, my), J = geol.J, roca = g.d && g.d[1] >= 0 ? J.rocas[g.d[1]] : null;
+  const h = `<h2>${roca ? esc(roca.n.replace(/ \(.*\)$/, "")) : "Roca"}</h2><p class="cap">${fmt.format(Math.round(heightAt(mx, my)))} m de altitud${munAt(mx, my) ? " · " + esc(munAt(mx, my).n) : ""}</p>
+    ${g.d ? `<p class="group-title">Unidad del mapa MAGNA 1:50.000 (hoja ${esc(String(g.d[2]))})</p><p style="margin:0;font-size:13.5px;line-height:1.45">${esc(g.d[0])}</p>` : ""}
+    <dl>${g.u ? `<dt>Edad (mapa general)</dt><dd>${esc(g.u.sis)}${g.u.ma ? ` <small style="color:var(--ink-soft);font-weight:400">(desde hace ~${fmt.format(g.u.ma)} Ma)</small>` : ""}</dd>${g.u.serie ? `<dt>Serie</dt><dd>${esc(g.u.serie)}</dd>` : ""}<dt>Era</dt><dd>${esc(g.u.era)}</dd>` : ""}
+    ${g.p ? `<dt>Permeabilidad</dt><dd>${esc(g.p.n)}</dd>` : ""}</dl>
+    ${g.u && g.u.lit ? `<p class="hint">Litología general (mapa 1:1.000.000): ${esc(g.u.lit)}.</p>` : ""}
+    <p class="hint">La descripción es del MAGNA 1:50.000 (detallado). La edad y la litología general vienen del Mapa Geológico 1:1.000.000, mucho más general: en zonas pequeñas puede no coincidir con la roca descrita (por ejemplo, un depósito cuaternario que en el mapa general tapa rocas más antiguas). Permeabilidad: Mapa Hidrogeológico 1:200.000. Todo del IGME-CSIC.</p>`;
+  showHcard(h, "geo", -1);
+}
+function showLig(k) {
+  const g = geol.J.ligs[k];
+  const h = `<h2>${esc(g.n)}</h2><p class="cap">Lugar de interés geológico ${esc(g.c || "")}${g.geo ? " · Geosite " + esc(g.geo) : ""}</p>
+    <dl>${g.i ? `<dt>Interés</dt><dd>${esc(g.i)}</dd>` : ""}${g.e ? `<dt>Edad</dt><dd>${esc(g.e)}</dd>` : ""}${g.u ? `<dt>Unidad</dt><dd>${esc(g.u)}</dd>` : ""}</dl>
+    ${g.d ? `<p style="font-size:13.5px;line-height:1.5;margin:10px 0 0">${esc(g.d)}</p>` : ""}
+    <p class="hint">Inventario Español de Lugares de Interés Geológico (IGME-CSIC).</p>`;
+  showHcard(h, "lig", k); flyToPoint(g.xy[0], g.xy[1], 12);
+}
 cargarRios();
 setCat("mapa", false);   // siempre se abre con el paisaje completo
 // vista paisaje: todo como al abrir (árboles, pueblos, luz de la tarde, cámara inicial), sin capas de datos ni fichas
