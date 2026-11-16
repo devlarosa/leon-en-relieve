@@ -674,14 +674,25 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
 <script>
-function showFatal(err) {
+// Un error solo tapa el mapa si ocurre mientras arranca. Después (o si viene de otro script de la página,
+// como el entorno de un artefacto) se anota en la consola y el mapa sigue funcionando.
+window.leonListo = false;
+function dondeFallo(err, archivo, linea, col) {
+  const pila = err && err.stack ? String(err.stack).split("\n").find(l => /:\d+:\d+/.test(l)) : "";
+  const m = pila && pila.match(/:(\d+):(\d+)\)?\s*$/);
+  if (m) return ` (línea ${m[1]}:${m[2]})`;
+  return linea ? ` (${archivo ? String(archivo).split("/").pop() + " " : ""}línea ${linea}:${col || 0})` : "";
+}
+function showFatal(err, archivo, linea, col) {
+  if (window.leonListo) { console.warn("Error después de arrancar:", err); return; }
   const box = document.querySelector("#loading .box");
   if (!box) return;
   document.getElementById("loading").classList.remove("done");
   box.innerHTML = "El mapa no ha podido arrancar.<small></small>";
-  box.querySelector("small").textContent = "Detalle técnico: " + (err && err.message ? err.message : String(err)) + ". Recarga la página; si se repite, copia este texto.";
+  box.querySelector("small").textContent = "Detalle técnico: " + (err && err.message ? err.message : String(err)) + dondeFallo(err, archivo, linea, col) +
+    ". Recarga la página; si se repite, copia este texto.";
 }
-addEventListener("error", (e) => showFatal(e.error || e.message));
+addEventListener("error", (e) => showFatal(e.error || e.message, e.filename, e.lineno, e.colno));
 addEventListener("unhandledrejection", (e) => showFatal(e.reason));
 if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"));
 // ↻ actualizar: comprueba version.json (lo da servidor/servidor.py; en el artefacto no existe y se ignora)
@@ -689,7 +700,10 @@ if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"
 (function () {
   const btn = document.getElementById("nav-upd"); if (!btn) return;
   let v0 = null;
-  const leerVersion = () => fetch("version.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => j && j.version).catch(() => null);
+  const leerVersion = () => fetch("version.json", { cache: "no-store" }).then(r => r.ok && /json/.test(r.headers.get("content-type") || "") ? r.json() : null)
+    .then(j => j && typeof j.version === "string" ? j.version : null).catch(() => null);
+  // ¿hay servidor propio (servidor/servidor.py) detrás? En un artefacto de claude.ai no: entonces no se le pide nada más
+  window.leonServidor = leerVersion().then(v => !!v);
   async function comprobar() {
     const v = await leerVersion(); if (!v) return;
     if (!v0) v0 = v;
@@ -2135,7 +2149,8 @@ function renderFavList() {
 buildFavMarkers(); placeFavs();
 // guardar la lista: solo con servidor/servidor.py (en el artefacto la lista es de solo lectura)
 let favsEditable = false;
-fetch("destacados", { method: "OPTIONS" }).then(r => { favsEditable = r.ok; renderFavList(); if (selected) updateFavBtn(); }).catch(() => {});
+(window.leonServidor || Promise.resolve(false)).then(hay => hay ? fetch("destacados", { method: "OPTIONS" }) : null)
+  .then(r => { favsEditable = !!(r && r.status === 204); renderFavList(); if (selected) updateFavBtn(); }).catch(() => {});
 renderFavList();
 async function saveFavs(list) {
   const r = await fetch("destacados", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(list) });
@@ -3397,6 +3412,7 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 $("loading").classList.add("done");
+window.leonListo = true;
 
 // ---------------------------------------------------------------- tutorial guiado
 // Cada paso enfoca un elemento, mueve una mano hasta él, «hace clic» (con la acción real) y explica qué pasa.
