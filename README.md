@@ -29,6 +29,7 @@ Todos los datos proceden de fuentes oficiales españolas o europeas (Copernicus)
 | Caudales y embalses | MITECO · Anuario de Aforos 2021-22 (Red Oficial de Estaciones de Aforo, datos de las confederaciones del Duero, Miño-Sil y Cantábrico); el caudal por tramo es una estimación calibrada con las estaciones |
 | Geología | IGME-CSIC · MAGNA 1:50.000 (descripción y tipo de roca), Mapa Geológico de España 1:1.000.000 (edad, con los colores de la Comisión Internacional de Estratigrafía), Mapa Hidrogeológico 1:200.000 (permeabilidad) e Inventario Español de Lugares de Interés Geológico |
 | Mapa histórico | Selección divulgativa de sitios y épocas (recursos/historia.json); calzadas romanas de Itiner-e 2024 (Zenodo, CC BY 4.0); labores de oro, minas de carbón y escombreras del IGME-CSIC; castillos, monasterios y yacimientos de Wikidata |
+| Camino de Santiago | IGN · Caminos de Santiago en Europa (etapas y albergues, nco.ign.es); perfil y desnivel calculados con el MDT |
 
 ## Como app en el móvil
 
@@ -70,6 +71,7 @@ python3 scripts/geologia_descargar.py  # geología del IGME-CSIC (MAGNA 50, mapa
 python3 scripts/geologia.py        # tipo de roca, edad, permeabilidad y lugares de interés -> web/data/geologia.*
 python3 scripts/lugares.py         # lugares de interés de recursos/lugares.json, situados con el Nomenclátor del IGN o Wikidata
 python3 scripts/historia.py        # mapa histórico: sitios de recursos/historia.json, calzadas (Itiner-e), oro y carbón (IGME), Wikidata
+python3 scripts/camino.py          # Caminos de Santiago: etapas y albergues del IGN, perfiles con el MDT -> web/data/camino.json
 ./abrir_visor.sh                  # sirve web/ en http://127.0.0.1:8800 y abre el navegador (--parar para detenerlo)
 ```
 
@@ -98,6 +100,7 @@ R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del 
 R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 2021)
 scripts/clima_aemet.py       normales 1991-2020 de AEMET (temperaturas, precipitación, heladas, días de calor) ajustadas a la altitud
 scripts/lugares.py           sitúa los lugares de interés (recursos/lugares.json): Nomenclátor del IGN, Wikidata o su pueblo
+scripts/camino.py            caminos de Santiago por la provincia: etapas, perfiles y albergues (IGN)
 scripts/historia.py          mapa histórico por épocas (castros, Roma, Reino de León, minería del carbón)
 scripts/geologia.py          tipo de roca, edad de las rocas, permeabilidad y lugares de interés geológico (IGME-CSIC)
 scripts/rios_red.py          árbol de afluentes, caudal medio estimado por tramo, estaciones de aforo, embalses y cuencas aproximadas
