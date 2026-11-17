@@ -35,6 +35,8 @@ Todos los datos proceden de fuentes oficiales españolas o europeas (Copernicus)
 
 `servidor/servidor.py` sirve `web/` como aplicación instalable (icono en la pantalla de inicio, pantalla completa) y añade el botón ↻ para cargar cambios y el guardado de lugares destacados. `servidor/leon3d-visor.service` lo deja como servicio de usuario de systemd (puerto 8800). La ubicación del dispositivo solo funciona si la app se abre por https.
 
+Si se expone a Internet, se le puede poner usuario y contraseña: `python3 servidor/servidor.py --acceso USUARIO` (pide la contraseña) y reiniciar el servicio. Se guarda como hash en `~/.config/leon3d-visor/acceso.json`, fuera del repositorio. Quien entra por `/entrar` recibe una cookie de sesión válida un año; `/salir` la borra. Cambiar la contraseña cierra todas las sesiones; `--sin-acceso` vuelve a dejar el visor abierto.
+
 ## Licencias
 
 El código de este repositorio se publica con licencia [MIT](LICENSE). Es un proyecto educativo y divulgativo.

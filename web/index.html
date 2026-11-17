@@ -891,7 +891,10 @@ let data, H, W, R, destacadas = [], HE = null, HP = null, PD = null, PA = null, 
 try {
   const [dest, json, png] = await Promise.all([
     fetch("data/destacados.json").then(r => r.ok ? r.json() : []).catch(() => []),
-    fetch("data/leon.json").then(r => { if (!r.ok) throw new Error("leon.json"); return r.json(); }),
+    fetch("data/leon.json").then(r => {
+      if (r.status === 401) { location.href = "entrar"; throw new Error("hay que entrar con usuario y contraseña"); }   // sesión caducada (servidor con acceso)
+      if (!r.ok) throw new Error("leon.json"); return r.json();
+    }),
     fetch("data/relieve.png").then(r => { if (!r.ok) throw new Error("relieve.png"); return r.blob(); })
   ]);
   data = json; destacadas = dest;
