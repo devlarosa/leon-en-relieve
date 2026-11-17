@@ -46,7 +46,7 @@ Los datos no se guardan en el repositorio: se descargan de sus fuentes oficiales
 - **MAPA** (comarcas agrarias): reutilización libre citando la fuente.
 - **IGME-CSIC** (geología): reutilización libre citando la fuente.
 - **Copernicus** (cubierta del suelo): acceso libre y gratuito, © Unión Europea, Copernicus Land Monitoring Service, Agencia Europea de Medio Ambiente.
-- **Wikipedia / Wikidata** (comarca tradicional, dato secundario): CC BY-SA 4.0 y CC0.
+- **Wikipedia / Wikidata** (comarca tradicional y posición de algunos lugares de interés): CC BY-SA 4.0 y CC0.
 
 Quien publique los datos procesados (por ejemplo, el visor con `web/data/`) debe mantener estas atribuciones; el visor las muestra en «Fuentes oficiales».
 
@@ -66,6 +66,7 @@ python3 scripts/rios_red_descargar.py  # red del IGN (HY-N), cuencas de la DGA y
 python3 scripts/rios_red.py        # afluentes, caudales, estaciones, embalses -> web/data/rios.json y cuencas.png
 python3 scripts/geologia_descargar.py  # geología del IGME-CSIC (MAGNA 50, mapa 1:1M, hidrogeológico, LIG) -> raw/geologia/
 python3 scripts/geologia.py        # tipo de roca, edad, permeabilidad y lugares de interés -> web/data/geologia.*
+python3 scripts/lugares.py         # lugares de interés de recursos/lugares.json, situados con el Nomenclátor del IGN o Wikidata
 ./abrir_visor.sh                  # sirve web/ en http://127.0.0.1:8800 y abre el navegador (--parar para detenerlo)
 ```
 
@@ -93,6 +94,7 @@ R/10_preparar_web.R          rejilla de alturas, recortes, simplificación y JSO
 R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del visor
 R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 2021)
 scripts/clima_aemet.py       normales 1991-2020 de AEMET (temperaturas, precipitación, heladas, días de calor) ajustadas a la altitud
+scripts/lugares.py           sitúa los lugares de interés (recursos/lugares.json): Nomenclátor del IGN, Wikidata o su pueblo
 scripts/geologia.py          tipo de roca, edad de las rocas, permeabilidad y lugares de interés geológico (IGME-CSIC)
 scripts/rios_red.py          árbol de afluentes, caudal medio estimado por tramo, estaciones de aforo, embalses y cuencas aproximadas
 servidor/servidor.py         servidor de la app (iPhone): cabecera PWA, version.json y guardado de destacados

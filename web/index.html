@@ -161,6 +161,11 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .lbl.lig:hover { text-decoration: underline; text-underline-offset: 3px; }
 .lbl.lig .ic { display: inline-block; width: 9px; height: 9px; margin-right: 4px; background: #a0522d; border: 1.5px solid #fff3e6; transform: rotate(45deg); vertical-align: 0; }
 .chip.off { opacity: .45; }
+.lbl.lugar { pointer-events: auto; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 11.5px; color: #3b2a10;
+  background: rgba(255, 250, 238, .88); border: 1px solid rgba(0,0,0,.12); padding: 1px 7px 1px 4px; border-radius: 999px; text-shadow: none; }
+.lbl.lugar:hover { background: #fff; text-decoration: underline; text-underline-offset: 2px; }
+.lbl.lugar .ic, .lista-st .ic { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.18); }
+.lista-st h4 { margin: 8px 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); }
 .lbl.cuenca { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: #134b6e; }
 .lista-st { display: flex; flex-direction: column; gap: 2px; }
 .lista-st button { display: flex; justify-content: space-between; gap: 8px; font: inherit; font-size: 13px; padding: 5px 6px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); cursor: pointer; text-align: left; }
@@ -419,6 +424,9 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
       <label class="layer" id="l-fav-row" hidden><input type="checkbox" id="l-fav" checked><span class="sw"></span><span class="name">Lugares destacados</span><span class="key" style="background:#f2b53a"></span></label>
       <label class="layer"><input type="checkbox" id="l-mun" checked><span class="sw"></span><span class="name">Límites municipales</span><span class="key" style="background:#fff7df;box-shadow:0 0 0 1px #8a7a52"></span></label>
       <label class="layer"><input type="checkbox" id="l-comarcas"><span class="sw"></span><span class="name">Comarcas agrarias<span class="note">Oficiales del MAPA</span></span><span class="key" style="background:#7a4d8c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-lugares" checked><span class="sw"></span><span class="name">Lugares de interés<span class="note">Naturaleza, patrimonio y etnografía</span></span><span class="key" style="background:#c47f12"></span></label>
+      <div class="chips leg" id="lug-cats"></div>
+      <details class="src" id="lug-box" style="padding: 0 6px 4px"><summary>Ver la lista de lugares</summary><div class="lista-st" id="lug-list" style="margin-top:6px"></div></details>
       <label class="layer"><input type="checkbox" id="l-comcolor"><span class="sw"></span><span class="name">Colorear todas las comarcas<span class="note">Cada comarca agraria de un color</span></span></label>
       <div class="chips leg" id="com-leg" hidden></div>
       <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
@@ -844,10 +852,11 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
-const layers = { lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+const layers = { lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
+const LUG = { listo: false, J: null, cats: new Set() };   // lugares de interés (data/lugares.json)
 const geol = { modo: "", listo: false, cargando: null, visto: false, mg: null, g1: null, pm: null, J: null, solo: null, cv: null, cvClave: "" };   // geología (IGME), al abrir su pestaña
 let selected = null, hovered = null, comarcaSel = null, yearIdx = 13, needsRender = true;
 const px1 = TW / 6144;
@@ -2100,7 +2109,7 @@ function locDeClave(k) {
 }
 // destacados de cualquier tipo: «tipo:Nombre» (sin prefijo = localidad, como en las listas antiguas)
 const TIPO_FAV = { localidad: "Localidad", cumbre: "Cumbre", puerto: "Puerto", sierra: "Sierra", valle: "Valle", embalse: "Embalse",
-  monumento: "Monumento", rio: "Río", estacion: "Estación de aforo", lig: "Lugar geológico" };
+  monumento: "Monumento", rio: "Río", estacion: "Estación de aforo", lig: "Lugar geológico", lugar: "Lugar de interés" };
 const nom0 = (t) => String(t).split(" / ")[0];
 function centroAgua(a) { const r = a.g[0]; let x = 0, y = 0; for (let i = 0; i < r.length; i += 2) { x += r[i]; y += r[i + 1]; } return [x / (r.length / 2), y / (r.length / 2)]; }
 function puntoRio(r) { let best = r.g[0]; for (const p of r.g) if (p.length > best.length) best = p; const k = Math.floor(best.length / 4) * 2; return [best[k], best[k + 1]]; }
@@ -2126,6 +2135,7 @@ function resolverFav(clave) {
     else if (RIO) { const i = RIO.rios.findIndex(x => norm(x.n) === q && x.d), t = RIO.tramos.find(x => x.r === i); if (t) { const k = Math.floor(t.g.length / 4) * 2; o = { n: RIO.rios[i].n, xy: [t.g[k], t.g[k + 1]] }; } }
   }
   else if (tipo === "estacion" && RIO) { const e = RIO.estaciones.find(x => norm(x.n) === q); if (e) o = { n: e.n, xy: e.xy, ref: e, sub: fmtQ(e.q) + " m³/s" }; }
+  else if (tipo === "lugar" && LUG.listo) { const g = LUG.J.lugares.find(x => norm(x.n) === q); if (g) o = { n: g.n, xy: g.xy, ref: g, sub: LUG.J.categorias[g.cat] }; }
   else if (tipo === "lig" && geol.listo) { const g = geol.J.ligs.find(x => norm(x.n) === q); if (g) o = { n: g.n, xy: g.xy, ref: g }; }
   if (!o) return null;
   return Object.assign(o, { tipo, key: clave, mx: o.xy[0], my: o.xy[1], mun: o.mun || (inProv(o.xy[0], o.xy[1]) ? munAt(o.xy[0], o.xy[1]) : null) });
@@ -2275,6 +2285,7 @@ function abrirFav(f, volar) {
   else if (f.tipo === "estacion" && RIO) showStation(RIO.estaciones.indexOf(r));
   else if (f.tipo === "embalse" && RIO) { const k = RIO.embalses.findIndex(e => Math.hypot(e.xy[0] - f.mx, e.xy[1] - f.my) < 5000); if (k >= 0) showEmbalse(k); else showPunto("embalse", f); }
   else if (f.tipo === "lig" && geol.listo) { showLig(geol.J.ligs.indexOf(r)); return; }
+  else if (f.tipo === "lugar" && LUG.listo) showLugar(r, false);
   else showPunto(f.tipo, { n: f.n, xy: [f.mx, f.my], e: r && r.e });
   if (volar) flyToPoint(f.mx, f.my, f.tipo === "localidad" ? 9 : 12);
 }
@@ -2486,7 +2497,7 @@ function updateLabels() {
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
     let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
-      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (show && L.minDist && camDist > L.minDist) show = false;
     if (show && L.kind !== "fav" && favSet.has(L.mx + "," + L.my)) show = false;   // ya tiene rótulo de destacado
     if (show && !layers.entorno && !inProv(L.mx, L.my)) show = false;
@@ -2968,7 +2979,7 @@ document.querySelector(".cats").addEventListener("keydown", (e) => {   // flecha
 });
 $("l-enfoque").addEventListener("change", () => setEnfoque(!$("hcard").hidden ? "agua" : CAT_ENFOQUE[catAct]));
 function showHcard(html, kind, ref) {
-  if (!["geo", "lig", "loc", "punto"].includes(kind)) modoAgua(true);
+  if (!["geo", "lig", "loc", "punto", "lugar"].includes(kind)) modoAgua(true);
   $("info").hidden = true; $("mirador").hidden = true; selected = null; updateMunState();
   $("hcard-body").innerHTML = html; $("hcard").hidden = false; $("hcard").scrollTop = 0; hcardKind = kind; hcardRef = ref;
 }
@@ -3378,6 +3389,53 @@ function showLig(k) {
     <p class="hint">Inventario Español de Lugares de Interés Geológico (IGME-CSIC).</p>`;
   showHcard(h, "lig", k); flyToPoint(g.xy[0], g.xy[1], 12);
 }
+// ---------------------------------------------------------------- lugares de interés (recursos/lugares.json → scripts/lugares.py)
+const COLOR_LUG = { bosque: "#3f7d3a", cascada: "#2a8fd0", cueva: "#6b4a2b", lago: "#36a3b5", paisaje: "#a07a3a", patrimonio: "#c47f12", arqueo: "#9c4f2f", etno: "#7a5aa0" };
+function showLugar(g, volar) {
+  const cat = LUG.J.categorias[g.cat] || g.cat, aprox = g.fuente === "aprox";
+  const html = `<h2>${esc(g.n)}</h2><p class="cap"><span class="ic" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${COLOR_LUG[g.cat]};margin-right:5px"></span>${esc(cat)} · ${esc(g.mun)}</p>
+    <p style="font-size:13.5px;line-height:1.5;margin:8px 0 0">${esc(g.desc)}</p>
+    <dl><dt>Altitud</dt><dd>${fmt.format(Math.round(heightAt(g.xy[0], g.xy[1])))} m</dd></dl>
+    <div class="i-acts">${botonFav(claveFav("lugar", g.n))}<button class="i-act" data-orb="${g.xy[0]},${g.xy[1]}">Sobrevolar</button></div>
+    <p class="hint">${aprox ? `Posición aproximada: se muestra en ${esc(g.como)}.` : `Posición del ${g.fuente === "IGN" ? "Nomenclátor Geográfico del IGN" : "registro de Wikidata"}${g.como && norm(g.como) !== norm(g.n) ? ` («${esc(g.como)}»)` : ""}.`}</p>`;
+  showHcard(html, "lugar", -1);
+  if (volar) flyToPoint(g.xy[0], g.xy[1], 8);
+}
+function listaLugares() {
+  const J = LUG.J, porCat = {};
+  for (const g of J.lugares) (porCat[g.cat] = porCat[g.cat] || []).push(g);
+  $("lug-cats").innerHTML = Object.keys(J.categorias).filter(c => porCat[c]).map(c => `<button class="chip${LUG.cats.has(c) ? "" : " off"}" data-lcat="${c}"><i style="background:${COLOR_LUG[c]}"></i>${esc(J.categorias[c])}<small>${porCat[c].length}</small></button>`).join("");
+  $("lug-list").innerHTML = Object.keys(J.categorias).filter(c => porCat[c]).map(c => `<h4>${esc(J.categorias[c])}</h4>` +
+    porCat[c].sort((a, b) => a.n.localeCompare(b.n, "es")).map(g => `<button data-lug="${J.lugares.indexOf(g)}"><span><span class="ic" style="background:${COLOR_LUG[c]}"></span>${esc(g.n)}</span><small>${esc(g.mun)}</small></button>`).join("")).join("");
+}
+$("lug-cats").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-lcat]"); if (!b) return;
+  const c = b.dataset.lcat;
+  if (LUG.cats.size === Object.keys(LUG.J.categorias).length) { LUG.cats = new Set([c]); }      // primer toque: solo esa categoría
+  else if (LUG.cats.has(c)) { LUG.cats.delete(c); if (!LUG.cats.size) LUG.cats = new Set(Object.keys(LUG.J.categorias)); }
+  else LUG.cats.add(c);
+  listaLugares(); needsRender = true;
+});
+$("lug-list").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-lug]"); if (!b) return;
+  showLugar(LUG.J.lugares[+b.dataset.lug], true);
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+});
+bind("l-lugares", "lugares", () => { $("lug-cats").hidden = !layers.lugares; });
+async function cargarLugares() {
+  try { LUG.J = await fetch("data/lugares.json").then(r => { if (!r.ok) throw new Error("lugares.json"); return r.json(); }); }
+  catch (e) { $("l-lugares").closest("label").hidden = true; $("lug-box").hidden = true; return; }
+  LUG.cats = new Set(Object.keys(LUG.J.categorias)); LUG.listo = true;
+  for (const g of LUG.J.lugares) {
+    addLabel("lugar", `<span class="ic" style="background:${COLOR_LUG[g.cat]}"></span>` + esc(g.n), g.xy[0], g.xy[1], 600, 75);
+    const L = labels[labels.length - 1]; L.cat = g.cat; L.lift = 0.5; L.el.addEventListener("click", () => showLugar(g, false));
+  }
+  labels.sort((a, b) => b.prio - a.prio);
+  listaLugares();
+  $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(LUG.J.fuente) + "</li>");
+  if (DESTACADAS.some(k => /^lugar:/.test(k))) rehacerFavs();
+}
+cargarLugares();
 cargarRios();
 setCat("mapa", false);   // siempre se abre con el paisaje completo
 // vista paisaje: todo como al abrir (árboles, pueblos, luz de la tarde, cámara inicial), sin capas de datos ni fichas

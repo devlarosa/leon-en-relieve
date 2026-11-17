@@ -1,0 +1,394 @@
+{
+ "nota": "Lugares de interés escogidos a mano. scripts/lugares.py busca sus coordenadas: primero en el Nomenclátor Geográfico del IGN (ngbe), si no en Wikidata (wd); siempre comprueba que el punto cae en el municipio indicado (mun). 'cerca' es la localidad que se usa como último recurso (posición aproximada).",
+ "categorias": {
+  "bosque": "Bosques y árboles",
+  "cascada": "Cascadas",
+  "cueva": "Cuevas",
+  "lago": "Lagos y lagunas",
+  "paisaje": "Desfiladeros, valles y miradores",
+  "patrimonio": "Monasterios, castillos e iglesias",
+  "arqueo": "Arqueología",
+  "etno": "Arquitectura popular e industria"
+ },
+ "lugares": [
+  {
+   "n": "Faedo de Ciñera",
+   "cat": "bosque",
+   "mun": "La Pola de Gordón",
+   "cerca": "Ciñera",
+   "desc": "Hayedo junto a Ciñera, al que se llega por un sendero junto al arroyo. Premio al Bosque Mejor Cuidado de España en 2007.",
+   "wd": "Faedo de Ciñera"
+  },
+  {
+   "n": "Faedo de Orzonaga",
+   "cat": "bosque",
+   "mun": "Matallana de Torío",
+   "ngbe": "Faedo de Orzonaga",
+   "cerca": "Orzonaga",
+   "desc": "Hayedo en la ladera sobre Orzonaga, en el valle del Torío."
+  },
+  {
+   "n": "Hayedo de Busmayor",
+   "cat": "bosque",
+   "mun": "Barjas",
+   "wd": "Hayedo de Busmayor",
+   "cerca": "Busmayor",
+   "desc": "Hayedo en el extremo occidental de El Bierzo, junto a Busmayor, en el límite con Galicia."
+  },
+  {
+   "n": "Sabinar de Mirantes de Luna",
+   "cat": "bosque",
+   "mun": "Los Barrios de Luna",
+   "wd": "Sabinar de Mirantes de Luna",
+   "cerca": "Mirantes de Luna",
+   "desc": "Sabinar albar sobre calizas, uno de los pocos que quedan en la cordillera Cantábrica."
+  },
+  {
+   "n": "Pinar de Lillo",
+   "cat": "bosque",
+   "mun": "Puebla de Lillo",
+   "ngbe": "Pinar de Lillo",
+   "cerca": "Puebla de Lillo",
+   "desc": "Pinar natural de pino albar, una rareza en la vertiente sur de la cordillera."
+  },
+  {
+   "n": "Cascada de Nocedo (Cola de Caballo)",
+   "cat": "cascada",
+   "mun": "Valdepiélago",
+   "wd": "Cascada de Nocedo",
+   "cerca": "Nocedo de Curueño",
+   "desc": "También llamada de Valdecésar o Cola de Caballo; un salto entre rocas a pocos minutos de Nocedo de Curueño."
+  },
+  {
+   "n": "Cascada de Lumajo",
+   "cat": "cascada",
+   "mun": "Villablino",
+   "cerca": "Lumajo",
+   "desc": "Ruta de saltos, pozas y fuentes en el valle de Laciana, junto a Lumajo."
+  },
+  {
+   "n": "Cascadas del río Faro",
+   "cat": "cascada",
+   "mun": "Valdelugueros",
+   "cerca": "Redipuertas",
+   "desc": "Serie de saltos sobre Redipuertas; el primero es la cascada de la Cola de Caballo."
+  },
+  {
+   "n": "Catarata de la Gualta",
+   "cat": "cascada",
+   "mun": "Noceda del Bierzo",
+   "wd": "Catarata de La Gualta",
+   "cerca": "Noceda del Bierzo",
+   "desc": "Salto en los montes de Noceda del Bierzo."
+  },
+  {
+   "n": "Cascada de Foz",
+   "cat": "cascada",
+   "mun": "San Emiliano",
+   "cerca": "Torrestío",
+   "desc": "Cascada junto a Torrestío, en Babia, al pie de la cordillera."
+  },
+  {
+   "n": "Cuevas de Valporquero",
+   "cat": "cueva",
+   "mun": "Vegacervera",
+   "ngbe": "Cuevas de Valporquero",
+   "cerca": "Valporquero de Torío",
+   "desc": "Cueva kárstica excavada por el arroyo Valporquero, con salas de estalactitas; se visita a 1.300 m de altitud."
+  },
+  {
+   "n": "Cueva de San Genadio",
+   "cat": "cueva",
+   "mun": "Ponferrada",
+   "ngbe": "Cueva de San Genadio",
+   "cerca": "Peñalba de Santiago",
+   "desc": "Cueva del Valle del Silencio donde, según la tradición, se retiraba San Genadio en el siglo X."
+  },
+  {
+   "n": "Cueva de Llamazares",
+   "cat": "cueva",
+   "mun": "Valdelugueros",
+   "ngbe": "Cueva de Llamazares",
+   "cerca": "Llamazares",
+   "desc": "Cueva en las calizas del alto Curueño, junto a Llamazares."
+  },
+  {
+   "n": "Lago de la Baña",
+   "cat": "lago",
+   "mun": "Encinedo",
+   "ngbe": "Lago de la Baña",
+   "cerca": "La Baña",
+   "desc": "Lago glaciar de la sierra de la Cabrera, Monumento Natural."
+  },
+  {
+   "n": "Lago de Truchillas",
+   "cat": "lago",
+   "mun": "Truchas",
+   "ngbe": "Lago de Truchillas",
+   "cerca": "Truchillas",
+   "desc": "Lago glaciar al pie del Vizcodillo, en La Cabrera."
+  },
+  {
+   "n": "Lago de Isoba",
+   "cat": "lago",
+   "mun": "Puebla de Lillo",
+   "ngbe": "Lago de Isoba",
+   "cerca": "Isoba",
+   "desc": "Lago de origen glaciar junto a la carretera del puerto de San Isidro."
+  },
+  {
+   "n": "Lago Ausente",
+   "cat": "lago",
+   "mun": "Puebla de Lillo",
+   "ngbe": "Lago Ausente",
+   "cerca": "Cofiñal",
+   "desc": "Lago glaciar a casi 1.700 m, entre los valles de Lillo y el Curueño."
+  },
+  {
+   "n": "Lagunas de las Verdes",
+   "cat": "lago",
+   "mun": "Cabrillanes",
+   "ngbe": "Laguna de las Verdes",
+   "cerca": "La Cueta",
+   "desc": "Lagunas glaciares de Babia, en la cabecera del Sil."
+  },
+  {
+   "n": "Ruta del Cares",
+   "cat": "paisaje",
+   "mun": "Posada de Valdeón",
+   "ngbe": "Caín",
+   "cerca": "Caín",
+   "desc": "La garganta del Cares empieza en Caín: un camino excavado en la roca que cruza los Picos de Europa hasta Poncebos."
+  },
+  {
+   "n": "Mirador del Tombo",
+   "cat": "paisaje",
+   "mun": "Posada de Valdeón",
+   "ngbe": "Mirador del Tombo",
+   "cerca": "Cordiñanes",
+   "desc": "Balcón sobre el valle de Valdeón y el macizo central de los Picos de Europa."
+  },
+  {
+   "n": "Chorco de los Lobos",
+   "cat": "paisaje",
+   "mun": "Posada de Valdeón",
+   "ngbe": "Chorco de los Lobos",
+   "cerca": "Posada de Valdeón",
+   "desc": "Trampa tradicional para cazar lobos, en forma de embudo de piedra."
+  },
+  {
+   "n": "Desfiladero de los Beyos",
+   "cat": "paisaje",
+   "mun": "Oseja de Sajambre",
+   "ngbe": "Desfiladero de los Beyos",
+   "cerca": "Oseja de Sajambre",
+   "desc": "Estrecho desfiladero del Sella entre Sajambre y Asturias."
+  },
+  {
+   "n": "Hoces de Vegacervera",
+   "cat": "paisaje",
+   "mun": "Vegacervera",
+   "ngbe": "Hoces de Vegacervera",
+   "cerca": "Vegacervera",
+   "desc": "El Torío corta las calizas en un desfiladero de paredes verticales."
+  },
+  {
+   "n": "Hoces de Valdeteja",
+   "cat": "paisaje",
+   "mun": "Valdepiélago",
+   "ngbe": "Hoces de Valdeteja",
+   "cerca": "Valdeteja",
+   "desc": "Desfiladero del Curueño, con la calzada y los puentes que la tradición llama romanos."
+  },
+  {
+   "n": "Valle del Silencio",
+   "cat": "paisaje",
+   "mun": "Ponferrada",
+   "ngbe": "Valle del Silencio",
+   "cerca": "Peñalba de Santiago",
+   "desc": "Valle del río Oza, cuna del monacato berciano en la Alta Edad Media."
+  },
+  {
+   "n": "Mirador de Orellán",
+   "cat": "paisaje",
+   "mun": "Borrenes",
+   "ngbe": "Mirador de Orellán",
+   "cerca": "Orellán",
+   "desc": "Asomado a las galerías de la mina de oro romana de Las Médulas."
+  },
+  {
+   "n": "Puerto de Ancares",
+   "cat": "paisaje",
+   "mun": "Valle de Ancares",
+   "ngbe": "Puerto de Ancares",
+   "cerca": "Tejedo de Ancares",
+   "desc": "Paso entre León y Galicia en plena sierra de Ancares, Reserva de la Biosfera."
+  },
+  {
+   "n": "Pallozas de Balboa",
+   "cat": "etno",
+   "mun": "Balboa",
+   "cerca": "Balboa",
+   "desc": "Pallozas, las casas castreñas de planta redonda y techo de paja, conservadas en Balboa."
+  },
+  {
+   "n": "Pallozas de Campo del Agua",
+   "cat": "etno",
+   "mun": "Villafranca del Bierzo",
+   "cerca": "Campo del Agua",
+   "desc": "Aldea de pallozas en la sierra de Ancares, declarada Bien de Interés Cultural."
+  },
+  {
+   "n": "Herrería de Compludo",
+   "cat": "etno",
+   "mun": "Ponferrada",
+   "ngbe": "Herrería de Compludo",
+   "cerca": "Compludo",
+   "desc": "Herrería movida por agua, con su martillo pilón aún en funcionamiento; Monumento Histórico-Artístico."
+  },
+  {
+   "n": "Museo de la Siderurgia y la Minería",
+   "cat": "etno",
+   "mun": "Sabero",
+   "cerca": "Sabero",
+   "desc": "En la Ferrería de San Blas (1846), uno de los primeros altos hornos de coque de España."
+  },
+  {
+   "n": "Pozo Ibarra",
+   "cat": "etno",
+   "mun": "La Pola de Gordón",
+   "cerca": "Ciñera",
+   "desc": "Castillete minero de Ciñera, testigo de la minería del carbón de la montaña central."
+  },
+  {
+   "n": "Castrillo de los Polvazares",
+   "cat": "etno",
+   "mun": "Astorga",
+   "ngbe": "Castrillo de los Polvazares",
+   "cerca": "Castrillo de los Polvazares",
+   "desc": "Pueblo maragato de calles empedradas y casas de arrieros, Conjunto Histórico."
+  },
+  {
+   "n": "Cruz de Ferro",
+   "cat": "etno",
+   "mun": "Santa Colomba de Somoza",
+   "ngbe": "Cruz de Ferro",
+   "cerca": "Foncebadón",
+   "desc": "Cruz sobre un gran montón de piedras que dejan los peregrinos del Camino de Santiago, en el punto más alto de los Montes de León."
+  },
+  {
+   "n": "Santiago de Peñalba",
+   "cat": "patrimonio",
+   "mun": "Ponferrada",
+   "cerca": "Peñalba de Santiago",
+   "desc": "Iglesia mozárabe del siglo X, uno de los ejemplos mejor conservados de este arte."
+  },
+  {
+   "n": "San Miguel de Escalada",
+   "cat": "patrimonio",
+   "mun": "Gradefes",
+   "ngbe": "San Miguel de Escalada",
+   "cerca": "San Miguel de Escalada",
+   "desc": "Monasterio mozárabe consagrado en el año 913, con su pórtico de arcos de herradura."
+  },
+  {
+   "n": "Monasterio de Carracedo",
+   "cat": "patrimonio",
+   "mun": "Carracedelo",
+   "ngbe": "Monasterio de Carracedo",
+   "cerca": "Carracedo del Monasterio",
+   "desc": "Monasterio cisterciense con palacio real, en la vega del Cúa."
+  },
+  {
+   "n": "Monasterio de Sandoval",
+   "cat": "patrimonio",
+   "mun": "Mansilla Mayor",
+   "ngbe": "Monasterio de Sandoval",
+   "cerca": "Villaverde de Sandoval",
+   "desc": "Monasterio cisterciense del siglo XII junto al Esla."
+  },
+  {
+   "n": "Monasterio de Gradefes",
+   "cat": "patrimonio",
+   "mun": "Gradefes",
+   "cerca": "Gradefes",
+   "desc": "Monasterio cisterciense de Santa María la Real, con una cabecera románica de gran altura."
+  },
+  {
+   "n": "Colegiata de Arbas",
+   "cat": "patrimonio",
+   "mun": "Villamanín",
+   "cerca": "Arbas del Puerto",
+   "desc": "Colegiata románica de Santa María, junto al antiguo hospital de peregrinos del puerto de Pajares."
+  },
+  {
+   "n": "Real Colegiata de San Isidoro",
+   "cat": "patrimonio",
+   "mun": "León",
+   "wd": "Basílica de San Isidoro de León",
+   "cerca": "León",
+   "desc": "Con el Panteón de los Reyes de León, llamado la Capilla Sixtina del románico por sus pinturas."
+  },
+  {
+   "n": "Casa Botines",
+   "cat": "patrimonio",
+   "mun": "León",
+   "wd": "Casa Botines",
+   "cerca": "León",
+   "desc": "Edificio de Antoni Gaudí (1891-1892) en el centro de León."
+  },
+  {
+   "n": "Castillo de Cornatel",
+   "cat": "patrimonio",
+   "mun": "Priaranza del Bierzo",
+   "ngbe": "Castillo de Cornatel",
+   "cerca": "Villavieja",
+   "desc": "Castillo medieval sobre un espolón rocoso que domina el valle del Sil."
+  },
+  {
+   "n": "Castillo de Sarracín",
+   "cat": "patrimonio",
+   "mun": "Vega de Valcarce",
+   "ngbe": "Castillo de Sarracín",
+   "cerca": "Vega de Valcarce",
+   "desc": "Ruinas del castillo que vigilaba el Camino de Santiago en el valle del Valcarce."
+  },
+  {
+   "n": "Murallas de Mansilla de las Mulas",
+   "cat": "patrimonio",
+   "mun": "Mansilla de las Mulas",
+   "cerca": "Mansilla de las Mulas",
+   "desc": "Muralla medieval de cubos de canto rodado, de las mejor conservadas de la provincia."
+  },
+  {
+   "n": "Santuario de la Virgen del Camino",
+   "cat": "patrimonio",
+   "mun": "Valverde de la Virgen",
+   "cerca": "La Virgen del Camino",
+   "desc": "Santuario moderno (1961) con las grandes esculturas de bronce de Josep Maria Subirachs."
+  },
+  {
+   "n": "Castro de Chano",
+   "cat": "arqueo",
+   "mun": "Peranzanes",
+   "ngbe": "Castro de Chano",
+   "cerca": "Chano",
+   "desc": "Poblado fortificado de la Edad del Hierro y época romana, con casas circulares excavadas."
+  },
+  {
+   "n": "Lancia",
+   "cat": "arqueo",
+   "mun": "Villasabariego",
+   "ngbe": "Lancia",
+   "cerca": "Villasabariego",
+   "desc": "Ciudad de los astures conquistada por Roma en el 25 a. C.; se visitan restos de época romana."
+  },
+  {
+   "n": "Villa romana de Navatejera",
+   "cat": "arqueo",
+   "mun": "Villaquilambre",
+   "cerca": "Navatejera",
+   "desc": "Restos de una villa romana con mosaicos, junto al Torío."
+  }
+ ]
+}
