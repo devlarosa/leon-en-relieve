@@ -4196,7 +4196,7 @@ const cerrarPanel = () => { if (isPhone) { $("panel").classList.add("collapsed")
 const verEn = (el) => { el.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" }); return el; };
 const capLeon = data.capitales.find(c => c.c === "24089"), munLeon = data.municipios.find(m => m.c === "24089");
 const PASOS_TUT = [
-  { t: "Bienvenido a León en relieve", x: "La provincia en 3D con datos oficiales. En dos minutos te enseño a moverte, a consultar cualquier lugar y a usar las capas de datos. Puedes pausar o saltar pasos cuando quieras.",
+  { t: "Bienvenido a León en relieve", x: "La provincia en 3D con datos oficiales. En tres minutos te enseño a moverte, a consultar cualquier lugar y a usar las capas de datos. Puedes pausar o saltar pasos cuando quieras.",
     f: async (tk) => { tour.objetivo = null; cerrarPanel(); tweenTo(HOME, 900); await espera(900, tk); } },
   { t: "Moverse por el mapa", x: "Arrastra para desplazarte. Con la rueda o pellizcando con dos dedos te acercas. Con el botón derecho, o girando dos dedos, cambias el ángulo y la orientación.",
     f: async (tk) => {
@@ -4218,7 +4218,7 @@ const PASOS_TUT = [
     f: async (tk) => { tour.objetivo = $("info"); await clic($("i-more"), tk); await espera(2200, tk); await clic($("i-more"), tk); } },
   { t: "Sobrevolar como un dron", x: "«Sobrevolar» da vueltas alrededor del municipio, como un dron. Toca el mapa para parar.",
     f: async (tk) => { tour.objetivo = $("i-orbit"); await clic($("i-orbit"), tk); tour.objetivo = null; await espera(4500, tk); if (orbit) stopOrbit(); showInfo(null); } },
-  { t: "Las categorías", x: "El panel se organiza por temas: Mapa, Relieve, Geología, Población, Clima, Agua y Escena. Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
+  { t: "Las categorías", x: "El panel se organiza por temas: Mapa, Relieve, Geología, Población, Clima, Agua, Historia, Camino y Escena. Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
     f: async (tk) => { abrirPanel(); await espera(400, tk); tour.objetivo = document.querySelector(".cats"); $("panel").scrollTop = 0; await espera(1200, tk); } },
   { t: "Nivel del agua", x: "En Relieve puedes inundar el terreno hasta una altitud y ver qué cotas sobresalen. Aquí, todo lo que queda por debajo de 1.000 m.",
     f: async (tk) => {
@@ -4246,6 +4246,30 @@ const PASOS_TUT = [
       if (!RIO) return; closeHcard(); abrirPanel(); tour.objetivo = verEn($("gota-btn")); await clic($("gota-btn"), tk);
       cerrarPanel(); tweenTo(HOME, 700); await espera(900, tk);
       const pto = { mx: 95000, my: 42000 }; tour.objetivo = pto; await clic(pto, tk, () => lanzarGota(pto.mx, pto.my)); tour.objetivo = $("hcard"); await espera(5000, tk);
+    } },
+  { t: "Historia", x: "En Historia el mapa se vuelve un pergamino antiguo. Mueve la línea del tiempo y verás aparecer castros, ciudades romanas, monasterios del Reino de León y las minas del siglo XX. Toca un lugar para leer su historia.",
+    f: async (tk) => {
+      if (!$("hcard").hidden || gota) closeHcard(); abrirPanel(); await clic($("tab-historia"), tk); await espera(1500, tk);
+      if (!HIST.listo) return;
+      if (isPhone) cerrarPanel();
+      tour.objetivo = $("hist-bar"); setAnio(-300); await espera(500, tk);
+      await mano($("hist-t"), tk, 0.05); await deslizar($("hist-t"), tDeAnio(-300), tDeAnio(1188), 3200, tk); await espera(1200, tk);
+      await deslizar($("hist-t"), tDeAnio(1188), tDeAnio(1950), 1800, tk); await espera(1200, tk);
+    } },
+  { t: "Visita guiada por la historia", x: "Si prefieres que te lo cuenten, la visita guiada recorre las cuatro épocas paso a paso, volando a cada lugar.",
+    f: async (tk) => { abrirPanel(); tour.objetivo = verEn($("hist-guia")); await mano($("hist-guia"), tk); await espera(2000, tk); } },
+  { t: "El Camino de Santiago", x: "Los caminos que cruzan la provincia, con datos del IGN. Elige un camino y una etapa: verás su perfil de subidas y bajadas, y los albergues por el camino.",
+    f: async (tk) => {
+      abrirPanel(); await clic($("tab-camino"), tk); await espera(1500, tk);
+      if (!CAM.listo) return;
+      tour.objetivo = verEn($("cam-etapas")); await espera(600, tk);
+      const b = [...$("cam-etapas").querySelectorAll("[data-ei]")].find(x => /→ León$/.test(x.textContent.split(/\d/)[0].trim())) || $("cam-etapas").querySelector("[data-ei]");
+      if (b) { await clic(b, tk); if (isPhone) cerrarPanel(); await espera(1800, tk); tour.objetivo = $("hcard"); await espera(1500, tk); }
+    } },
+  { t: "Recorrer la etapa", x: "«Recorrer la etapa» la sobrevuela como un dron, del inicio al final. Toca el mapa para parar.",
+    f: async (tk) => {
+      if ($("hcard").hidden || !$("cam-rec")) return;
+      tour.objetivo = $("cam-rec"); await clic($("cam-rec"), tk); tour.objetivo = null; await espera(5000, tk); stopNav(); closeHcard();
     } },
   { t: "Luz y estación", x: "En Escena eliges el mes y la hora: el sol, la nieve y los colores del paisaje cambian con ellos.",
     f: async (tk) => {
