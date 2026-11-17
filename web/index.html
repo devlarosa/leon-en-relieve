@@ -2373,10 +2373,17 @@ function renderFavList() {
     (favsEditable ? `<button class="fav-del" data-i="${i}" aria-label="Quitar ${esc(f.n)} de destacados" title="Quitar de destacados">×</button>` : "") + `</div>`).join("");
 }
 buildFavMarkers(); placeFavs();
-// guardar la lista: solo con servidor/servidor.py (en el artefacto la lista es de solo lectura)
-let favsEditable = false;
+// guardar la lista: con servidor/servidor.py, en el servidor; si no (artefacto, Cloudflare Pages…) los destacados
+// son efímeros: se pueden añadir y quitar, pero solo duran esta visita
+let favsEditable = false, favsLocal = false;
+function modoFavsLocal() {
+  favsEditable = true; favsLocal = true;
+  renderFavList(); document.querySelectorAll("[data-favk]").forEach(pintarBotonFav);
+  if (selected) updateFavBtn();
+}
 (window.leonServidor || Promise.resolve(false)).then(hay => hay ? fetch("destacados", { method: "OPTIONS" }) : null)
-  .then(r => { favsEditable = !!(r && r.status === 204); renderFavList(); if (selected) updateFavBtn(); }).catch(() => {});
+  .then(r => { if (r && r.status === 204) { favsEditable = true; renderFavList(); if (selected) updateFavBtn(); } else modoFavsLocal(); })
+  .catch(() => modoFavsLocal());
 renderFavList();
 function rehacerFavs() {
   for (let i = labels.length - 1; i >= 0; i--) if (labels[i].kind === "fav") { labels[i].el.remove(); labels.splice(i, 1); }
@@ -2385,6 +2392,10 @@ function rehacerFavs() {
   document.querySelectorAll("[data-favk]").forEach(pintarBotonFav);
 }
 async function saveFavs(list) {
+  if (favsLocal) {
+    const vista = new Set(); DESTACADAS = list.map(x => String(x).trim()).filter(x => x && !vista.has(x.toLowerCase()) && vista.add(x.toLowerCase()));
+    rehacerFavs(); return;
+  }
   const r = await fetch("destacados", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(list) });
   if (!r.ok) throw new Error("HTTP " + r.status);
   DESTACADAS = await r.json();
