@@ -537,7 +537,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
       <label class="layer"><input type="checkbox" id="l-sierras" checked><span class="sw"></span><span class="name">Sierras y montes</span><span class="key" style="background:#6b4a2b"></span></label>
       <label class="layer"><input type="checkbox" id="l-valles" checked><span class="sw"></span><span class="name">Valles</span><span class="key" style="background:#2f5f3c"></span></label>
       <label class="layer"><input type="checkbox" id="l-puertos" checked><span class="sw"></span><span class="name">Puertos de montaña</span><span class="key" style="background:#5a4632"></span></label>
-      <label class="layer" id="l-cob-row" hidden><input type="checkbox" id="l-cob" checked><span class="sw"></span><span class="name">Cubierta del suelo<span class="note">Copernicus CLC+ Backbone 2021</span></span></label>
+      <label class="layer" id="l-cob-row" hidden><input type="checkbox" id="l-cob"><span class="sw"></span><span class="name">Cubierta del suelo<span class="note">Copernicus CLC+ Backbone 2021</span></span></label>
       <div id="cob-legend" class="cob-legend" hidden></div>
       <label class="layer"><input type="checkbox" id="l-arboles" checked><span class="sw"></span><span class="name">Árboles<span class="note" id="arb-note">Ilustrativos, no son datos</span></span></label>
     </div></div>
@@ -642,6 +642,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <div id="cam-etapas"></div>
     <div><p class="group-title">Capas</p><div class="layers">
       <label class="layer"><input type="checkbox" id="l-alb" checked><span class="sw"></span><span class="name">Albergues<span class="note">IGN, con plazas y servicios</span></span></label>
+      <label class="layer"><input type="checkbox" id="l-camfoco" checked><span class="sw"></span><span class="name">Solo nombres del Camino<span class="note">Albergues y pueblos que atraviesa; oculta el resto</span></span></label>
     </div></div>
     <p class="spark-note" style="padding: 0 6px">Trazados, etapas y albergues del IGN (Caminos de Santiago en Europa). Perfiles calculados con el MDT. Toca una etapa para ver su perfil y recorrerla.</p>
   </section>
@@ -976,7 +977,8 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
-const layers = { alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: true, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+let aspAnt = false;   // aspecto de mapa antiguo (Historia y Camino)
+const layers = { camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
@@ -1699,7 +1701,7 @@ function applyMorph(full) {
   if (!HP) return;
   for (let i = 0; i < HE.length; i++) HE[i] = H[i] + (HP[i] - H[i]) * morph;
   U.uMorph.value = morph;
-  treeMesh.visible = layers.arboles && morph < 0.5;
+  treeMesh.visible = layers.arboles && morph < 0.5 && !aspAnt;
   placeTrees(); placeTowns(); placeMonuments(); placeFavs(); placeMe(); rebuildOutlines();
   clearTimeout(morphTimer);
   morphTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, full ? 0 : 150);
@@ -1741,8 +1743,8 @@ const COB_BASE = {   // colores base por clase; prados, cultivos y bosque caduci
 if (COB) {
   const ct = new THREE.DataTexture(COB, CW, CH, THREE.RedFormat, THREE.UnsignedByteType);
   ct.magFilter = THREE.NearestFilter; ct.minFilter = THREE.NearestFilter; ct.needsUpdate = true;
-  U.uCover.value = ct; U.uCovTexel.value.set(1 / CW, 1 / CH); U.uCoverOn.value = 1;
-  $("l-cob-row").hidden = false; $("cob-legend").hidden = false;
+  U.uCover.value = ct; U.uCovTexel.value.set(1 / CW, 1 / CH); U.uCoverOn.value = layers.cob ? 1 : 0;
+  $("l-cob-row").hidden = false; $("cob-legend").hidden = !layers.cob;
   $("arb-note").textContent = "Donde hay bosque según Copernicus; los árboles son ilustrativos";
 }
 function seasonCoverColors(m, cols) {     // cols: {low, mea, alp, fA, fB, field}
@@ -2216,6 +2218,10 @@ function updateSky() {
   clouds.children.forEach(c => c.material.color.set("#ffffff").lerp(C("#d9dde6"), win * 0.6).lerp(C("#ffd9c4"), golden * 0.7).lerp(C("#565e7c"), night));
   const hh0 = Math.floor(hh), mm = Math.round((hh - hh0) * 60);
   $("hora-o").textContent = hh0 + ":" + String(mm).padStart(2, "0") + (night > 0.6 ? " · noche" : "");
+  if (aspAnt) {   // el mapa antiguo conserva su cielo de pergamino
+    skyMat.uniforms.uTop.value.set("#d9c8a0"); skyMat.uniforms.uHorizon.value.set("#efe2c2");
+    U.uFog.value.set("#e6d6b0"); ground.material.color.set("#e6d6b0");
+  }
 }
 applySeason();
 
@@ -2642,8 +2648,11 @@ function updateLabels() {
       k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : L.kind === "alb" ? layers.alb && CAM.on : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (HIST.antiguo) show = ["hist", "histx", "pueblo", "deco"].includes(k0) ? histVisible(L) : (k0 === "peak" && L.kind.includes("top")) || k0 === "river" ? show : false;
     else if (["hist", "histx", "pueblo", "deco"].includes(k0)) show = false;
-    if (show && L.minDist && camDist > L.minDist) show = false;
-    if (show && !HIST.antiguo && L.kind !== "fav" && favSet.has(L.mx + "," + L.my)) show = false;   // ya tiene rótulo de destacado
+    else if (CAM.on && CAM.listo && layers.camfoco && L.kind !== "alb")   // con un camino elegido, solo sus pueblos
+      show = show && !!L.caminos && (CAM.sel == null ? L.caminos.size > 0 : L.caminos.has(CAM.sel));
+    const soloCamino = CAM.on && CAM.listo && layers.camfoco;
+    if (show && L.minDist && camDist > L.minDist && !(soloCamino && L.caminos && !L.kind.includes("loc"))) show = false;   // las cabeceras del Camino, siempre
+    if (show && !HIST.antiguo && !soloCamino && L.kind !== "fav" && favSet.has(L.mx + "," + L.my)) show = false;   // ya tiene rótulo de destacado
     if (show && !layers.entorno && !inProv(L.mx, L.my)) show = false;
     if (show && sea.on && L.kind !== "fav" && L.kind !== "comarca" && H[Math.min(R - 1, (L.my / M.celda) | 0) * W + Math.min(W - 1, (L.mx / M.celda) | 0)] < sea.level) show = false;   // bajo el agua
     if (show) {
@@ -3115,6 +3124,7 @@ function setCat(k, guardar) {
   if ($("hcard").hidden) setEnfoque(f);
   if (k === "clima" && !clima.on && !clima.visto) { clima.visto = true; setClima(true); }
   if (k === "geologia" && !geol.visto) { geol.visto = true; setGeoModo("roca"); }
+  aspectoAntiguo(k === "historia" || k === "camino");
   setAntiguo(k === "historia");
   setCamino(k === "camino");   // la primera vez, el clima se enciende solo
   $("panel").scrollTop = 0;
@@ -3716,19 +3726,28 @@ $("hist-play").onclick = () => {
   HIST.play = setInterval(() => { const t = Math.min(1000, +$("hist-t").value + 3); $("hist-t").value = t; setAnio(anioDeT(t), true); if (t >= 1000) pararHistPlay(); }, reduceMotion ? 300 : 90);
 };
 // el aspecto antiguo: pergamino, cielo sepia, sin el paisaje moderno; se deshace al salir de la pestaña
+// aspecto de mapa antiguo (pergamino, cielo sepia, sin árboles ni casas 3D): lo usan las pestañas Historia y Camino
+function aspectoAntiguo(on) {
+  if (on === aspAnt) return;
+  aspAnt = on;
+  document.body.classList.toggle("antiguo", on);
+  $("antiguo-velo").hidden = !on; $("rosa").hidden = !on;
+  U.uAntiguo.value = on ? 1 : 0; U.uEntorno.value = on || layers.entorno ? 1 : 0;
+  treeMesh.visible = !on && layers.arboles && morph < 0.5; townGroup.visible = !on && layers.pueblos; monGroup.visible = !on && layers.mon;
+  clouds.visible = !on && layers.nubes;
+  if (on) {
+    skyMat.uniforms.uTop.value.set("#d9c8a0"); skyMat.uniforms.uHorizon.value.set("#efe2c2");
+    U.uFog.value.set("#e6d6b0"); ground.material.color.set("#e6d6b0");
+  } else updateSky();
+  drawOverlay(); needsRender = true;
+}
 async function setAntiguo(on) {
   if (on === HIST.antiguo) return;
   if (on && !(await cargarHistoria())) return;
   HIST.antiguo = on;
-  document.body.classList.toggle("antiguo", on);
-  $("hist-bar").hidden = !on; $("antiguo-velo").hidden = !on; $("rosa").hidden = !on;
-  U.uAntiguo.value = on ? 1 : 0; U.uEntorno.value = on || layers.entorno ? 1 : 0;
-  treeMesh.visible = !on && layers.arboles && morph < 0.5; townGroup.visible = !on && layers.pueblos; monGroup.visible = !on && layers.mon;
-  favGroup.visible = !on && layers.fav; clouds.visible = !on && layers.nubes;
-  if (on) {
-    skyMat.uniforms.uTop.value.set("#d9c8a0"); skyMat.uniforms.uHorizon.value.set("#efe2c2");
-    U.uFog.value.set("#e6d6b0"); ground.material.color.set("#e6d6b0");
-  } else { updateSky(); if (HIST.play) pararHistPlay(); }
+  $("hist-bar").hidden = !on;
+  favGroup.visible = !on && layers.fav;
+  if (!on && HIST.play) pararHistPlay();
   HIST.clave = ""; drawOverlay(); needsRender = true;
 }
 const PASOS_HIST = [
@@ -3771,8 +3790,11 @@ function dibujarCaminos() {
       const e = J.etapas[ei];
       for (const g of e.g) {
         if (g.length < 4) continue;
-        trazar(g); ov.strokeStyle = apagado ? "rgba(255, 250, 240, 0.35)" : "rgba(255, 250, 240, 0.95)"; ov.lineWidth = (sel ? 9 : 7) * px1; ov.setLineDash([]); ov.stroke();
-        trazar(g); ov.strokeStyle = apagado ? c.color + "66" : c.color; ov.lineWidth = (sel ? 5 : 3.5) * px1;
+        // sobre el pergamino, contorno de tinta parda y trazo más grueso para que el Camino destaque
+        const halo = aspAnt ? (apagado ? "rgba(70, 45, 20, 0.25)" : "rgba(60, 38, 16, 0.85)") : (apagado ? "rgba(255, 250, 240, 0.35)" : "rgba(255, 250, 240, 0.95)");
+        const k = aspAnt ? 1.5 : 1;
+        trazar(g); ov.strokeStyle = halo; ov.lineWidth = (sel ? 9 : 7) * k * px1; ov.setLineDash([]); ov.stroke();
+        trazar(g); ov.strokeStyle = apagado ? c.color + (aspAnt ? "88" : "66") : c.color; ov.lineWidth = (sel ? 5 : 3.5) * k * px1;
         ov.setLineDash(e.variante ? [10 * px1, 8 * px1] : []); ov.stroke();
       }
     }
@@ -3859,6 +3881,23 @@ $("cam-lista").addEventListener("click", (ev) => {
 });
 $("cam-etapas").addEventListener("click", (ev) => { const b = ev.target.closest("[data-ei]"); if (b) { showEtapa(+b.dataset.ei, true); if (isPhone) cerrarPanel(); } });
 bind("l-alb", "alb");
+bind("l-camfoco", "camfoco", () => { needsRender = true; });
+// pueblos que atraviesa cada camino (a menos de 500 m del trazado): los únicos nombres que se ven con «Solo nombres del Camino»
+function marcarPueblosCamino() {
+  const partes = [];
+  CAM.J.caminos.forEach((c, ci) => { for (const ei of c.etapas) for (const g of CAM.J.etapas[ei].g) {
+    if (g.length < 4) continue;
+    let x0 = 1e12, y0 = 1e12, x1 = -1e12, y1 = -1e12;
+    for (let k = 0; k < g.length; k += 2) { x0 = Math.min(x0, g[k]); x1 = Math.max(x1, g[k]); y0 = Math.min(y0, g[k + 1]); y1 = Math.max(y1, g[k + 1]); }
+    partes.push({ ci, g, bb: [x0 - 500, y0 - 500, x1 + 500, y1 + 500] });
+  } });
+  for (const L of labels) {
+    const k0 = L.kind.split(" ")[0];
+    if (k0 !== "city" && k0 !== "town" && k0 !== "vil") continue;
+    L.caminos = new Set();
+    for (const q of partes) if (!L.caminos.has(q.ci) && L.mx >= q.bb[0] && L.mx <= q.bb[2] && L.my >= q.bb[1] && L.my <= q.bb[3] && distSeg(L.mx, L.my, q.g) < 500) L.caminos.add(q.ci);
+  }
+}
 async function cargarCamino() {
   if (CAM.listo) return true;
   try { CAM.J = await fetch("data/camino.json").then(r => { if (!r.ok) throw new Error("camino.json"); return r.json(); }); }
@@ -3868,6 +3907,7 @@ async function cargarCamino() {
     labels[labels.length - 1].el.addEventListener("click", () => showAlbergue(a));
   }
   labels.sort((x, y) => y.prio - x.prio);
+  marcarPueblosCamino();
   $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(CAM.J.fuente) + "</li>");
   CAM.listo = true; CAM.sel = CAM.J.caminos.findIndex(c => c.n === "Camino Francés"); if (CAM.sel < 0) CAM.sel = null;
   listaCaminos();
@@ -3891,7 +3931,7 @@ cargarRios();
 setCat("mapa", false);   // siempre se abre con el paisaje completo
 // vista paisaje: todo como al abrir (árboles, pueblos, luz de la tarde, cámara inicial), sin capas de datos ni fichas
 const CAPAS_INICIO = { "l-fav": true, "l-mun": true, "l-comarcas": false, "l-carr": true, "l-pob": true, "l-entorno": false, "l-picos": true, "l-sierras": true,
-  "l-valles": true, "l-puertos": true, "l-cob": true, "l-arboles": true, "l-pueblos": true, "l-mon": true, "l-rios": true, "l-aguas": true, "l-nubes": false,
+  "l-valles": true, "l-puertos": true, "l-cob": false, "l-arboles": true, "l-pueblos": true, "l-mon": true, "l-rios": true, "l-aguas": true, "l-nubes": false,
   "l-hist": false, "l-sea": false };
 function vistaPaisaje() {
   if (orbit) stopOrbit();
@@ -3923,8 +3963,8 @@ bind("l-cob", "cob", () => { U.uCoverOn.value = layers.cob && COB ? 1 : 0; $("co
   seg("co-dens", "co-age", () => { popColor = "dens"; if (PD) buildPopColors(); });
   seg("co-age", "co-dens", () => { popColor = "age"; if (PD) buildPopColors(); });
 }
-bind("l-pueblos", "pueblos", () => { townGroup.visible = layers.pueblos; drawOverlay(); });
-bind("l-mon", "mon", () => { monGroup.visible = layers.mon; });
+bind("l-pueblos", "pueblos", () => { townGroup.visible = layers.pueblos && !aspAnt; drawOverlay(); });
+bind("l-mon", "mon", () => { monGroup.visible = layers.mon && !aspAnt; });
 bind("l-hist", "hist", updateMunHist);
 function setYear(i) {
   yearIdx = i; $("anio").value = i; updateHistPanel(); updateMunHist();
@@ -3946,9 +3986,9 @@ if (ANIOS.length) updateHistPanel();
 bind("l-sierras", "sierras"); bind("l-valles", "valles"); bind("l-puertos", "puertos");
 bind("l-carr", "carr", drawOverlay); bind("l-comarcas", "comarcas", drawOverlay);
 bind("l-fav", "fav", () => { favGroup.visible = layers.fav; });
-bind("l-entorno", "entorno", () => { U.uEntorno.value = layers.entorno ? 1 : 0; setTreeCount(); });
-bind("l-arboles", "arboles", () => { treeMesh.visible = layers.arboles && morph < 0.5; });
-bind("l-nubes", "nubes", () => { clouds.visible = layers.nubes; });
+bind("l-entorno", "entorno", () => { U.uEntorno.value = layers.entorno || aspAnt ? 1 : 0; setTreeCount(); });
+bind("l-arboles", "arboles", () => { treeMesh.visible = layers.arboles && morph < 0.5 && !aspAnt; });
+bind("l-nubes", "nubes", () => { clouds.visible = layers.nubes && !aspAnt; });
 let exagTimer = null;
 $("exag").addEventListener("input", (e) => {
   exag = +e.target.value; U.uExag.value = exag / 1000;
