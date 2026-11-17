@@ -3734,8 +3734,8 @@ async function setAntiguo(on) {
 const PASOS_HIST = [
   { t: "Tres mil años en la provincia", x: "Un recorrido por las cuatro grandes épocas de León: los castros, Roma, el Reino de León y la minería del carbón. Puedes pausar, retroceder o salir cuando quieras.",
     f: async (tk) => { tour.objetivo = null; setAnio(-500); tweenTo(HOME, 1200); await espera(1200, tk); } },
-  { t: "Los castros", x: "En la Edad del Hierro la gente vive en castros: poblados en alto, amurallados, con casas redondas. El de Chano, en Peranzanes, se ha excavado y se puede visitar.",
-    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n.startsWith("Castro de Chano")); setAnio(-200); if (s) { flyToPoint(s.xy[0], s.xy[1], 14); await espera(1700, tk); showHist(s); } } },
+  { t: "Los castros", x: "En la Edad del Hierro la gente vive en castros: poblados en alto, amurallados, con casas redondas. Castro Ventosa, sobre el Cúa, será luego la Bergidum romana que da nombre a El Bierzo.",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n.startsWith("Castro Ventosa")); setAnio(-200); if (s) { flyToPoint(s.xy[0], s.xy[1], 14); await espera(1700, tk); showHist(s); } } },
   { t: "Astures, cántabros y vacceos", x: "Los astures ocupan el centro y el oeste; los cántabros, la montaña oriental de Riaño; los vacceos, las llanuras del sureste. Así encontró Roma estas tierras.",
     f: async (tk) => { closeHcard(); setAnio(-100); tweenTo(HOME, 1200); await espera(1300, tk); } },
   { t: "La conquista romana", x: "Entre el 29 y el 19 a. C. Roma vence a astures y cántabros. Lancia, la ciudad de los astures lancienses, cae en el 25 a. C.",
