@@ -100,60 +100,73 @@ def dentro(x, y, rings):
     return ins
 
 
+class Contexto:
+    """Datos del visor necesarios para situar lugares (municipios, pueblos, malla)."""
+    def __init__(self):
+        L = json.loads((RAIZ / "web" / "data" / "leon.json").read_text())
+        self.L, self.M = L, L["meta"]
+        self.munis = {m["n"]: m for m in L["municipios"]}
+        self.pueblos = [(e["n"].split(" / ")[0], e.get("c"), e["xy"]) for e in L["capitales"] + L["entidades"]]
+        CACHE.parent.mkdir(parents=True, exist_ok=True)
+        self.cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
+
+    def guardar(self):
+        CACHE.write_text(json.dumps(self.cache, ensure_ascii=False))
+
+    def local(self, lat, lon):
+        E, N = latlon_a_utm30(np.array(lat), np.array(lon))
+        return float(E) - self.M["x0"], self.M["y1"] - float(N)
+
+
+def situar(l, cx, avisos):
+    """Devuelve ((x, y), fuente, nombre encontrado, qid) o None. l: dict con n, mun y opcionalmente ngbe, wd, cerca."""
+    mun = cx.munis.get(l["mun"])
+    if not mun:
+        avisos.append(f"{l['n']}: municipio desconocido {l['mun']}"); return None
+    cerca = norm(l.get("cerca", ""))
+    ref = next((xy for n, c, xy in cx.pueblos if norm(n) == cerca and c == mun["c"]), None) \
+        or next((xy for n, c, xy in cx.pueblos if cerca and norm(n).startswith(cerca) and c == mun["c"]), None)
+    refmun = next((c["xy"] for c in cx.L["capitales"] if c.get("c") == mun["c"]), None)   # capital del municipio, último recurso
+
+    def vale(c):
+        x, y = cx.local(c["lat"], c["lon"])
+        ok = dentro(x, y, mun["g"]) and (ref is None or math.hypot(x - ref[0], y - ref[1]) <= MAX_KM * 1000)
+        return (x, y) if ok else None
+
+    def puntua(c):    # nombre más parecido primero; los cauces, al final
+        n = norm(c["n"]); objetivo = {norm(l["n"]), norm(l.get("ngbe", "")), norm(l.get("wd", ""))} - {""}
+        return (0 if n in objetivo else 1 if any(o in n or n in o for o in objetivo) else 2, "agua" in norm(c["tipo"]))
+
+    for fuente, buscar, termino in (("IGN", ngbe, l.get("ngbe")), ("Wikidata", wikidata, l.get("wd")), ("Wikidata", wikidata, l["n"])):
+        if not termino:
+            continue
+        try:
+            cands = buscar(termino, cx.cache)
+        except Exception as e:      # un servicio caído no detiene el resto
+            avisos.append(f"{l['n']}: {fuente} falló ({e})"); continue
+        for c in sorted(cands, key=puntua):
+            xy = vale(c)
+            if xy and puntua(c)[0] < 2:
+                return xy, fuente, c["n"], c.get("qid")
+    if ref or refmun:
+        return tuple(ref or refmun), "aprox", l.get("cerca") if ref else "capital de " + l["mun"], None
+    avisos.append(f"{l['n']}: sin posición")
+    return None
+
+
 def main():
     D = json.loads((RAIZ / "recursos" / "lugares.json").read_text(encoding="utf-8"))
-    L = json.loads((RAIZ / "web" / "data" / "leon.json").read_text())
-    M = L["meta"]
-    munis = {m["n"]: m for m in L["municipios"]}
-    pueblos = [(e["n"].split(" / ")[0], e.get("c"), e["xy"]) for e in L["capitales"] + L["entidades"]]
-    CACHE.parent.mkdir(parents=True, exist_ok=True)
-    cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
-
-    def local(lat, lon):
-        E, N = latlon_a_utm30(np.array(lat), np.array(lon))
-        return float(E) - M["x0"], M["y1"] - float(N)
-
+    cx = Contexto()
     salida, avisos = [], []
     for l in D["lugares"]:
-        mun = munis.get(l["mun"])
-        if not mun:
-            avisos.append(f"{l['n']}: municipio desconocido {l['mun']}"); continue
-        ref = next((xy for n, c, xy in pueblos if norm(n) == norm(l.get("cerca", "")) and c == mun["c"]), None) \
-            or next((xy for n, c, xy in pueblos if norm(l.get("cerca", "")) and norm(n).startswith(norm(l.get("cerca", ""))) and c == mun["c"]), None)
-        refmun = next((c["xy"] for c in L["capitales"] if c.get("c") == mun["c"]), None)   # capital del municipio, último recurso
-
-        def vale(c):
-            x, y = local(c["lat"], c["lon"])
-            ok = dentro(x, y, mun["g"]) and (ref is None or math.hypot(x - ref[0], y - ref[1]) <= MAX_KM * 1000)
-            return (x, y) if ok else None
-
-        def puntua(c):    # nombre más parecido primero; los cauces y edificaciones genéricas, al final
-            n = norm(c["n"]); objetivo = {norm(l["n"]), norm(l.get("ngbe", "")), norm(l.get("wd", ""))}
-            return (0 if n in objetivo else 1 if any(o and (o in n or n in o) for o in objetivo) else 2, "agua" in norm(c["tipo"]))
-
-        hallado = None
-        for fuente, buscar, termino in (("IGN", ngbe, l.get("ngbe")), ("Wikidata", wikidata, l.get("wd")), ("Wikidata", wikidata, l["n"])):
-            if not termino:
-                continue
-            try:
-                cands = buscar(termino, cache)
-            except Exception as e:      # un servicio caído no detiene el resto
-                avisos.append(f"{l['n']}: {fuente} falló ({e})"); continue
-            for c in sorted(cands, key=puntua):
-                xy = vale(c)
-                if xy and puntua(c)[0] < 2:
-                    hallado = (xy, fuente, c["n"], c.get("qid")); break
-            if hallado:
-                break
-        if not hallado and (ref or refmun):
-            hallado = (tuple(ref or refmun), "aprox", l.get("cerca") if ref else "capital de " + l["mun"], None)
-        if not hallado:
-            avisos.append(f"{l['n']}: sin posición"); continue
-        (x, y), fuente, encontrado, qid = hallado
+        r = situar(l, cx, avisos)
+        if not r:
+            continue
+        (x, y), fuente, encontrado, qid = r
         salida.append({"n": l["n"], "cat": l["cat"], "desc": l["desc"], "mun": l["mun"], "xy": [round(x), round(y)],
                        "fuente": fuente, "como": encontrado, **({"wd": qid} if qid else {})})
         print(f"  {fuente:8} {l['n']:42} ← {encontrado}")
-    CACHE.write_text(json.dumps(cache, ensure_ascii=False))
+    cx.guardar()
     out = {"fuente": "Lugares escogidos para el visor; posiciones del Nomenclátor Geográfico Básico de España (IGN) o, si no figuran, de Wikidata",
            "categorias": D["categorias"], "lugares": salida}
     (RAIZ / "web" / "data" / "lugares.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))

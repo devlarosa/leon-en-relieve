@@ -28,6 +28,7 @@ Todos los datos proceden de fuentes oficiales españolas o europeas (Copernicus)
 | Cuencas | Dirección General del Agua · cuencas de captación con orden Pfafstetter (superficie oficial); la sombra del visor es una aproximación sobre la red del IGN |
 | Caudales y embalses | MITECO · Anuario de Aforos 2021-22 (Red Oficial de Estaciones de Aforo, datos de las confederaciones del Duero, Miño-Sil y Cantábrico); el caudal por tramo es una estimación calibrada con las estaciones |
 | Geología | IGME-CSIC · MAGNA 1:50.000 (descripción y tipo de roca), Mapa Geológico de España 1:1.000.000 (edad, con los colores de la Comisión Internacional de Estratigrafía), Mapa Hidrogeológico 1:200.000 (permeabilidad) e Inventario Español de Lugares de Interés Geológico |
+| Mapa histórico | Selección divulgativa de sitios y épocas (recursos/historia.json); calzadas romanas de Itiner-e 2024 (Zenodo, CC BY 4.0); labores de oro, minas de carbón y escombreras del IGME-CSIC; castillos, monasterios y yacimientos de Wikidata |
 
 ## Como app en el móvil
 
@@ -45,6 +46,7 @@ Los datos no se guardan en el repositorio: se descargan de sus fuentes oficiales
 - **MITECO y Dirección General del Agua** (anuario de aforos, embalses, cuencas): reutilización libre citando la fuente (aviso legal del MITECO, Ley 37/2007 y Real Decreto 1495/2011).
 - **MAPA** (comarcas agrarias): reutilización libre citando la fuente.
 - **IGME-CSIC** (geología): reutilización libre citando la fuente.
+- **Itiner-e** (calzadas romanas): CC BY 4.0, Brughmans, Pažout, de Soto y Bjerregaard Vahlstrup (2024).
 - **Copernicus** (cubierta del suelo): acceso libre y gratuito, © Unión Europea, Copernicus Land Monitoring Service, Agencia Europea de Medio Ambiente.
 - **Wikipedia / Wikidata** (comarca tradicional y posición de algunos lugares de interés): CC BY-SA 4.0 y CC0.
 
@@ -67,6 +69,7 @@ python3 scripts/rios_red.py        # afluentes, caudales, estaciones, embalses -
 python3 scripts/geologia_descargar.py  # geología del IGME-CSIC (MAGNA 50, mapa 1:1M, hidrogeológico, LIG) -> raw/geologia/
 python3 scripts/geologia.py        # tipo de roca, edad, permeabilidad y lugares de interés -> web/data/geologia.*
 python3 scripts/lugares.py         # lugares de interés de recursos/lugares.json, situados con el Nomenclátor del IGN o Wikidata
+python3 scripts/historia.py        # mapa histórico: sitios de recursos/historia.json, calzadas (Itiner-e), oro y carbón (IGME), Wikidata
 ./abrir_visor.sh                  # sirve web/ en http://127.0.0.1:8800 y abre el navegador (--parar para detenerlo)
 ```
 
@@ -95,6 +98,7 @@ R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del 
 R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 2021)
 scripts/clima_aemet.py       normales 1991-2020 de AEMET (temperaturas, precipitación, heladas, días de calor) ajustadas a la altitud
 scripts/lugares.py           sitúa los lugares de interés (recursos/lugares.json): Nomenclátor del IGN, Wikidata o su pueblo
+scripts/historia.py          mapa histórico por épocas (castros, Roma, Reino de León, minería del carbón)
 scripts/geologia.py          tipo de roca, edad de las rocas, permeabilidad y lugares de interés geológico (IGME-CSIC)
 scripts/rios_red.py          árbol de afluentes, caudal medio estimado por tramo, estaciones de aforo, embalses y cuencas aproximadas
 servidor/servidor.py         servidor de la app (iPhone): cabecera PWA, version.json y guardado de destacados

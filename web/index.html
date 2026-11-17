@@ -374,6 +374,39 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
 #tour-invita button { font: inherit; font-weight: 700; font-size: 13px; padding: 7px 12px; border-radius: 9px; border: 0; cursor: pointer; }
 #tour-invita .ver { background: #c47f12; color: #fff; }
 #tour-invita .no { background: transparent; color: var(--ink-soft); font-size: 18px; padding: 4px 8px; }
+#hist-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(52px + env(safe-area-inset-bottom, 0px)); width: min(780px, calc(100% - 32px));
+  box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 10px 14px; z-index: 3; }
+.antiguo #hist-bar { background: rgba(240, 228, 196, .94); border-color: #8a6a3e; }
+.hb-centro { flex: 1; min-width: 0; }
+.hb-eras { display: flex; gap: 2px; margin-bottom: 4px; }
+.hb-eras button { flex: 1; min-width: 0; font: inherit; font-size: 11.5px; font-weight: 700; padding: 3px 4px; border: 0; border-radius: 6px; cursor: pointer; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .55; }
+.hb-eras button[aria-pressed="true"] { opacity: 1; box-shadow: 0 0 0 2px rgba(0,0,0,.25) inset; }
+#hist-t { width: 100%; accent-color: #7a5530; }
+.hb-anio { font-family: var(--font-display); font-weight: 800; font-size: 22px; min-width: 96px; text-align: right; font-variant-numeric: tabular-nums; color: #3b2714; }
+@media (max-width: 720px) { #hist-bar { bottom: calc(108px + env(safe-area-inset-bottom, 0px)); padding: 8px 10px; gap: 8px; } .hb-anio { font-size: 17px; min-width: 70px; } .hb-eras button { font-size: 9.5px; } }
+#antiguo-velo { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(80, 52, 22, .38) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
+body.antiguo #tour-invita { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); }
+#rosa { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(118px + env(safe-area-inset-bottom, 0px)); pointer-events: none; z-index: 1; opacity: .9; }
+body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
+@media (max-width: 720px) { #rosa { display: none; } }
+.antiguo .lbl { color: #3b2714; text-shadow: 0 0 3px #efe2c2, 0 0 3px #efe2c2, 0 0 6px rgba(239,226,194,.9); }
+.antiguo .lbl.peak { color: #4a3420; } .antiguo .lbl.peak .tri { border-bottom-color: #4a3420; }
+.antiguo .lbl.river { color: #2c4a5a; }
+.lbl.hist { pointer-events: auto; cursor: pointer; font-family: var(--font-display); font-weight: 800; font-size: 14px; letter-spacing: .02em; }
+.lbl.hist .mk { display: inline-block; width: 11px; height: 11px; margin-right: 5px; border: 2px solid #fff6e0; border-radius: 50%; vertical-align: -1px; box-shadow: 0 0 0 1px rgba(60,40,20,.45); }
+.lbl.hist:hover, .lbl.histx:hover { text-decoration: underline; text-underline-offset: 3px; }
+.lbl.histx { pointer-events: auto; cursor: pointer; font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 12px; }
+.lbl.histx .mk { display: inline-block; width: 7px; height: 7px; margin-right: 4px; border-radius: 1px; transform: rotate(45deg); vertical-align: 1px; }
+.lbl.pueblo { font-family: var(--font-display); font-style: italic; font-weight: 800; font-size: 24px; letter-spacing: .4em; color: #6b3f1c !important; opacity: .85; }
+.lbl.deco { pointer-events: none; }
+.lbl.deco .lema { display: block; text-align: center; font-family: var(--font-display); font-style: italic; font-weight: 700; font-size: 15px; letter-spacing: .18em; color: #5a3d22; margin-top: -4px; }
+.lista-st button.hist-era { display: flex; justify-content: flex-start; gap: 10px; align-items: flex-start; text-align: left; }
+.hist-era i { flex: none; width: 12px; height: 12px; border-radius: 3px; margin-top: 4px; }
+.hist-era b { display: block; } .hist-era small { white-space: normal !important; }
+#hist-ficha .txt { font-size: 13px; line-height: 1.5; margin: 6px 0 0; }
 .tour-btn { font: inherit; font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; border: 1.5px solid #c47f12; background: transparent; color: var(--ink); cursor: pointer; margin-top: 8px; }
 .tour-btn:hover { background: #c47f12; color: #fff; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
@@ -397,6 +430,7 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
     <button class="cat-b" role="tab" id="tab-poblacion" data-cat="poblacion" aria-selected="false" aria-controls="cat-poblacion"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20v-8l5-4 5 4v8z"/><path d="M14 20v-6l3-2.5 3 2.5v6"/><path d="M8 20v-4h2v4"/></svg>Población</button>
     <button class="cat-b" role="tab" id="tab-clima" data-cat="clima" aria-selected="false" aria-controls="cat-clima"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1"/><path d="M10 19h8a3 3 0 0 0 0-6 4.5 4.5 0 0 0-8.6-1A3.5 3.5 0 0 0 10 19z"/></svg>Clima</button>
     <button class="cat-b" role="tab" id="tab-agua" data-cat="agua" aria-selected="false" aria-controls="cat-agua"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z"/></svg>Agua</button>
+    <button class="cat-b" role="tab" id="tab-historia" data-cat="historia" aria-selected="false" aria-controls="cat-historia"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6M9 11h4"/></svg>Historia</button>
     <button class="cat-b" role="tab" id="tab-escena" data-cat="escena" aria-selected="false" aria-controls="cat-escena"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>Escena</button>
   </nav>
   <label class="layer enfoque"><input type="checkbox" id="l-enfoque" checked><span class="sw"></span><span class="name">Enfocar en esta categoría<span class="note" id="enfoque-note">Oculta lo que no ayuda a leer estos datos</span></span></label>
@@ -536,6 +570,12 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
     <p class="spark-note" style="padding: 4px 6px 0">Toca un río en el mapa para ver sus afluentes y su cuenca. Toca un embalse o una estación para ver sus datos.</p>
   </div>
   </section>
+  <section class="cat" id="cat-historia" role="tabpanel" aria-labelledby="tab-historia" hidden>
+    <button class="tool-btn" id="hist-guia">▶ Visita guiada por la historia<small>Castros, Roma, el Reino de León y la minería, paso a paso</small></button>
+    <div><p class="group-title">Épocas</p><div class="lista-st" id="hist-eras"></div></div>
+    <div id="hist-ficha"></div>
+    <p class="spark-note" id="hist-nota" style="padding: 0 6px">Mueve la línea del tiempo de abajo o pulsa una época. Toca un lugar del mapa para leer su historia.</p>
+  </section>
   <section class="cat" id="cat-escena" role="tabpanel" aria-labelledby="tab-escena" hidden>
     <button class="tool-btn" id="tour-abrir-2">▶ Tutorial guiado<small>Dos minutos para aprender a usar el mapa</small></button>
     <button class="tool-btn paisaje" id="vista-paisaje-2">✦ Vista paisaje<small>Vuelve a la vista inicial con todo el paisaje</small></button>
@@ -625,6 +665,21 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
   <button id="nav-upd" aria-label="Actualizar la aplicación" title="Actualizar"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg></button>
 </div>
 
+<div id="hist-bar" class="card" hidden>
+  <button class="play" id="hist-play" aria-pressed="false" aria-label="Avanzar en el tiempo">▶</button>
+  <div class="hb-centro">
+    <div class="hb-eras" id="hb-eras"></div>
+    <input type="range" id="hist-t" min="0" max="1000" step="1" value="0" aria-label="Línea del tiempo">
+  </div>
+  <output id="hist-anio" class="hb-anio"></output>
+</div>
+<div id="antiguo-velo" hidden></div>
+<div id="rosa" hidden aria-hidden="true"><svg viewBox="-60 -60 120 120" width="110" height="110">
+  <circle r="44" fill="none" stroke="#5a3d22" stroke-width="1.2"/><circle r="40" fill="none" stroke="#5a3d22" stroke-width=".6"/>
+  <g fill="#7a5530" stroke="#3b2714" stroke-width=".7"><path d="M0-56 L7-7 L0 0Z"/><path d="M0-56 L-7-7 L0 0Z" fill="#e9d9b4"/><path d="M0 56 L-7 7 L0 0Z"/><path d="M0 56 L7 7 L0 0Z" fill="#e9d9b4"/>
+  <path d="M56 0 L7 7 L0 0Z"/><path d="M56 0 L7-7 L0 0Z" fill="#e9d9b4"/><path d="M-56 0 L-7-7 L0 0Z"/><path d="M-56 0 L-7 7 L0 0Z" fill="#e9d9b4"/>
+  <path d="M30-30 L4 0 L0-4Z" fill="#e9d9b4"/><path d="M-30-30 L0-4 L-4 0Z" fill="#e9d9b4"/><path d="M30 30 L0 4 L4 0Z" fill="#e9d9b4"/><path d="M-30 30 L-4 0 L0 4Z" fill="#e9d9b4"/></g>
+  <text y="-46" text-anchor="middle" font-family="Alegreya, serif" font-size="11" font-weight="800" fill="#3b2714" transform="translate(0 -6)">N</text></svg></div>
 <div id="tour" hidden>
   <div id="tour-bloq"></div>
   <div id="tour-foco" class="libre"></div>
@@ -856,6 +911,7 @@ const layers = { lugares: true, lig: true, comcolor: false, cucolor: false, caud
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
+const HIST = { antiguo: false, listo: false, J: null, anio: -300, play: null, clave: "" };   // mapa histórico
 const LUG = { listo: false, J: null, cats: new Set() };   // lugares de interés (data/lugares.json)
 const geol = { modo: "", listo: false, cargando: null, visto: false, mg: null, g1: null, pm: null, J: null, solo: null, cv: null, cvClave: "" };   // geología (IGME), al abrir su pestaña
 let selected = null, hovered = null, comarcaSel = null, yearIdx = 13, needsRender = true;
@@ -876,6 +932,7 @@ for (const c of data.comarcas) {
 }
 function drawOverlay() {
   ov.clearRect(0, 0, TW, TH);
+  if (HIST.antiguo) { dibujarHistoria(); ovTex && (ovTex.needsUpdate = true); needsRender = true; return; }
   if (layers.comcolor) pintarComarcas();
   if (layers.cucolor && RIO) pintarCuencas();
   if (geol.modo && geol.listo) pintarGeo();
@@ -1268,7 +1325,7 @@ const U = {
   uSnow: { value: 2300 }, uAutumn: { value: 0 }, uWinter: { value: 0 }, uMorph: { value: 0 }, uPop: { value: null },
   uMunId: { value: null }, uMunState: { value: null }, uMunHist: { value: null }, uComarcaOn: { value: 0 }, uHistOn: { value: 0 }, uNoise: { value: null },
   uCover: { value: null }, uCoverOn: { value: 0 }, uCovTexel: { value: new THREE.Vector2(1, 1) }, uCls: { value: Array.from({ length: 12 }, () => new THREE.Color(1, 1, 1)) },
-  uSea: { value: 1000 }, uSeaOn: { value: 0 }, uCalma: { value: 0 },
+  uSea: { value: 1000 }, uSeaOn: { value: 0 }, uCalma: { value: 0 }, uAntiguo: { value: 0 },
   uClima: { value: null }, uCSize: { value: new THREE.Vector2(1, 1) }, uClimaOn: { value: 0 }, uCMin: { value: 0 }, uCMax: { value: 1 }, uCB: { value: 0 },
   uCLo: { value: -1e4 }, uCHi: { value: 1e4 }, uCS0: { value: 0 }, uCS1: { value: 1 }, uCStep: { value: 1 }, uCPal: { value: Array.from({ length: 5 }, () => new THREE.Color()) },
   uLow: { value: new THREE.Color(0.56, 0.75, 0.36) }, uMeadow: { value: new THREE.Color(0.47, 0.70, 0.33) }, uField: { value: new THREE.Color(0.86, 0.76, 0.46) },
@@ -1288,7 +1345,7 @@ const terrainMat = new THREE.ShaderMaterial({
     }`,
   fragmentShader: `
     uniform sampler2D uNrm, uOv, uMask, uVis; uniform vec3 uSun, uSunCol, uShadeCol, uFog, uCam; uniform float uEntorno, uViewOn, uSnow, uMorph, uCoverOn, uComarcaOn, uHistOn; uniform sampler2D uPop, uCover, uMunId, uMunState, uMunHist, uNoise; uniform vec2 uCovTexel; uniform vec3 uCls[12];
-    uniform vec3 uLow, uMeadow, uField, uForA, uForB, uAlpine; uniform float uSea, uSeaOn, uCalma;
+    uniform vec3 uLow, uMeadow, uField, uForA, uForB, uAlpine; uniform float uSea, uSeaOn, uCalma, uAntiguo;
     uniform sampler2D uClima; uniform vec2 uCSize; uniform float uClimaOn, uCMin, uCMax, uCB, uCLo, uCHi, uCS0, uCS1, uCStep; uniform vec3 uCPal[5];
     varying vec2 vUv; varying float vH; varying vec3 vWorld;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -1384,6 +1441,20 @@ const terrainMat = new THREE.ShaderMaterial({
       float rim = pow(1.0 - max(n.y, 0.0), 2.0) * 0.12;
       lit += rim * uSunCol;
       if (wet > 0.5) lit = wcol * mix(vec3(0.86, 0.9, 1.0), uSunCol, 0.35) + pow(max(dot(reflect(-uSun, vec3(0.0, 1.0, 0.0)), normalize(uCam - vWorld)), 0.0), 40.0) * uSunCol * 0.35;
+      // mapa antiguo: pergamino, laderas en sombra rayadas a plumilla y la capa de tinta (ríos, calzadas…) encima
+      if (uAntiguo > 0.001) {
+        float luz = dot(n, uSun) * 0.5 + 0.5, sombra = 1.0 - smoothstep(0.25, 0.8, luz);
+        vec3 papel = vec3(0.93, 0.86, 0.69) * (0.9 + 0.14 * fT(wp * 0.5)) * (0.96 + 0.06 * nT(wp * 7.0));
+        float hv = (wp.x * 0.7 - wp.y * 0.7) * 3.0, dh = max(fwidth(hv), 1e-4);
+        float raya = (1.0 - smoothstep(0.0, 1.2, abs(fract(hv) - 0.5) / dh)) * (1.0 - smoothstep(0.25, 0.55, dh));
+        vec3 tinta = vec3(0.33, 0.22, 0.12);
+        vec3 a = mix(papel, papel * vec3(0.8, 0.72, 0.6), sombra * 0.75);
+        a = mix(a, tinta, raya * sombra * 0.55);
+        a = mix(a, a * vec3(0.92, 0.84, 0.72), smoothstep(1300.0, 2400.0, vH) * 0.55);       // la alta montaña, más tostada
+        a = mix(a, vec3(0.86, 0.80, 0.66), outside * 0.55);                                   // fuera de la provincia: tierra ignota
+        a = mix(a, ov.rgb, ov.a);
+        lit = mix(lit, a, uAntiguo);
+      }
       // mirador: lo visible brilla, lo oculto queda en penumbra
       if (uViewOn > 0.5) {
         float v = texture2D(uVis, vUv).r;
@@ -2498,8 +2569,10 @@ function updateLabels() {
     const k0 = L.kind.split(" ")[0];
     let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
       k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+    if (HIST.antiguo) show = ["hist", "histx", "pueblo", "deco"].includes(k0) ? histVisible(L) : (k0 === "peak" && L.kind.includes("top")) || k0 === "river" ? show : false;
+    else if (["hist", "histx", "pueblo", "deco"].includes(k0)) show = false;
     if (show && L.minDist && camDist > L.minDist) show = false;
-    if (show && L.kind !== "fav" && favSet.has(L.mx + "," + L.my)) show = false;   // ya tiene rótulo de destacado
+    if (show && !HIST.antiguo && L.kind !== "fav" && favSet.has(L.mx + "," + L.my)) show = false;   // ya tiene rótulo de destacado
     if (show && !layers.entorno && !inProv(L.mx, L.my)) show = false;
     if (show && sea.on && L.kind !== "fav" && L.kind !== "comarca" && H[Math.min(R - 1, (L.my / M.celda) | 0) * W + Math.min(W - 1, (L.mx / M.celda) | 0)] < sea.level) show = false;   // bajo el agua
     if (show) {
@@ -2936,9 +3009,11 @@ const ENFOQUE = {
   poblacion: { ocultar: ["l-arboles", "l-cob", "l-sierras", "l-valles", "l-puertos", "l-nubes"], calma: 0.35,
     nota: "Oculta árboles, cubierta del suelo y nombres del relieve" },
   relieve: { ocultar: ["l-pueblos", "l-mon", "l-carr", "l-nubes"], calma: 0, nota: "Oculta pueblos, monumentos y carreteras" },
+  historia: { ocultar: ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-nubes", "l-sierras", "l-valles", "l-puertos", "l-lugares", "l-est", "l-lig"], calma: 0,
+    nota: "Mapa antiguo: oculta el paisaje actual" },
   geologia: { ocultar: ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-nubes"], calma: 0.45, nota: "Oculta árboles, pueblos, carreteras y cubierta del suelo" }
 };
-const CAT_ENFOQUE = { mapa: null, relieve: "relieve", geologia: "geologia", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
+const CAT_ENFOQUE = { historia: "historia", mapa: null, relieve: "relieve", geologia: "geologia", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
 const TODAS_OCULTABLES = [...new Set(Object.values(ENFOQUE).flatMap(e => e.ocultar))];
 let enfoqueAct = null, enfoqueGuardado = null, catAct = "mapa";
 function setEnfoque(f) {
@@ -2966,7 +3041,8 @@ function setCat(k, guardar) {
   $("enfoque-note").textContent = f ? ENFOQUE[f].nota : "Esta categoría muestra el mapa completo";
   if ($("hcard").hidden) setEnfoque(f);
   if (k === "clima" && !clima.on && !clima.visto) { clima.visto = true; setClima(true); }
-  if (k === "geologia" && !geol.visto) { geol.visto = true; setGeoModo("roca"); }   // la primera vez, el clima se enciende solo
+  if (k === "geologia" && !geol.visto) { geol.visto = true; setGeoModo("roca"); }
+  setAntiguo(k === "historia");   // la primera vez, el clima se enciende solo
   $("panel").scrollTop = 0;
   if (guardar) { try { localStorage.setItem("leon3d-cat", k); } catch (e) { /* sin almacenamiento */ } }
 }
@@ -2979,12 +3055,12 @@ document.querySelector(".cats").addEventListener("keydown", (e) => {   // flecha
 });
 $("l-enfoque").addEventListener("change", () => setEnfoque(!$("hcard").hidden ? "agua" : CAT_ENFOQUE[catAct]));
 function showHcard(html, kind, ref) {
-  if (!["geo", "lig", "loc", "punto", "lugar"].includes(kind)) modoAgua(true);
+  if (!["geo", "lig", "loc", "punto", "lugar", "hist"].includes(kind)) modoAgua(true);
   $("info").hidden = true; $("mirador").hidden = true; selected = null; updateMunState();
   $("hcard-body").innerHTML = html; $("hcard").hidden = false; $("hcard").scrollTop = 0; hcardKind = kind; hcardRef = ref;
 }
 function closeHcard() {
-  modoAgua(false);
+  if (hcardKind !== "hist") modoAgua(false);
   $("hcard").hidden = true; hcardKind = null; rioSel = -1; rioSet = null; cuencaCv = null; $("cuenca-sel").value = "";
   if (gota) { gota = null; gotaMesh.visible = false; }
   drawOverlay();
@@ -3435,6 +3511,182 @@ async function cargarLugares() {
   $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(LUG.J.fuente) + "</li>");
   if (DESTACADAS.some(k => /^lugar:/.test(k))) rehacerFavs();
 }
+// ---------------------------------------------------------------- mapa histórico (recursos/historia.json → scripts/historia.py)
+const fmtAnio = (a) => a < 0 ? `${fmt.format(-a)} a. C.` : a < 1000 ? `año ${a}` : String(a);
+function eraDe(a) { const E = HIST.J.epocas; let k = E.findIndex(e => a >= e.ini && a <= e.fin); return k < 0 ? (a < E[0].ini ? 0 : E.length - 1) : k; }
+function anioDeT(t) { const E = HIST.J.epocas, u = t / 1000 * E.length, k = Math.min(E.length - 1, Math.floor(u)), e = E[k]; return Math.round(e.ini + Math.min(1, u - k) * (e.fin - e.ini)); }
+function tDeAnio(a) { const E = HIST.J.epocas, k = eraDe(a), e = E[k]; return Math.round((k + Math.max(0, Math.min(1, (a - e.ini) / (e.fin - e.ini)))) * 1000 / E.length - (k === E.length - 1 && a >= e.fin ? 0 : 0)); }
+function histVisible(L) {
+  if (!HIST.listo) return false;
+  const a = HIST.anio, k = eraDe(a), E = HIST.J.epocas;
+  if (L.kind === "deco") return true;
+  if (L.kind === "pueblo") return a < -19;
+  if (L.kind.startsWith("histx")) return L.it.era === E[k].id;
+  return a >= L.it.ini && a <= L.it.fin;
+}
+function claveHist() { const a = HIST.anio; return [eraDe(a), a >= -29, a >= 300, a >= 1000, a >= 1890].join(); }
+function dibujarHistoria() {
+  if (!HIST.listo) return;
+  const J = HIST.J, a = HIST.anio, k = eraDe(a), E = J.epocas;
+  ov.lineJoin = "round"; ov.lineCap = "round";
+  // ríos y lagos naturales en tinta (los embalses son modernos)
+  for (const w of data.aguas) if (w.t !== "Embalse") { ringPath(ov, w.g); ov.fillStyle = "rgba(92, 128, 140, 0.55)"; ov.fill("evenodd"); }
+  for (const r of data.rios) {
+    ov.beginPath(); for (const pt of r.g) { ov.moveTo(pt[0] * TS, pt[1] * TS); for (let i = 2; i < pt.length; i += 2) ov.lineTo(pt[i] * TS, pt[i + 1] * TS); }
+    ov.strokeStyle = "rgba(48, 78, 92, 0.85)"; ov.lineWidth = (r.k > 60 ? 4.5 : r.k > 25 ? 3.2 : 2) * px1; ov.stroke();
+  }
+  // calzadas romanas: doble trazo las principales
+  if (a >= -29) {
+    const al = E[k].id === "roma" ? 1 : E[k].id === "reino" ? 0.5 : 0.3;
+    for (const c of J.calzadas) {
+      trazar(c.g);
+      if (c.t === 1) { ov.strokeStyle = `rgba(122, 59, 28, ${al})`; ov.lineWidth = 10 * px1; ov.setLineDash([]); ov.stroke(); trazar(c.g); ov.strokeStyle = `rgba(239, 226, 194, ${al})`; ov.lineWidth = 3.6 * px1; ov.stroke(); }
+      else { ov.strokeStyle = `rgba(122, 59, 28, ${al * 0.85})`; ov.lineWidth = 4.5 * px1; ov.setLineDash([14 * px1, 9 * px1]); ov.stroke(); }
+    }
+    ov.setLineDash([]);
+  }
+  // oro romano
+  if (a >= -29 && a <= 300) for (const o of J.oro) { ov.beginPath(); ov.arc(o.xy[0] * TS, o.xy[1] * TS, 9 * px1, 0, 7); ov.fillStyle = "#d9a51d"; ov.fill(); ov.lineWidth = 2.4 * px1; ov.strokeStyle = "#6b4a0e"; ov.stroke(); }
+  // Camino de Santiago
+  if (a >= J.camino.ini && J.camino.g.length > 3) {
+    trazar(J.camino.g); ov.strokeStyle = "rgba(239, 226, 194, 0.9)"; ov.lineWidth = 22 * px1; ov.setLineDash([]); ov.stroke();
+    trazar(J.camino.g); ov.strokeStyle = "#9c2f2f"; ov.lineWidth = 13 * px1; ov.setLineDash([1 * px1, 24 * px1]); ov.stroke(); ov.setLineDash([]);
+  }
+  // minería del carbón: escombreras y minas
+  if (a >= 1890) {
+    for (const o of J.escombreras) { const x = o.xy[0] * TS, y = o.xy[1] * TS, r = 8 * px1; ov.beginPath(); ov.moveTo(x, y - r); ov.lineTo(x + r, y + r); ov.lineTo(x - r, y + r); ov.closePath(); ov.fillStyle = "rgba(60, 60, 64, 0.75)"; ov.fill(); }
+    for (const o of J.carbon) { ov.beginPath(); ov.arc(o.xy[0] * TS, o.xy[1] * TS, 10 * px1, 0, 7); ov.fillStyle = "#1d1d22"; ov.fill(); ov.lineWidth = 2.6 * px1; ov.strokeStyle = "#efe2c2"; ov.stroke(); }
+  }
+  // límite de la provincia: trazo de tinta con orla roja
+  ringPath(ov, data.provincia);
+  ov.strokeStyle = "rgba(156, 47, 47, 0.55)"; ov.lineWidth = 9 * px1; ov.stroke();
+  ov.strokeStyle = "#3b2714"; ov.lineWidth = 2.6 * px1; ov.stroke();
+}
+function setAnio(a, desdeBarra) {
+  if (!HIST.listo) return;
+  HIST.anio = a; $("hist-anio").textContent = fmtAnio(a);
+  if (!desdeBarra) $("hist-t").value = tDeAnio(a);
+  const k = eraDe(a), E = HIST.J.epocas;
+  for (const b of $("hb-eras").children) b.setAttribute("aria-pressed", String(+b.dataset.k === k));
+  for (const b of $("hist-eras").children) b.style.outline = +b.dataset.k === k ? "2px solid " + E[k].color : "";
+  const c = claveHist(); if (c !== HIST.clave) { HIST.clave = c; drawOverlay(); fichaEra(k); }
+  needsRender = true;
+}
+function fichaEra(k) {
+  const e = HIST.J.epocas[k];
+  let h = `<p class="group-title" style="color:${e.color}">${esc(e.n)} · ${esc(e.sub)}</p><p class="txt">${esc(e.txt)}</p>`;
+  if (e.id === "mineria" && HIST.J.mineros.length) h += `<p class="group-title" style="margin-top:10px">Población de los pueblos mineros (1900–2025)</p>` +
+    HIST.J.mineros.slice(0, 6).map((m, i) => `<div style="margin-top:4px"><small style="font-weight:700">${esc(m.n)}</small><div class="spark" id="hm-sp-${i}"></div></div>`).join("");
+  if (e.id === "roma") h += `<p class="spark-note" style="margin-top:6px">Calzadas: Itiner-e. Puntos dorados: labores de oro inventariadas por el IGME (${HIST.J.oro.length}), la mayoría romanas.</p>`;
+  if (e.id === "mineria") h += `<p class="spark-note" style="margin-top:6px">Puntos negros: minas e indicios de hulla y antracita (${HIST.J.carbon.length}); triángulos: escombreras de carbón del inventario de 1989 (${HIST.J.escombreras.length}). IGME-CSIC.</p>`;
+  $("hist-ficha").innerHTML = h;
+  if (e.id === "mineria") HIST.J.mineros.slice(0, 6).forEach((m, i) => sparkline($("hm-sp-" + i), m.ph, ANIOS.length - 1));
+}
+function showHist(it) {
+  const E = HIST.J.epocas, e = E.find(x => x.id === it.era) || E[0];
+  const html = `<h2>${esc(it.n)}</h2><p class="cap" style="color:${e.color};font-weight:700">${esc(e.n)}${it.fecha ? " · " + esc(it.fecha) : ""}</p>
+    <p style="font-size:13.5px;line-height:1.55;margin:8px 0 0">${esc(it.desc || it.d || "")}</p>
+    ${it.w ? `<p class="hint"><a href="${esc(it.w)}" target="_blank" rel="noopener">Leer más en Wikipedia</a></p>` : ""}
+    <p class="hint">${it.aprox ? "Fechas aproximadas. " : ""}${it.pos === "aprox" ? "Posición aproximada (su pueblo). " : ""}${it.wd ? "Dato de Wikidata (" + esc(it.wd) + ")." : ""}</p>`;
+  showHcard(html, "hist", -1);
+}
+async function cargarHistoria() {
+  if (HIST.listo) return true;
+  try { HIST.J = await fetch("data/historia.json").then(r => { if (!r.ok) throw new Error("historia.json"); return r.json(); }); }
+  catch (e) { $("hist-nota").textContent = "No se pudo cargar la historia (" + e.message + ")."; return false; }
+  const J = HIST.J, E = J.epocas, col = (id) => (E.find(e => e.id === id) || E[0]).color;
+  for (const it of J.sitios) {
+    addLabel("hist", `<span class="mk" style="background:${col(it.era)}"></span>` + esc(it.n), it.xy[0], it.xy[1], 700, 0);
+    const L = labels[labels.length - 1]; L.it = it; L.lift = 0.4; L.el.addEventListener("click", () => showHist(it));
+  }
+  for (const it of J.extra) {
+    addLabel("histx", `<span class="mk" style="background:${col(it.era)}"></span>` + esc(it.n), it.xy[0], it.xy[1], 200, 60);
+    const L = labels[labels.length - 1]; L.it = it; L.el.addEventListener("click", () => showHist(it));
+  }
+  if (J.camino.g.length > 3) {
+    const m = Math.floor(J.camino.g.length / 4) * 2, it = { n: J.camino.n, era: "reino", ini: J.camino.ini, fin: J.camino.fin, fecha: "desde el s. XI",
+      desc: "La ruta de peregrinación a Santiago cruza la provincia de este a oeste: Sahagún, León, Astorga, los Montes de León y el Bierzo. El trazado del mapa une sus pueblos y es aproximado." };
+    addLabel("hist", `<span class="mk" style="background:#9c2f2f"></span>` + esc(J.camino.n), J.camino.g[m], J.camino.g[m + 1] - 4000, 650, 0);
+    const L = labels[labels.length - 1]; L.it = it; L.el.addEventListener("click", () => showHist(it));
+  }
+  for (const p of J.pueblos) addLabel("pueblo", esc(p.n), p.xy[0], p.xy[1], 900, 0);
+  // decoración: criaturas en la tierra ignota de los bordes
+  const serpiente = `<svg viewBox="0 0 170 74" width="170" height="74"><path d="M0 62 q10-7 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#5a3d22" stroke-width="1.4"/>
+    <path d="M16 60 C14 30 46 28 46 52 C46 64 60 64 62 50 C64 24 96 24 98 50 C100 64 114 64 116 52 C118 34 140 28 150 38" fill="none" stroke="#3b2714" stroke-width="10" stroke-linecap="round"/>
+    <path d="M16 60 C14 30 46 28 46 52 C46 64 60 64 62 50 C64 24 96 24 98 50 C100 64 114 64 116 52 C118 34 140 28 150 38" fill="none" stroke="#8a6338" stroke-width="7" stroke-linecap="round"/>
+    <path d="M24 32 l3-6 3 6 M36 29 l3-6 3 6 M72 25 l3-6 3 6 M84 25 l3-6 3 6 M126 31 l3-6 3 6" fill="#8a6338" stroke="#3b2714" stroke-width="1"/>
+    <path d="M148 36 l18-10 -4 9 6 3 -18 6z" fill="#8a6338" stroke="#3b2714" stroke-width="1.2"/><circle cx="156" cy="33" r="1.4" fill="#3b2714"/></svg>`;
+  const ballena = `<svg viewBox="0 0 150 80" width="150" height="80"><path d="M0 66 q10-7 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" fill="none" stroke="#5a3d22" stroke-width="1.4"/>
+    <path d="M18 62 C20 36 60 28 96 40 C116 46 124 58 120 64 C110 60 98 62 88 64 Z" fill="#8a6338" stroke="#3b2714" stroke-width="1.6"/>
+    <path d="M120 64 l18-14 -6 16 10 6 -22-2z" fill="#8a6338" stroke="#3b2714" stroke-width="1.4"/><circle cx="40" cy="48" r="2.2" fill="#3b2714"/>
+    <path d="M30 56 q8 4 16 0" fill="none" stroke="#3b2714" stroke-width="1.4"/><path d="M50 32 q-6-14 -16-18 M50 32 q2-16 10-22 M50 32 q10-10 22-8" fill="none" stroke="#2c4a5a" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+  addLabel("deco", serpiente + '<span class="lema">HIC SVNT DRACONES</span>', M.ancho - 22000, 9000, 50, 0);
+  addLabel("deco", ballena + '<span class="lema">TERRA INCOGNITA</span>', 16000, M.alto - 16000, 50, 0);
+  labels.sort((x, y) => y.prio - x.prio);
+  $("hb-eras").innerHTML = E.map((e, k) => `<button data-k="${k}" style="background:${e.color}" title="${esc(e.n)} (${esc(e.sub)})">${esc(e.n)}</button>`).join("");
+  $("hist-eras").innerHTML = E.map((e, k) => `<button data-k="${k}" class="hist-era"><i style="background:${e.color}"></i><span><b>${esc(e.n)}</b><small>${esc(e.sub)}</small></span></button>`).join("");
+  $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(J.fuente) + "</li>");
+  HIST.listo = true; setAnio(-300);
+  return true;
+}
+const irEra = (k) => { const e = HIST.J.epocas[k]; setAnio(e.id === "reino" ? 910 : e.id === "mineria" ? 1950 : e.id === "roma" ? 50 : -300); };
+$("hb-eras").addEventListener("click", (ev) => { const b = ev.target.closest("[data-k]"); if (b) irEra(+b.dataset.k); });
+$("hist-eras").addEventListener("click", (ev) => { const b = ev.target.closest("[data-k]"); if (b) irEra(+b.dataset.k); });
+$("hist-t").addEventListener("input", (ev) => setAnio(anioDeT(+ev.target.value), true));
+function pararHistPlay() { clearInterval(HIST.play); HIST.play = null; $("hist-play").setAttribute("aria-pressed", "false"); $("hist-play").textContent = "▶"; }
+$("hist-play").onclick = () => {
+  if (HIST.play) return pararHistPlay();
+  if (+$("hist-t").value >= 995) $("hist-t").value = 0;
+  $("hist-play").setAttribute("aria-pressed", "true"); $("hist-play").textContent = "❚❚";
+  HIST.play = setInterval(() => { const t = Math.min(1000, +$("hist-t").value + 3); $("hist-t").value = t; setAnio(anioDeT(t), true); if (t >= 1000) pararHistPlay(); }, reduceMotion ? 300 : 90);
+};
+// el aspecto antiguo: pergamino, cielo sepia, sin el paisaje moderno; se deshace al salir de la pestaña
+async function setAntiguo(on) {
+  if (on === HIST.antiguo) return;
+  if (on && !(await cargarHistoria())) return;
+  HIST.antiguo = on;
+  document.body.classList.toggle("antiguo", on);
+  $("hist-bar").hidden = !on; $("antiguo-velo").hidden = !on; $("rosa").hidden = !on;
+  U.uAntiguo.value = on ? 1 : 0; U.uEntorno.value = on || layers.entorno ? 1 : 0;
+  treeMesh.visible = !on && layers.arboles && morph < 0.5; townGroup.visible = !on && layers.pueblos; monGroup.visible = !on && layers.mon;
+  favGroup.visible = !on && layers.fav; clouds.visible = !on && layers.nubes;
+  if (on) {
+    skyMat.uniforms.uTop.value.set("#d9c8a0"); skyMat.uniforms.uHorizon.value.set("#efe2c2");
+    U.uFog.value.set("#e6d6b0"); ground.material.color.set("#e6d6b0");
+  } else { updateSky(); if (HIST.play) pararHistPlay(); }
+  HIST.clave = ""; drawOverlay(); needsRender = true;
+}
+const PASOS_HIST = [
+  { t: "Tres mil años en la provincia", x: "Un recorrido por las cuatro grandes épocas de León: los castros, Roma, el Reino de León y la minería del carbón. Puedes pausar, retroceder o salir cuando quieras.",
+    f: async (tk) => { tour.objetivo = null; setAnio(-500); tweenTo(HOME, 1200); await espera(1200, tk); } },
+  { t: "Los castros", x: "En la Edad del Hierro la gente vive en castros: poblados en alto, amurallados, con casas redondas. El de Chano, en Peranzanes, se ha excavado y se puede visitar.",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n.startsWith("Castro de Chano")); setAnio(-200); if (s) { flyToPoint(s.xy[0], s.xy[1], 14); await espera(1700, tk); showHist(s); } } },
+  { t: "Astures, cántabros y vacceos", x: "Los astures ocupan el centro y el oeste; los cántabros, la montaña oriental de Riaño; los vacceos, las llanuras del sureste. Así encontró Roma estas tierras.",
+    f: async (tk) => { closeHcard(); setAnio(-100); tweenTo(HOME, 1200); await espera(1300, tk); } },
+  { t: "La conquista romana", x: "Entre el 29 y el 19 a. C. Roma vence a astures y cántabros. Lancia, la ciudad de los astures lancienses, cae en el 25 a. C.",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n === "Lancia"); setAnio(-25); if (s) { flyToPoint(s.xy[0], s.xy[1], 16); await espera(1700, tk); showHist(s); } } },
+  { t: "Legio: el nacimiento de León", x: "Las legiones se asientan junto al Bernesga y el Torío. Desde el año 74 es el campamento de la Legio VII Gemina, de donde viene el nombre de León.",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n === "Legio"); setAnio(74); if (s) { flyToPoint(s.xy[0], s.xy[1], 14); await espera(1700, tk); showHist(s); } } },
+  { t: "El oro de Roma", x: "El noroeste fue el gran distrito aurífero del Imperio. Cada punto dorado es una labor de oro inventariada por el IGME; Las Médulas fue la mayor mina a cielo abierto.",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n === "Las Médulas"); setAnio(120); if (s) { flyToPoint(s.xy[0], s.xy[1], 34); await espera(1800, tk); showHist(s); } } },
+  { t: "Las calzadas", x: "Una red de calzadas une Asturica Augusta con Bracara, Lucus, Emerita o Legio. Muchas de nuestras carreteras siguen hoy sus trazados.",
+    f: async (tk) => { closeHcard(); setAnio(250); tweenTo(HOME, 1200); await espera(1300, tk); } },
+  { t: "910: nace el Reino de León", x: "Tras siglos de repoblación, la corte se traslada de Oviedo a León. La ciudad será durante tres siglos la capital de un reino.",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n.startsWith("León, capital")); setAnio(910); if (s) { flyToPoint(s.xy[0], s.xy[1], 16); await espera(1700, tk); showHist(s); } } },
+  { t: "Monjes del sur", x: "Monjes llegados de al-Ándalus levantan iglesias mozárabes con arcos de herradura: San Miguel de Escalada, Santiago de Peñalba…",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n === "Santiago de Peñalba"); setAnio(940); if (s) { flyToPoint(s.xy[0], s.xy[1], 14); await espera(1700, tk); showHist(s); } } },
+  { t: "El Camino de Santiago", x: "Desde el siglo XI miles de peregrinos cruzan la provincia: Sahagún, León, Astorga, la Cruz de Ferro, Ponferrada, Villafranca. El Camino trae monasterios, hospitales y comercio.",
+    f: async (tk) => { closeHcard(); setAnio(1100); tweenTo(HOME, 1200); await espera(1300, tk); } },
+  { t: "Las Cortes de 1188", x: "Alfonso IX reúne en León unas Cortes con representantes de las ciudades: la UNESCO las reconoce como el testimonio documental más antiguo del parlamentarismo europeo.",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n === "San Isidoro de León"); setAnio(1188); if (s) { flyToPoint(s.xy[0], s.xy[1], 10); await espera(1700, tk); showHist(s); } } },
+  { t: "El siglo del carbón", x: "Con el ferrocarril llegan los pozos. Cada punto negro es una mina o un indicio de carbón; cada triángulo, una escombrera. Laciana, el Bierzo, Ciñera, Sabero…",
+    f: async (tk) => { const s = HIST.J.sitios.find(x => x.n.startsWith("Laciana")); setAnio(1950); if (s) { flyToPoint(s.xy[0], s.xy[1], 40); await espera(1900, tk); showHist(s); } } },
+  { t: "El final de la minería", x: "La crisis del carbón y el cierre de las últimas minas dejan los valles mineros con la mitad de habitantes o menos. En el panel tienes la población de estos pueblos desde 1900.",
+    f: async (tk) => { closeHcard(); setAnio(2018); abrirPanel(); tweenTo(HOME, 1200); await espera(1300, tk); } },
+  { t: "Ahora explora tú", x: "Mueve la línea del tiempo, pulsa una época o toca cualquier lugar para leer su historia.",
+    f: async (tk) => { tour.objetivo = null; $("tour-sig").textContent = "Terminar"; } }
+];
+$("hist-guia").onclick = () => empezarTour(PASOS_HIST, { titulo: "Historia", sinMano: true, arriba: true, alEmpezar: () => { setCat("historia"); cerrarPanel(); }, alSalir: () => { closeHcard(); } });
 cargarLugares();
 cargarRios();
 setCat("mapa", false);   // siempre se abre con el paisaje completo
@@ -3646,7 +3898,7 @@ function colocar() {      // foco y bocadillo siguen al objetivo aunque se mueva
     Object.assign(f.style, { left: r.x - p + "px", top: r.y - p + "px", width: r.w + 2 * p + "px", height: r.h + 2 * p + "px", borderRadius: r.redondo ? "50%" : "14px" });
   } else f.classList.add("libre");
   let x, y;
-  if (!r) { x = (vw - cw) / 2; y = vw < 720 ? m + 8 : (vh - ch) / 2; }   // en el móvil, arriba: deja ver el mapa
+  if (!r) { x = (vw - cw) / 2; y = vw < 720 || tour.arriba ? m + 8 : (vh - ch) / 2; }   // en el móvil (y en la visita histórica), arriba: deja ver el mapa
   else if (vw < 720) { x = (vw - cw) / 2; y = r.y + r.h / 2 > vh / 2 ? m + 8 : vh - ch - m - 8; }
   else {
     const opciones = [[r.x + r.w + 18, r.y], [r.x - cw - 18, r.y], [r.x, r.y + r.h + 18], [r.x, r.y - ch - 18]];
@@ -3685,7 +3937,7 @@ const abrirPanel = () => { if (isPhone) { $("panel").classList.remove("collapsed
 const cerrarPanel = () => { if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } };
 const verEn = (el) => { el.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" }); return el; };
 const capLeon = data.capitales.find(c => c.c === "24089"), munLeon = data.municipios.find(m => m.c === "24089");
-const PASOS = [
+const PASOS_TUT = [
   { t: "Bienvenido a León en relieve", x: "La provincia en 3D con datos oficiales. En dos minutos te enseño a moverte, a consultar cualquier lugar y a usar las capas de datos. Puedes pausar o saltar pasos cuando quieras.",
     f: async (tk) => { tour.objetivo = null; cerrarPanel(); tweenTo(HOME, 900); await espera(900, tk); } },
   { t: "Moverse por el mapa", x: "Arrastra para desplazarte. Con la rueda o pellizcando con dos dedos te acercas. Con el botón derecho, o girando dos dedos, cambias el ángulo y la orientación.",
@@ -3752,9 +4004,10 @@ async function correrPaso(i) {
   if (clima.play) stopClimaPlay();
   if (rioPlay) stopRioPlay();
   $("tour-mano").classList.remove("pulsa");
-  const P = PASOS[i];
-  $("tour-paso").textContent = `Paso ${i + 1} de ${PASOS.length}`; $("tour-tit").textContent = P.t; $("tour-txt").textContent = P.x;
+  const PASOS = tour.pasos, P = PASOS[i];
+  $("tour-paso").textContent = `${tour.titulo} · ${i + 1} de ${PASOS.length}`; $("tour-tit").textContent = P.t; $("tour-txt").textContent = P.x;
   $("tour-sig").textContent = i === PASOS.length - 1 ? "Terminar" : "Siguiente ›"; $("tour-ant").disabled = i === 0;
+  $("tour-mano").hidden = !!tour.sinMano; $("tour-bloq").hidden = !!tour.sinMano;
   const barra = $("tour-barra"); barra.style.transition = "none"; barra.style.width = "0";
   try {
     await P.f(tk);
@@ -3766,11 +4019,13 @@ async function correrPaso(i) {
     if (i < PASOS.length - 1) correrPaso(i + 1);
   } catch (e) { if (e !== PARAR) { console.warn("tutorial:", e); } }
 }
-function empezarTour() {
+function empezarTour(pasos, opciones) {
   if (tour.on) return;
+  const op = opciones || {};
+  tour.pasos = Array.isArray(pasos) ? pasos : PASOS_TUT; tour.titulo = op.titulo || "Paso"; tour.alSalir = op.alSalir || vistaPaisaje; tour.sinMano = !!op.sinMano; tour.arriba = !!op.arriba;
   $("tour-invita").hidden = true; try { localStorage.setItem("leon3d-tour", "visto"); } catch (e) { /* sin almacenamiento */ }
   if (!$("help").hidden) toggleHelp(false);
-  vistaPaisaje();
+  if (op.alEmpezar) op.alEmpezar(); else vistaPaisaje();
   tour.on = true; tour.pausa = false; $("tour-pausa").textContent = "❚❚"; $("tour").hidden = false;
   $("tour-mano").style.transform = `translate(${innerWidth / 2}px, ${innerHeight * 0.6}px)`;
   cancelAnimationFrame(tour.raf); colocar(); correrPaso(0);
@@ -3779,13 +4034,14 @@ function salirTour() {
   if (!tour.on) return;
   tour.on = false; tour.tok++; cancelAnimationFrame(tour.raf); $("tour").hidden = true;
   if (clima.play) stopClimaPlay();
-  vistaPaisaje();
+  $("tour-mano").hidden = false; $("tour-bloq").hidden = false;
+  (tour.alSalir || vistaPaisaje)();
 }
-$("tour-sig").onclick = () => { if (tour.i >= PASOS.length - 1) salirTour(); else correrPaso(tour.i + 1); };
+$("tour-sig").onclick = () => { if (tour.i >= tour.pasos.length - 1) salirTour(); else correrPaso(tour.i + 1); };
 $("tour-ant").onclick = () => { if (tour.i > 0) correrPaso(tour.i - 1); };
 $("tour-salir").onclick = salirTour;
 $("tour-pausa").onclick = () => { tour.pausa = !tour.pausa; $("tour-pausa").textContent = tour.pausa ? "▶" : "❚❚"; $("tour-pausa").setAttribute("aria-label", tour.pausa ? "Seguir" : "Pausar"); };
-for (const id of ["tour-abrir", "tour-abrir-2", "tour-abrir-3", "tour-invita-ver"]) $(id).onclick = empezarTour;
+for (const id of ["tour-abrir", "tour-abrir-2", "tour-abrir-3", "tour-invita-ver"]) $(id).onclick = () => empezarTour(PASOS_TUT);
 $("tour-invita-no").onclick = () => { $("tour-invita").hidden = true; try { localStorage.setItem("leon3d-tour", "visto"); } catch (e) { /* sin almacenamiento */ } };
 addEventListener("keydown", (e) => {          // durante el tutorial, el teclado lo maneja él
   if (!tour.on) return;
