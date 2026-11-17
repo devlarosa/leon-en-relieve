@@ -13,6 +13,10 @@
   iPhone llevan mal la autenticación básica del navegador). Sin ese fichero, el visor queda abierto.
   La contraseña se guarda como hash PBKDF2, nunca en claro, y fuera del repositorio.
 
+- Protección contra avalanchas (por si la URL se filtra): como mucho 48 conexiones a la vez (las demás
+  reciben 503 al instante, sin crear hilo), conexiones inactivas cerradas a los 15 s, y un cupo de
+  peticiones por visitante (429 al pasarse): holgado con sesión, muy corto sin ella y para entrar.
+
 Uso: python3 servidor.py [--puerto 8800] [--host 0.0.0.0]
      python3 servidor.py --acceso USUARIO [CONTRASEÑA]   crea o cambia el acceso (cierra las sesiones abiertas)
      python3 servidor.py --sin-acceso                    lo quita: el visor vuelve a quedar abierto
@@ -25,6 +29,7 @@ import hmac
 import html
 import json
 import secrets
+import threading
 import time
 import mimetypes
 import os
@@ -47,6 +52,32 @@ _cache_gz = {}   # (ruta, mtime_ns, tamaño) -> bytes comprimidos
 ACCESO = Path(os.environ.get("LEON3D_ACCESO", Path.home() / ".config" / "leon3d-visor" / "acceso.json"))
 COOKIE = "leon3d"
 LIBRES = {"/entrar", "/manifest.webmanifest", "/icono-180.png", "/icono-192.png", "/icono-512.png"}   # sin sesión
+
+
+# ---------------------------------------------------------------- límites de carga
+MAX_CONEXIONES = 48
+CUPO = threading.BoundedSemaphore(MAX_CONEXIONES)
+# cubo de fichas por visitante: (capacidad, fichas por segundo)
+LIMITES = {"sesion": (240, 4.0),      # la app pide ~25 ficheros al abrir y algunos más al cambiar de pestaña
+           "anonimo": (20, 0.2),      # sin sesión: la pantalla de entrada y poco más
+           "entrar": (6, 1 / 60)}     # intentos de contraseña: 6 seguidos y luego uno por minuto
+_cubos, _cubos_cerrojo = {}, threading.Lock()
+
+
+def gastar(clase, quien):
+    cap, ritmo = LIMITES[clase]
+    ahora = time.monotonic()
+    with _cubos_cerrojo:
+        if len(_cubos) > 20000:                      # limpieza: olvida a los que ya han rellenado su cubo
+            for k in [k for k, (f, t) in _cubos.items() if f + (ahora - t) * LIMITES[k[0]][1] >= LIMITES[k[0]][0]]:
+                del _cubos[k]
+        f, t = _cubos.get((clase, quien), (cap, ahora))
+        f = min(cap, f + (ahora - t) * ritmo)
+        if f < 1:
+            _cubos[(clase, quien)] = (f, ahora)
+            return max(1, int((1 - f) / ritmo))       # segundos hasta la siguiente ficha
+        _cubos[(clase, quien)] = (f - 1, ahora)
+        return 0
 
 
 def hash_clave(clave, sal):
@@ -123,6 +154,41 @@ def version():
 class Visor(BaseHTTPRequestHandler):
     server_version = "leon3d"
     protocol_version = "HTTP/1.1"
+    timeout = 15          # cierra conexiones inactivas o lentas (evita que ocupen hilos)
+    _avisado = set()
+
+    def visitante(self):
+        # detrás del proxy del NAS, la IP real es la ÚLTIMA de X-Forwarded-For (la que añade el proxy; las anteriores las pone el cliente)
+        xff = [x.strip() for x in (self.headers.get("X-Forwarded-For") or "").split(",") if x.strip()]
+        return xff[-1] if xff else self.client_address[0]
+
+    def frenar(self, clase):
+        """True si el visitante se ha pasado de su cupo (ya se ha respondido 429)."""
+        if self.client_address[0] in ("127.0.0.1", "::1") and not self.headers.get("X-Forwarded-For"):
+            return False
+        quien = self.visitante()
+        espera = gastar(clase, quien)
+        if not espera:
+            Visor._avisado.discard((clase, quien))
+            return False
+        if (clase, quien) not in Visor._avisado:      # se anota una vez por racha, no en cada petición
+            Visor._avisado.add((clase, quien))
+            self.log_message("demasiadas peticiones (%s): frenado %d s", clase, espera)
+        self.send_response_only(429)
+        self.send_header("Retry-After", str(espera))
+        self.send_header("Content-Length", "0")
+        self.send_header("Connection", "close")
+        self.end_headers()
+        self.close_connection = True
+        return True
+
+    def log_error(self, fmt, *args):
+        if not fmt.startswith("Request timed out"):    # conexiones inactivas que se cierran a los 15 s: normal
+            super().log_error(fmt, *args)
+
+    def log_request(self, code="-", size="-"):
+        if str(code) not in ("429", "401"):           # en una avalancha no se llena el registro
+            super().log_request(code, size)
 
     def log_message(self, fmt, *args):
         quien = (self.headers.get("X-Forwarded-For") or "").split(",")[0].strip() if getattr(self, "headers", None) else ""
@@ -147,7 +213,10 @@ class Visor(BaseHTTPRequestHandler):
     def exigir_acceso(self, cuerpo):
         """True si la petición puede seguir; si no, responde (a la entrada si es la página, 401 si es un dato)."""
         ruta = urlsplit(self.path).path
-        if ruta in LIBRES or self.autorizado():
+        ok = self.autorizado()
+        if self.frenar("sesion" if ok else "anonimo"):
+            return False
+        if ruta in LIBRES or ok:
             return True
         if ruta in ("/", "/index.html"):
             self.send_response(303)
@@ -162,6 +231,8 @@ class Visor(BaseHTTPRequestHandler):
     def do_POST(self):
         if urlsplit(self.path).path != "/entrar":
             return self.enviar(404, b"No encontrado\n", "text/plain; charset=utf-8", None, True)
+        if self.frenar("entrar"):
+            return
         a = leer_acceso()
         try:
             n = min(int(self.headers.get("Content-Length") or 0), 4000)
@@ -171,8 +242,7 @@ class Visor(BaseHTTPRequestHandler):
         usuario, clave = (f.get("usuario") or [""])[0].strip(), (f.get("clave") or [""])[0]
         ok = bool(a) and hmac.compare_digest(usuario.lower(), a["usuario"].lower()) and \
             hmac.compare_digest(hash_clave(clave, a["sal"]), a["hash"])
-        if not ok:
-            time.sleep(1.5)                               # frena los intentos a ciegas
+        if not ok:                                        # los intentos a ciegas los frena el cupo «entrar»
             self.log_message("entrada fallida (usuario %r)", usuario[:40])
             return self.enviar(401, pagina_entrar("Usuario o contraseña incorrectos."), "text/html; charset=utf-8", None, True)
         segura = "; Secure" if (self.headers.get("X-Forwarded-Proto") == "https" or ".devlarosa.es" in (self.headers.get("Host") or "")) else ""
@@ -191,11 +261,15 @@ class Visor(BaseHTTPRequestHandler):
     def do_GET(self):
         ruta = urlsplit(self.path).path
         if ruta == "/entrar":
+            if self.frenar("anonimo"):
+                return
             if not leer_acceso() or self.autorizado():
                 self.send_response(303); self.send_header("Location", "./"); self.send_header("Content-Length", "0"); self.end_headers()
                 return
             return self.enviar(200, pagina_entrar(), "text/html; charset=utf-8", None, True)
         if ruta == "/salir":
+            if self.frenar("anonimo"):
+                return
             self.send_response(303)
             self.send_header("Set-Cookie", f"{COOKIE}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax")
             self.send_header("Location", "entrar")
@@ -306,6 +380,35 @@ class Visor(BaseHTTPRequestHandler):
         self.enviar(200, leer if comp else p.read_bytes(), tipo, etag, cuerpo, comprimir=comp)
 
 
+class Servidor(ThreadingHTTPServer):
+    daemon_threads = True
+    request_queue_size = 64
+
+    def process_request(self, request, client_address):
+        if not CUPO.acquire(blocking=False):          # lleno: 503 al momento, sin crear hilo
+            try:
+                request.sendall(b"HTTP/1.1 503 Service Unavailable\r\nRetry-After: 5\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+            except OSError:
+                pass
+            self.shutdown_request(request)
+            return
+        try:
+            super().process_request(request, client_address)
+        except Exception:
+            CUPO.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            CUPO.release()
+
+    def handle_error(self, request, client_address):
+        if not isinstance(sys.exc_info()[1], (ConnectionError, TimeoutError)):   # cortes del cliente: sin traza
+            super().handle_error(request, client_address)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--puerto", type=int, default=int(os.environ.get("LEON3D_PUERTO", 8800)))
@@ -328,8 +431,7 @@ def main():
         print(f"Acceso guardado en {ACCESO} (usuario «{usuario}»). Las sesiones anteriores quedan cerradas."); return
     if not (WEB / "index.html").is_file():
         sys.exit(f"No encuentro {WEB / 'index.html'}")
-    srv = ThreadingHTTPServer((a.host, a.puerto), Visor)
-    srv.daemon_threads = True
+    srv = Servidor((a.host, a.puerto), Visor)
     print(f"León en relieve en http://{a.host}:{a.puerto}/  (versión {version()['version']}; "
           f"{'con usuario y contraseña' if leer_acceso() else 'ABIERTO, sin usuario ni contraseña'})", flush=True)
     try:
