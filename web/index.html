@@ -2645,7 +2645,7 @@ function updateLabels() {
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
     let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
-      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : L.kind === "alb" ? layers.alb && CAM.on : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo && catAct === "geologia" : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : L.kind === "alb" ? layers.alb && CAM.on : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (HIST.antiguo) show = ["hist", "histx", "pueblo", "deco"].includes(k0) ? histVisible(L) : (k0 === "peak" && L.kind.includes("top")) || k0 === "river" ? show : false;
     else if (["hist", "histx", "pueblo", "deco"].includes(k0)) show = false;
     else if (CAM.on && CAM.listo && layers.camfoco && L.kind !== "alb")   // con un camino elegido, solo sus pueblos
@@ -3124,6 +3124,9 @@ function setCat(k, guardar) {
   if ($("hcard").hidden) setEnfoque(f);
   if (k === "clima" && !clima.on && !clima.visto) { clima.visto = true; setClima(true); }
   if (k === "geologia" && !geol.visto) { geol.visto = true; setGeoModo("roca"); }
+  // las capas de geología son de su pestaña: se apagan al salir y vuelven como estaban al entrar
+  if (k !== "geologia" && geol.modo) { geol.ultimo = geol.modo; setGeoModo(""); if (hcardKind === "geo" || hcardKind === "lig") closeHcard(); }
+  else if (k === "geologia" && !geol.modo && geol.ultimo) { setGeoModo(geol.ultimo); geol.ultimo = ""; }
   aspectoAntiguo(k === "historia" || k === "camino");
   setAntiguo(k === "historia");
   setCamino(k === "camino");   // la primera vez, el clima se enciende solo
