@@ -818,17 +818,32 @@ function dondeFallo(err, archivo, linea, col) {
   if (m) return ` (línea ${m[1]}:${m[2]})`;
   return linea ? ` (${archivo ? String(archivo).split("/").pop() + " " : ""}línea ${linea}:${col || 0})` : "";
 }
+// Solo se muestra el PRIMER error: los que vienen después suelen ser consecuencia de él y lo taparían.
 function showFatal(err, archivo, linea, col) {
   if (window.leonListo) { console.warn("Error después de arrancar:", err); return; }
+  if (window.leonFallo) { console.warn("Error posterior al primero:", err); return; }
   const box = document.querySelector("#loading .box");
   if (!box) return;
+  window.leonFallo = "Detalle técnico: " + (err && err.message ? err.message : String(err)) + dondeFallo(err, archivo, linea, col) +
+    " · " + navigator.userAgent.replace(/^Mozilla\/5\.0 /, "");
   document.getElementById("loading").classList.remove("done");
-  box.innerHTML = "El mapa no ha podido arrancar.<small></small>";
-  box.querySelector("small").textContent = "Detalle técnico: " + (err && err.message ? err.message : String(err)) + dondeFallo(err, archivo, linea, col) +
-    ". Recarga la página; si se repite, copia este texto.";
+  box.innerHTML = 'El mapa no ha podido arrancar.<small class="fallo"></small><small>Recarga la página; si se repite, copia este texto.</small><span id="loading-msg" hidden></span>';
+  box.querySelector(".fallo").textContent = window.leonFallo;
+  box.querySelector(".fallo").style.userSelect = "text";
 }
-addEventListener("error", (e) => showFatal(e.error || e.message, e.filename, e.lineno, e.colno));
-addEventListener("unhandledrejection", (e) => showFatal(e.reason));
+// Solo paran el arranque los errores del propio mapa (esta página o three.js). Los de scripts ajenos
+// (escudos y extensiones del navegador, el marco de un artefacto de claude.ai) se anotan y se ignoran.
+const PAGINA = location.href.split("#")[0].split("?")[0];
+const esNuestro = (fichero) => !!fichero && (fichero.split("#")[0].split("?")[0] === PAGINA || /three(\.min)?\.js/.test(fichero));
+addEventListener("error", (e) => {
+  if (!esNuestro(e.filename)) { console.warn("Error ajeno ignorado:", e.message, e.filename || "(sin fichero)"); return; }
+  showFatal(e.error || e.message, e.filename, e.lineno, e.colno);
+});
+addEventListener("unhandledrejection", (e) => {
+  const pila = e.reason && e.reason.stack ? String(e.reason.stack) : "";
+  if (pila && !pila.includes(location.origin) && !/three(\.min)?\.js/.test(pila)) { console.warn("Rechazo ajeno ignorado:", e.reason); return; }
+  showFatal(e.reason);
+});
 if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"));
 // ↻ actualizar: comprueba version.json (lo da servidor/servidor.py; en el artefacto no existe y se ignora)
 // y, al pulsar, vuelve a descargar todo sin caché y recarga. Útil en el iPhone, donde la app no tiene botón de recargar.
@@ -862,7 +877,7 @@ if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"
 const $ = (id) => document.getElementById(id);
 const fmt = new Intl.NumberFormat("es-ES");
 const fmt1 = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 });
-const msg = (t) => { $("loading-msg").textContent = t; };
+const msg = (t) => { const el = $("loading-msg"); if (el) el.textContent = t; };
 const isPhone = matchMedia("(max-width: 720px)").matches;
 if (!isPhone) $("panel").classList.remove("collapsed");
 $("toggle-panel").onclick = () => {
@@ -903,7 +918,7 @@ try {
     }
   } catch (e) { COB = null; }
 } catch (e) {
-  $("loading").querySelector(".box").innerHTML = "No se pudieron cargar los datos del mapa.<small>Recarga la página. Si sigue fallando, el fichero " + e.message + " no se ha publicado.</small>";
+  if (!window.leonFallo) showFatal(new Error("no se pudieron cargar los datos del mapa: " + (e && e.message ? e.message : e)));
   return;
 }
 for (const m of data.municipios) { m.ph = Array.isArray(m.ph) && m.ph.length ? m.ph : null; m.pmax = m.ph ? Math.max(...m.ph) : 0; m.abs = Array.isArray(m.abs) ? m.abs : typeof m.abs === "string" && m.abs ? [m.abs] : []; }
