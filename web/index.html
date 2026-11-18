@@ -35,6 +35,9 @@
   --sky: #1d2b33; --hist: #e9a24f; color-scheme: dark;
 }
 html, body { height: 100%; }
+/* en la interfaz (panel, fichas, botones) solo se desplaza con un dedo: el pellizco no agranda la página,
+   lo recoge el mapa (ver «pellizco fuera del mapa»); tampoco hay zoom por doble toque */
+html, body { touch-action: pan-x pan-y; }
 body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); overflow: hidden; }
 #scene { position: fixed; inset: 0; }
 #scene canvas { display: block; width: 100%; height: 100%; touch-action: none; }
@@ -1256,6 +1259,39 @@ function stopNav() { fly = null; ctl.tw = null; ctl.zoomQ = null; if (orbit) sto
     const k = e.deltaY * (e.deltaMode === 1 ? 0.05 : e.deltaMode === 2 ? 1 : 0.0016);
     const P = groundPoint(e.clientX, e.clientY);
     ctl.zoomQ = { P: P || (ctl.zoomQ && ctl.zoomQ.P) || ctl.target.clone(), k: (ctl.zoomQ ? ctl.zoomQ.k : 0) + clampN(k, -1, 1) };
+  }, { passive: false });
+}
+
+// pellizco fuera del mapa: si un dedo cae sobre el panel o una ficha, el gesto acerca o aleja el MAPA
+// en lugar de agrandar la página (zoom del navegador). Lo mismo con el pellizco del touchpad (rueda + Ctrl).
+{
+  const cv = renderer.domElement;
+  let pz = null;   // { d, P } del pellizco en curso que empezó fuera del lienzo
+  const fuera = (t) => t !== cv && !(t instanceof Element && t.closest("#scene canvas"));
+  document.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 2 || ![...e.touches].some(x => fuera(x.target))) { pz = null; return; }
+    const [a, b] = e.touches, cx = (a.clientX + b.clientX) / 2, cy = (a.clientY + b.clientY) / 2;
+    pz = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), P: groundPoint(cx, cy) || ctl.target.clone() };
+    stopNav(); e.preventDefault();
+  }, { passive: false, capture: true });
+  document.addEventListener("touchmove", (e) => {
+    if (!pz || e.touches.length < 2) return;
+    e.preventDefault();
+    const [a, b] = e.touches, d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    if (d > 10 && pz.d > 10) { zoomAround(pz.P, pz.d / d); applyCamera(); }
+    pz.d = d;
+  }, { passive: false, capture: true });
+  const finPz = (e) => { if (e.touches.length < 2) pz = null; };
+  document.addEventListener("touchend", finPz, { capture: true }); document.addEventListener("touchcancel", finPz, { capture: true });
+  // Safari (iPhone/iPad): sus gestos propios de zoom de página, anulados
+  for (const ev of ["gesturestart", "gesturechange", "gestureend"]) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
+  // touchpad o Ctrl + rueda sobre la interfaz: zoom del mapa, no de la página
+  addEventListener("wheel", (e) => {
+    if (!e.ctrlKey || !fuera(e.target)) return;
+    e.preventDefault(); fly = null; ctl.tw = null;
+    const k = e.deltaY * (e.deltaMode === 1 ? 0.05 : e.deltaMode === 2 ? 1 : 0.0016);
+    const P = groundPoint(innerWidth / 2, innerHeight / 2);
+    ctl.zoomQ = { P: P || (ctl.zoomQ && ctl.zoomQ.P) || ctl.target.clone(), k: (ctl.zoomQ ? ctl.zoomQ.k : 0) + clampN(k * 4, -1, 1) };
   }, { passive: false });
 }
 
