@@ -4,6 +4,15 @@ Mapa 3D interactivo de la provincia de León con su orografía real, pintado con
 
 **Capas**: relieve (MDT25), límites municipales, comarcas, ríos, embalses y lagos, carreteras, poblaciones, cumbres, sierras, valles y puertos de montaña. Cada municipio tiene una ficha con su población (INE), superficie, altitudes y comarca. Se puede filtrar por comarca, cambiar la exageración vertical y la hora del sol, ver la evolución de la población de 1900 a 2025, transformar el relieve en un relieve de población y usar un mirador que calcula todo lo que se ve desde cualquier punto.
 
+También tiene pestañas de **geología** (IGME), **clima** (normales de AEMET 1991-2020), **agua** (ríos, afluentes, caudales y embalses), **historia** (de los castros a la minería, sobre un mapa antiguo) y **Camino de Santiago** (etapas, perfiles y albergues del IGN), además de un tutorial guiado.
+
+| | |
+|---|---|
+| ![Vista paisaje: el relieve de la provincia con pueblos, ríos y cumbres](docs/capturas/paisaje.jpg) | ![Geología: el terreno coloreado por tipo de roca (IGME, MAGNA 1:50.000)](docs/capturas/geologia.jpg) |
+| **Paisaje** · relieve, pueblos, ríos y cumbres | **Geología** · tipos de roca del MAGNA 1:50.000 |
+| ![Historia: el Reino de León sobre un mapa antiguo, con la línea del tiempo](docs/capturas/historia.jpg) | ![Camino de Santiago: el Camino Francés con sus pueblos y etapas](docs/capturas/camino.jpg) |
+| **Historia** · línea del tiempo sobre un mapa antiguo | **Camino de Santiago** · caminos, etapas y albergues |
+
 ## Fuentes
 
 Todos los datos proceden de fuentes oficiales españolas o europeas (Copernicus); la comarca tradicional que aparece en la ficha de cada municipio es el único dato no oficial:
