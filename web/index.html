@@ -169,6 +169,13 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .lbl.lugar:hover { background: #fff; text-decoration: underline; text-underline-offset: 2px; }
 .lbl.lugar .ic, .lista-st .ic { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.18); }
 .lista-st h4 { margin: 8px 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); }
+.lbl.bic { pointer-events: auto; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 11px; color: #3b2414; }
+.lbl.bic:hover { text-decoration: underline; text-underline-offset: 2px; }
+.lbl.bic .ic { display: inline-block; width: 9px; height: 9px; margin-right: 4px; vertical-align: -1px; border: 1.5px solid #fff8ec; box-shadow: 0 0 0 1px rgba(0,0,0,.25); border-radius: 2px; }
+.lbl.prot { pointer-events: auto; cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 13px; letter-spacing: .02em; color: #183d22;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px rgba(255,255,255,.9); }
+.lbl.prot small { display: block; font-family: var(--font-ui); font-weight: 600; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; opacity: .75; }
+.lbl.prot:hover { text-decoration: underline; text-underline-offset: 3px; }
 .lbl.alb { pointer-events: auto; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 11px; color: #7b241c; }
 .lbl.alb .ic { display: inline-block; width: 10px; height: 10px; margin-right: 3px; vertical-align: -1px;
   background: radial-gradient(circle at 50% 100%, #fff 0 18%, transparent 19%), conic-gradient(from 230deg at 50% 100%, #e6a817 0 80deg, transparent 80deg); border-radius: 50% 50% 0 0; }
@@ -495,6 +502,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <button class="cat-b" role="tab" id="tab-agua" data-cat="agua" aria-selected="false" aria-controls="cat-agua"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z"/></svg>Agua</button>
     <button class="cat-b" role="tab" id="tab-historia" data-cat="historia" aria-selected="false" aria-controls="cat-historia"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6M9 11h4"/></svg>Historia</button>
     <button class="cat-b" role="tab" id="tab-camino" data-cat="camino" aria-selected="false" aria-controls="cat-camino"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 C7 20 3 15.5 3 10.5 C3 7 5 4 8 4 C9.6 4 11 5 12 6.4 C13 5 14.4 4 16 4 C19 4 21 7 21 10.5 C21 15.5 17 20 12 20Z"/><path d="M12 20 V7 M12 20 L7 6 M12 20 L17 6 M12 20 L4.5 9 M12 20 L19.5 9"/></svg>Camino</button>
+    <button class="cat-b" role="tab" id="tab-proteccion" data-cat="proteccion" aria-selected="false" aria-controls="cat-proteccion"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 L19.5 5.6 V11.2 C19.5 15.8 16.4 19.4 12 21.2 C7.6 19.4 4.5 15.8 4.5 11.2 V5.6 Z"/><path d="M8.6 12.2 L11 14.5 L15.6 9.6"/></svg>Protección</button>
     <button class="cat-b" role="tab" id="tab-escena" data-cat="escena" aria-selected="false" aria-controls="cat-escena"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>Escena</button>
   </nav>
   <label class="layer enfoque"><input type="checkbox" id="l-enfoque" checked><span class="sw"></span><span class="name">Enfocar en esta categoría<span class="note" id="enfoque-note">Oculta lo que no ayuda a leer estos datos</span></span></label>
@@ -648,6 +656,30 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
       <label class="layer"><input type="checkbox" id="l-camfoco" checked><span class="sw"></span><span class="name">Solo nombres del Camino<span class="note">Albergues y pueblos que atraviesa; oculta el resto</span></span></label>
     </div></div>
     <p class="spark-note" style="padding: 0 6px">Trazados, etapas y albergues del IGN (Caminos de Santiago en Europa). Perfiles calculados con el MDT. Toca una etapa para ver su perfil y recorrerla.</p>
+  </section>
+  <section class="cat" id="cat-proteccion" role="tabpanel" aria-labelledby="tab-proteccion" hidden>
+    <div><p class="group-title">Espacios protegidos</p>
+      <div class="field" style="padding: 0 6px"><select id="pr-modo" aria-label="Figura de protección">
+        <option value="espacios">Espacios naturales y Parque Nacional</option>
+        <option value="zec">Red Natura 2000 · ZEC (hábitats)</option>
+        <option value="zepa">Red Natura 2000 · ZEPA (aves)</option>
+        <option value="biosfera">Reservas de la Biosfera (UNESCO)</option>
+        <option value="">Ninguno</option>
+      </select></div>
+      <p class="spark-note" id="pr-nota" style="padding: 4px 8px 0"></p>
+      <div class="layers" id="pr-zon-row" hidden>
+        <label class="layer"><input type="checkbox" id="l-przon"><span class="sw"></span><span class="name">Zonificación<span class="note">Núcleo, tampón y transición</span></span></label>
+      </div>
+      <div class="lista-st" id="pr-lista"><p class="spark-note">Cargando…</p></div>
+    </div>
+    <div><p class="group-title">Bienes de Interés Cultural</p><div class="layers">
+      <label class="layer"><input type="checkbox" id="l-bic" checked><span class="sw"></span><span class="name">Bienes de Interés Cultural<span class="note">Inmuebles declarados · Junta de Castilla y León</span></span></label>
+    </div>
+      <div class="chips leg" id="bic-cats"></div>
+      <div class="field" style="padding: 4px 6px"><input id="bic-buscar" type="search" placeholder="Buscar: castillo, iglesia, Astorga…" autocomplete="off" aria-label="Buscar un Bien de Interés Cultural"></div>
+      <div class="lista-st" id="bic-lista"></div>
+    </div>
+    <p class="spark-note" style="padding: 0 6px">Toca el mapa para ver qué figuras protegen ese punto. Datos de la Junta de Castilla y León (Red de Espacios Naturales, Red Natura 2000 y BIC) y del MITECO (Reservas de la Biosfera).</p>
   </section>
   <section class="cat" id="cat-escena" role="tabpanel" aria-labelledby="tab-escena" hidden>
     <button class="tool-btn" id="tour-abrir-2">▶ Tutorial guiado<small>Dos minutos para aprender a usar el mapa</small></button>
@@ -999,7 +1031,9 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
 let aspAnt = false;   // aspecto de mapa antiguo (Historia y Camino)
-const layers = { camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+// figuras de protección (scripts/proteccion.R): modo = qué espacios se dibujan; sel = el elegido; cats = categorías de BIC visibles
+const PROT = { on: false, listo: false, cargando: null, J: null, modo: "espacios", sel: null, cats: new Set(), busca: "" };
+const layers = { bic: true, przon: false, camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
@@ -1028,6 +1062,7 @@ function drawOverlay() {
   if (HIST.antiguo) { dibujarHistoria(); ovTex && (ovTex.needsUpdate = true); needsRender = true; return; }
   if (layers.comcolor) pintarComarcas();
   if (layers.cucolor && RIO) pintarCuencas();
+  if (PROT.on && PROT.listo) dibujarProteccion();
   if (CAM.on && CAM.listo) dibujarCaminos();
   if (geol.modo && geol.listo) pintarGeo();
   ov.lineJoin = "round"; ov.lineCap = "round";
@@ -2710,7 +2745,7 @@ function updateLabels() {
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
     let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
-      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo && catAct === "geologia" : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : L.kind === "alb" ? layers.alb && CAM.on : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo && catAct === "geologia" : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : L.kind === "alb" ? layers.alb && CAM.on : L.kind === "bic" ? PROT.on && layers.bic && PROT.cats.has(L.cat) : L.kind === "prot" ? PROT.on && L.grupo === PROT.modo : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (HIST.antiguo) show = ["hist", "histx", "pueblo", "deco"].includes(k0) ? histVisible(L) : (k0 === "peak" && L.kind.includes("top")) || k0 === "river" ? show : false;
     else if (["hist", "histx", "pueblo", "deco"].includes(k0)) show = false;
     else if (CAM.on && CAM.listo && layers.camfoco && L.kind !== "alb")   // con un camino elegido, solo sus pueblos
@@ -2885,6 +2920,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   if (gotaArmed) { if (p) lanzarGota(p.mx, p.my); return; }
   if (miradorArmed || mirador) { if (p) { setArmed(true); openMirador(p.mx, p.my, null, 0); } return; }
   if (p && geol.modo && geol.listo && catAct === "geologia" && inProv(p.mx, p.my)) { showGeo(p.mx, p.my); return; }
+  if (p && PROT.on && PROT.listo && inProv(p.mx, p.my)) { showProtPunto(p.mx, p.my); return; }
   if (p && CAM.on) { const ei = etapaCerca(p.mx, p.my, tolM(14)); if (ei >= 0) { showEtapa(ei, false); return; } }
   if (p && RIO && layers.rios) { const c = rioCerca(p.mx, p.my, tolM(14)); if (c) { selectRio(RIO.tramos[c.t].r, false); return; } }
   if (rioSel >= 0 || gota) closeHcard();
@@ -3160,7 +3196,9 @@ const ENFOQUE = {
     nota: "Mapa antiguo: oculta el paisaje actual" },
   geologia: { ocultar: ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-nubes"], calma: 0.45, nota: "Oculta árboles, pueblos, carreteras y cubierta del suelo" }
 };
-const CAT_ENFOQUE = { camino: "camino", historia: "historia", mapa: null, relieve: "relieve", geologia: "geologia", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
+ENFOQUE.proteccion = { ocultar: ["l-arboles", "l-cob", "l-carr", "l-lugares", "l-est", "l-lig", "l-mon", "l-nubes", "l-sierras", "l-valles", "l-puertos"], calma: 0.7,
+  nota: "Oculta árboles, carreteras y otros puntos de interés, y apaga los colores del paisaje" };
+const CAT_ENFOQUE = { proteccion: "proteccion", camino: "camino", historia: "historia", mapa: null, relieve: "relieve", geologia: "geologia", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
 const TODAS_OCULTABLES = [...new Set(Object.values(ENFOQUE).flatMap(e => e.ocultar))];
 let enfoqueAct = null, enfoqueGuardado = null, catAct = "mapa";
 function setEnfoque(f) {
@@ -3195,6 +3233,7 @@ function setCat(k, guardar) {
   aspectoAntiguo(k === "historia" || k === "camino");
   setAntiguo(k === "historia");
   setCamino(k === "camino");   // la primera vez, el clima se enciende solo
+  setProteccion(k === "proteccion");
   $("panel").scrollTop = 0;
   if (guardar) { try { localStorage.setItem("leon3d-cat", k); } catch (e) { /* sin almacenamiento */ } }
 }
@@ -3207,13 +3246,14 @@ document.querySelector(".cats").addEventListener("keydown", (e) => {   // flecha
 });
 $("l-enfoque").addEventListener("change", () => setEnfoque(!$("hcard").hidden ? "agua" : CAT_ENFOQUE[catAct]));
 function showHcard(html, kind, ref) {
-  if (!["geo", "lig", "loc", "punto", "lugar", "hist", "etapa", "alb"].includes(kind)) modoAgua(true);
+  if (!["geo", "lig", "loc", "punto", "lugar", "hist", "etapa", "alb", "prot", "protp", "bic"].includes(kind)) modoAgua(true);
   $("info").hidden = true; $("mirador").hidden = true; selected = null; updateMunState();
   $("hcard-body").innerHTML = html; $("hcard").hidden = false; $("hcard").scrollTop = 0; hcardKind = kind; hcardRef = ref;
 }
 function closeHcard() {
   if (hcardKind === "etapa") { CAM.etapa = null; drawOverlay(); }
-  if (!["hist", "etapa", "alb"].includes(hcardKind)) modoAgua(false);
+  if (!["hist", "etapa", "alb", "prot", "protp", "bic"].includes(hcardKind)) modoAgua(false);
+  if (hcardKind === "prot") { PROT.sel = null; listaProt(); }
   $("hcard").hidden = true; hcardKind = null; rioSel = -1; rioSet = null; cuencaCv = null; $("cuenca-sel").value = "";
   if (gota) { gota = null; gotaMesh.visible = false; }
   drawOverlay();
@@ -3849,6 +3889,178 @@ const PASOS_HIST = [
     f: async (tk) => { tour.objetivo = null; $("tour-sig").textContent = "Terminar"; } }
 ];
 $("hist-guia").onclick = () => empezarTour(PASOS_HIST, { titulo: "Historia", sinMano: true, arriba: true, alEmpezar: () => { setCat("historia"); cerrarPanel(); }, alSalir: () => { closeHcard(); } });
+// ---------------------------------------------------------------- figuras de protección (scripts/proteccion.R)
+const COLOR_FIG = { PNAC: "#0b6b3a", PREG: "#1f9e5a", PNAT: "#5fb336", MNAT: "#e07a1f", ZPP: "#f2b36b", RNAT: "#2a9d8f", PPRT: "#8e6bbf",
+  ZEC: "#1f78c8", ZEPA: "#8e44ad", MAB: "#d1495b" };
+const COLOR_ZONA = { "Núcleo": "#9e2a2b", "Tampón": "#e0892b", "Transición": "#e9c46a" };
+const COLOR_BIC = { "Monumento": "#8e2b1e", "Castillos": "#5d4037", "Conjunto Histórico": "#b5541b", "Zona Arqueológica": "#a07d1c", "Arte Rupestre": "#8d6e63",
+  "Hórreos y Pallozas": "#5f7f2f", "Rollos de Justicia": "#566573", "Conjunto Etnológico": "#7d3c98", "Paisaje Cultural": "#1e8449",
+  "Conjunto Industrial": "#2c3e50", "Archivos, Museos y Bibliotecas": "#2471a3", "Hitos Forales": "#7f8c8d", "Sitio Histórico": "#a93226", "Jardín Histórico": "#229954" };
+const BIC_OFF = new Set(["Hórreos y Pallozas"]);   // 380 hórreos y pallozas (declaración genérica): apagados al empezar
+const NOTA_PROT = {
+  espacios: "Red de Espacios Naturales de Castilla y León: parques, monumentos naturales y su zona periférica. Incluye el Parque Nacional de Picos de Europa.",
+  zec: "Zonas Especiales de Conservación de la Red Natura 2000 europea: protegen hábitats y especies (Directiva Hábitats).",
+  zepa: "Zonas de Especial Protección para las Aves de la Red Natura 2000 (Directiva Aves).",
+  biosfera: "Reservas de la Biosfera del programa MaB de la UNESCO: territorios donde se busca conservar la naturaleza con la vida y la economía locales.",
+  "": "" };
+function itemsProt(modo = PROT.modo) {
+  const J = PROT.J; if (!J) return [];
+  if (modo === "espacios") return J.espacios.map(o => ({ o, tipo: "espacio", n: o.n, sub: o.figN, color: COLOR_FIG[o.fig] || "#4f8f3a" }));
+  if (modo === "zec" || modo === "zepa") return J.natura.filter(o => o.tipo === modo.toUpperCase()).map(o => ({ o, tipo: "natura", n: o.n, sub: o.tipo, color: COLOR_FIG[o.tipo] }));
+  if (modo === "biosfera") return J.biosfera.map(o => ({ o, tipo: "biosfera", n: o.n, sub: "Reserva de la Biosfera", color: COLOR_FIG.MAB }));
+  return [];
+}
+function cajaAnillos(g) { let x0 = 1e12, y0 = 1e12, x1 = -1e12, y1 = -1e12; for (const r of g) for (let i = 0; i < r.length; i += 2) { x0 = Math.min(x0, r[i]); x1 = Math.max(x1, r[i]); y0 = Math.min(y0, r[i + 1]); y1 = Math.max(y1, r[i + 1]); } return [x0, y0, x1, y1]; }
+function dibujarProteccion() {
+  const its = itemsProt(), sel = PROT.sel;
+  ov.save(); ov.lineJoin = "round";
+  for (const it of its) {
+    const o = it.o, elegido = sel && sel.o === o, apagado = sel && !elegido;
+    if (it.tipo === "biosfera" && layers.przon && o.zonas.length) {
+      for (const z of o.zonas) { ringPath(ov, z.g); ov.fillStyle = conAlfa(COLOR_ZONA[z.z] || it.color, apagado ? 0.12 : 0.42); ov.fill("evenodd"); }
+    } else { ringPath(ov, o.g); ov.fillStyle = conAlfa(it.color, apagado ? 0.12 : elegido ? 0.62 : 0.46); ov.fill("evenodd"); }
+    // borde: cinta clara y línea de color (punteada en las reservas de la biosfera)
+    ringPath(ov, o.g); ov.setLineDash([]); ov.strokeStyle = `rgba(255, 252, 240, ${apagado ? 0.35 : 0.95})`; ov.lineWidth = (elegido ? 13 : 10) * px1; ov.stroke();
+    ov.strokeStyle = conAlfa(it.color, apagado ? 0.4 : 1); ov.lineWidth = (elegido ? 6.5 : 5) * px1;
+    ov.setLineDash(it.tipo === "biosfera" ? [14 * px1, 8 * px1] : []); ov.stroke();
+  }
+  ov.setLineDash([]);
+  // BIC con superficie (conjuntos históricos, zonas arqueológicas…): su recinto, con borde punteado
+  if (layers.bic) for (const b of PROT.J.bic) if (b.g && PROT.cats.has(b.cat)) {
+    ringPath(ov, b.g); ov.fillStyle = conAlfa(COLOR_BIC[b.cat] || "#8e2b1e", 0.22); ov.fill("evenodd");
+    ov.strokeStyle = conAlfa(COLOR_BIC[b.cat] || "#8e2b1e", 0.9); ov.lineWidth = 1.6 * px1; ov.setLineDash([4 * px1, 3 * px1]); ov.stroke(); ov.setLineDash([]);
+  }
+  ov.restore();
+}
+const fmtHa = (ha) => ha >= 1000 ? `${fmt.format(Math.round(ha))} ha (${fmt1.format(ha / 100)} km²)` : `${fmt.format(ha)} ha`;
+const fmtFecha = (f) => { if (!f) return ""; const [a, m, d] = f.split("-"); return `${+d} de ${MESES[+m - 1].toLowerCase()} de ${a}`; };
+function enlaceOficial(url, txt) { return url ? `<p class="hint"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(txt)} ↗</a></p>` : ""; }
+function showProt(it, volar) {
+  const o = it.o; PROT.sel = it; listaProt();
+  let h = `<h2>${esc(o.n)}</h2><p class="cap"><span class="ic" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${it.color};margin-right:6px;vertical-align:-1px"></span>${esc(it.tipo === "natura" ? (o.tipo === "ZEC" ? "Zona Especial de Conservación (ZEC)" : "Zona de Especial Protección para las Aves (ZEPA)") : it.sub)}</p><dl>`;
+  if (o.fecha) h += `<dt>${it.tipo === "biosfera" ? "Declarada por la UNESCO" : "Declaración"}</dt><dd>${fmtFecha(o.fecha)}${o.ampl ? ` <small>(ampliada en ${esc(o.ampl)})</small>` : ""}</dd>`;
+  if (o.estado && o.estado !== "Declarado") h += `<dt>Estado</dt><dd>${esc(o.estado)}</dd>`;
+  h += `<dt>Superficie</dt><dd>${fmtHa(o.ha)}${o.haLeon < o.ha * 0.98 ? `<br><small>${fmtHa(o.haLeon)} en la provincia de León</small>` : ""}</dd>`;
+  if (o.zonas && o.zonas.length) h += `<dt>Zonas en León</dt><dd>${o.zonas.map(z => `<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${COLOR_ZONA[z.z]};margin-right:4px"></span>${esc(z.z)}: ${fmtHa(z.ha)}`).join("<br>")}</dd>`;
+  if (o.gestor) h += `<dt>Gestión</dt><dd>${esc(o.gestor)}</dd>`;
+  if (o.porn) h += `<dt>Plan de ordenación (PORN)</dt><dd>${esc(o.porn)}</dd>`;
+  h += `</dl>`;
+  if (o.norma) h += `<p class="hint">${esc(o.norma)}</p>`;
+  h += it.tipo === "espacio" ? enlaceOficial(o.url, "Ficha en patrimonionatural.org (Junta de Castilla y León)")
+     : it.tipo === "natura" ? enlaceOficial(o.url, "Formulario oficial Natura 2000 (Agencia Europea de Medio Ambiente)")
+     : enlaceOficial("https://www.miteco.gob.es/es/parques-nacionales-oapn/reservas-biosfera-mab.html", "Red Española de Reservas de la Biosfera (OAPN)");
+  showHcard(h, "prot", -1);
+  if (volar) { const b = cajaAnillos(o.g); flyToPoint((b[0] + b[2]) / 2, (b[1] + b[3]) / 2, clampN(Math.max(b[2] - b[0], b[3] - b[1]) / 1000 * 1.05, 6, 140)); }
+  drawOverlay();
+}
+function showBic(b, volar) {
+  const m = munAt(b.xy[0], b.xy[1]), col = COLOR_BIC[b.cat] || "#8e2b1e";
+  const h = `<h2>${esc(b.n)}</h2><p class="cap"><span class="ic" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${col};margin-right:6px;vertical-align:-1px"></span>Bien de Interés Cultural · ${esc(b.cat)}</p>
+    <dl>${m ? `<dt>Municipio</dt><dd>${esc(m.n)}</dd>` : ""}${b.fecha ? `<dt>Protección</dt><dd>${fmtFecha(b.fecha)}</dd>` : ""}
+    ${b.ha ? `<dt>Superficie protegida</dt><dd>${fmtHa(b.ha)}</dd>` : ""}<dt>Altitud</dt><dd>${fmt.format(Math.round(heightAt(b.xy[0], b.xy[1])))} m</dd></dl>
+    <div class="i-acts"><button class="i-act" data-orb="${b.xy[0]},${b.xy[1]}">Sobrevolar</button></div>
+    ${b.cat === "Hórreos y Pallozas" ? `<p class="hint">Los hórreos y pallozas se protegieron en bloque (Decreto 449/1973) y se inventariaron uno a uno; por eso se nombran con un número.</p>` : ""}
+    ${b.cat === "Castillos" ? `<p class="hint">Todos los castillos de España son BIC desde el Decreto de 22 de abril de 1949, se conserven o estén en ruinas.</p>` : ""}
+    ${enlaceOficial(b.url, "Ficha del bien (Patrimonio Cultural, Junta de Castilla y León)")}`;
+  showHcard(h, "bic", -1);
+  if (volar) flyToPoint(b.xy[0], b.xy[1], b.ha ? clampN(Math.sqrt(b.ha) / 10 * 2.2, 6, 24) : 6);
+}
+// toque en el mapa: todas las figuras que protegen ese punto
+function showProtPunto(mx, my) {
+  const J = PROT.J, en = (g, b) => (!b || (mx >= b[0] && mx <= b[2] && my >= b[1] && my <= b[3])) && pointInRings(mx, my, g), filas = [];
+  for (const modo of ["espacios", "zec", "zepa", "biosfera"]) for (const it of itemsProt(modo)) {
+    const o = it.o; o.bb = o.bb || cajaAnillos(o.g);
+    if (!en(o.g, o.bb)) continue;
+    let zona = ""; if (it.tipo === "biosfera") { const z = o.zonas.find(z => pointInRings(mx, my, z.g)); if (z) zona = ` · zona ${z.z.toLowerCase()}`; }
+    filas.push({ it, modo, txt: it.sub + zona });
+  }
+  for (const b of J.bic) if (b.g && pointInRings(mx, my, b.g)) filas.push({ bic: b });
+  const m = munAt(mx, my);
+  PROT.punto = filas;
+  const h = `<h2>${filas.length ? "Protección en este punto" : "Sin figura de protección"}</h2><p class="cap">${m ? esc(m.n) + " · " : ""}${fmt.format(Math.round(heightAt(mx, my)))} m de altitud</p>
+    ${filas.length ? `<div class="lista-st" style="margin-top:6px">${filas.map((f, i) => f.bic
+      ? `<button data-pp="${i}"><span><span class="ic" style="background:${COLOR_BIC[f.bic.cat]};border-radius:2px"></span>${esc(f.bic.n)}</span><small>BIC · ${esc(f.bic.cat)}</small></button>`
+      : `<button data-pp="${i}"><span><span class="ic" style="background:${f.it.color};border-radius:3px"></span>${esc(f.it.n)}</span><small>${esc(f.txt)}</small></button>`).join("")}</div>`
+    : `<p class="hint">Este lugar no está dentro de ningún espacio natural protegido, zona de la Red Natura 2000, reserva de la biosfera ni recinto BIC.</p>`}`;
+  showHcard(h, "protp", -1);
+}
+$("hcard").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pp]"); if (!b || hcardKind !== "protp") return;
+  const f = PROT.punto[+b.dataset.pp]; if (!f) return;
+  if (f.bic) { showBic(f.bic, false); return; }
+  if (f.modo !== PROT.modo) { PROT.modo = f.modo; $("pr-modo").value = f.modo; notaProt(); }
+  showProt(f.it, false);
+});
+function notaProt() { $("pr-nota").textContent = NOTA_PROT[PROT.modo]; $("pr-zon-row").hidden = PROT.modo !== "biosfera"; }
+function listaProt() {
+  if (!PROT.J) return;
+  const its = itemsProt();
+  $("pr-lista").innerHTML = its.length ? its.slice().sort((a, b) => (b.o.haLeon || 0) - (a.o.haLeon || 0)).map(it => `<button data-pi="${its.indexOf(it)}" aria-pressed="${PROT.sel && PROT.sel.o === it.o}"><span><span class="ic" style="background:${it.color};border-radius:3px"></span>${esc(it.n)}</span><small>${it.tipo === "espacio" ? esc(it.sub) + " · " : ""}${fmt.format(Math.round(it.o.haLeon / 100))} km²</small></button>`).join("") : "";
+}
+function listaBic() {
+  const J = PROT.J, q = norm(PROT.busca.trim()), cuenta = {};
+  for (const b of J.bic) cuenta[b.cat] = (cuenta[b.cat] || 0) + 1;
+  const cats = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a]);
+  $("bic-cats").innerHTML = cats.map(c => `<button class="chip${PROT.cats.has(c) ? "" : " off"}" data-bcat="${esc(c)}"><i style="background:${COLOR_BIC[c] || "#8e2b1e"}"></i>${esc(c)}<small>${cuenta[c]}</small></button>`).join("");
+  const lista = J.bic.filter(b => PROT.cats.has(b.cat) && (!q || norm(b.n + " " + (b.mun || "")).includes(q)));
+  $("bic-lista").innerHTML = (q || lista.length <= 40 ? lista.slice(0, 80) : []).map(b => `<button data-bi="${J.bic.indexOf(b)}"><span><span class="ic" style="background:${COLOR_BIC[b.cat] || "#8e2b1e"};border-radius:2px"></span>${esc(b.n)}</span><small>${esc(b.mun || "")}</small></button>`).join("")
+    + (!q && lista.length > 40 ? `<p class="spark-note">${fmt.format(lista.length)} bienes con estas categorías: busca por nombre o municipio para ver la lista.</p>` : q && !lista.length ? `<p class="spark-note">Ningún BIC coincide con «${esc(PROT.busca)}».</p>` : lista.length > 80 ? `<p class="spark-note">Y ${lista.length - 80} más: afina la búsqueda.</p>` : "");
+}
+$("pr-modo").addEventListener("change", (e) => { PROT.modo = e.target.value; PROT.sel = null; if (hcardKind === "prot") closeHcard(); notaProt(); listaProt(); drawOverlay(); needsRender = true; });
+$("pr-lista").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pi]"); if (!b) return;
+  showProt(itemsProt()[+b.dataset.pi], true);
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+});
+$("bic-cats").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-bcat]"); if (!b) return;
+  const c = b.dataset.bcat; if (PROT.cats.has(c)) PROT.cats.delete(c); else PROT.cats.add(c);
+  listaBic(); drawOverlay(); needsRender = true;
+});
+$("bic-buscar").addEventListener("input", (e) => { PROT.busca = e.target.value; listaBic(); });
+$("bic-lista").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-bi]"); if (!b) return;
+  showBic(PROT.J.bic[+b.dataset.bi], true);
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+});
+bind("l-bic", "bic", () => { $("bic-cats").hidden = !layers.bic; drawOverlay(); needsRender = true; });
+bind("l-przon", "przon", () => { drawOverlay(); needsRender = true; });
+async function cargarProteccion() {
+  if (PROT.listo) return true;
+  if (!PROT.cargando) PROT.cargando = (async () => {
+    try { PROT.J = await fetch("data/proteccion.json").then(r => { if (!r.ok) throw new Error("proteccion.json"); return r.json(); }); }
+    catch (e) { $("pr-lista").innerHTML = `<p class="spark-note">No se pudieron cargar las figuras de protección (${esc(e.message)}).</p>`; PROT.cargando = null; return false; }
+    const J = PROT.J;
+    for (const [modo, its] of [["espacios", itemsProt("espacios")], ["zec", itemsProt("zec")], ["zepa", itemsProt("zepa")], ["biosfera", itemsProt("biosfera")]]) for (const it of its) {
+      addLabel("prot", esc(it.n) + `<small>${esc(it.tipo === "natura" ? it.o.tipo : it.tipo === "biosfera" ? "Reserva de la Biosfera" : it.sub)}</small>`, it.o.c[0], it.o.c[1], 700 + Math.log10(1 + it.o.haLeon) * 40, 0);
+      const L = labels[labels.length - 1]; L.grupo = modo; L.el.addEventListener("click", () => showProt(it, false));
+    }
+    const PRIO_BIC = { "Conjunto Histórico": 560, "Monumento": 520, "Zona Arqueológica": 500, "Castillos": 480, "Paisaje Cultural": 500, "Sitio Histórico": 500, "Conjunto Industrial": 470, "Conjunto Etnológico": 460 };
+    for (const b of J.bic) {
+      const m = munAt(b.xy[0], b.xy[1]); b.mun = m ? m.n : "";
+      const pr = PRIO_BIC[b.cat] || 300;
+      // nombres genéricos («La Ciudad», «La Villa», «Murallas»): en el rótulo, con su municipio
+      const rot = b.mun && b.n.split(" ").length <= 2 && !norm(b.n).includes(norm(b.mun)) ? `${b.n} (${b.mun})` : b.n;
+      addLabel("bic", `<span class="ic" style="background:${COLOR_BIC[b.cat] || "#8e2b1e"}"></span>` + esc(rot), b.xy[0], b.xy[1], pr, pr >= 500 ? 60 : pr >= 460 ? 40 : 16);
+      const L = labels[labels.length - 1]; L.cat = b.cat; L.lift = 0.4; L.el.addEventListener("click", () => showBic(b, false));
+    }
+    J.bic.sort((a, b) => a.n.localeCompare(b.n, "es", { numeric: true }));
+    labels.sort((a, b) => b.prio - a.prio);
+    PROT.cats = new Set(J.bic.map(b => b.cat).filter(c => !BIC_OFF.has(c)));
+    $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(J.fuente) + "</li>");
+    PROT.listo = true; notaProt(); listaProt(); listaBic();
+    return true;
+  })();
+  return PROT.cargando;
+}
+async function setProteccion(on) {
+  if (on && !(await cargarProteccion())) return;
+  if (on === PROT.on) return;
+  PROT.on = on;
+  if (!on && ["prot", "protp", "bic"].includes(hcardKind)) closeHcard();
+  if (!on) PROT.sel = null;
+  drawOverlay(); needsRender = true;
+}
 // ---------------------------------------------------------------- Caminos de Santiago (scripts/camino.py, datos del IGN)
 function dibujarCaminos() {
   const J = CAM.J;
@@ -4268,7 +4480,7 @@ const PASOS_TUT = [
     f: async (tk) => { tour.objetivo = $("info"); await clic($("i-more"), tk); await espera(2200, tk); await clic($("i-more"), tk); } },
   { t: "Sobrevolar como un dron", x: "«Sobrevolar» da vueltas alrededor del municipio, como un dron. Toca el mapa para parar.",
     f: async (tk) => { tour.objetivo = $("i-orbit"); await clic($("i-orbit"), tk); tour.objetivo = null; await espera(4500, tk); if (orbit) stopOrbit(); showInfo(null); } },
-  { t: "Las categorías", x: "El panel se organiza por temas: Mapa, Relieve, Geología, Población, Clima, Agua, Historia, Camino y Escena. Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
+  { t: "Las categorías", x: "El panel se organiza por temas: Mapa, Relieve, Geología, Población, Clima, Agua, Historia, Camino, Protección y Escena. Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
     f: async (tk) => { abrirPanel(); await espera(400, tk); tour.objetivo = document.querySelector(".cats"); $("panel").scrollTop = 0; await espera(1200, tk); } },
   { t: "Nivel del agua", x: "En Relieve puedes inundar el terreno hasta una altitud y ver qué cotas sobresalen. Aquí, todo lo que queda por debajo de 1.000 m.",
     f: async (tk) => {
@@ -4320,6 +4532,14 @@ const PASOS_TUT = [
     f: async (tk) => {
       if ($("hcard").hidden || !$("cam-rec")) return;
       tour.objetivo = $("cam-rec"); await clic($("cam-rec"), tk); tour.objetivo = null; await espera(5000, tk); stopNav(); closeHcard();
+    } },
+  { t: "Figuras de protección", x: "En Protección ves los espacios naturales, la Red Natura 2000, las reservas de la biosfera y los Bienes de Interés Cultural. Toca el mapa para saber qué protege ese lugar.",
+    f: async (tk) => {
+      if (!$("hcard").hidden) closeHcard(); abrirPanel(); await clic($("tab-proteccion"), tk); await espera(1800, tk);
+      if (!PROT.listo) return;
+      tour.objetivo = verEn($("pr-lista")); await espera(900, tk);
+      const b = [...$("pr-lista").querySelectorAll("[data-pi]")].find(x => /Picos/.test(x.textContent)) || $("pr-lista").querySelector("[data-pi]");
+      if (b) { await clic(b, tk); if (isPhone) cerrarPanel(); await espera(2200, tk); tour.objetivo = $("hcard"); await espera(1500, tk); }
     } },
   { t: "Luz y estación", x: "En Escena eliges el mes y la hora: el sol, la nieve y los colores del paisaje cambian con ellos.",
     f: async (tk) => {

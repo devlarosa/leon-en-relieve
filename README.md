@@ -4,7 +4,7 @@ Mapa 3D interactivo de la provincia de León con su orografía real, pintado con
 
 **Capas**: relieve (MDT25), límites municipales, comarcas, ríos, embalses y lagos, carreteras, poblaciones, cumbres, sierras, valles y puertos de montaña. Cada municipio tiene una ficha con su población (INE), superficie, altitudes y comarca. Se puede filtrar por comarca, cambiar la exageración vertical y la hora del sol, ver la evolución de la población de 1900 a 2025, transformar el relieve en un relieve de población y usar un mirador que calcula todo lo que se ve desde cualquier punto.
 
-También tiene pestañas de **geología** (IGME), **clima** (normales de AEMET 1991-2020), **agua** (ríos, afluentes, caudales y embalses), **historia** (de los castros a la minería, sobre un mapa antiguo) y **Camino de Santiago** (etapas, perfiles y albergues del IGN), además de un tutorial guiado.
+También tiene pestañas de **geología** (IGME), **clima** (normales de AEMET 1991-2020), **agua** (ríos, afluentes, caudales y embalses), **historia** (de los castros a la minería, sobre un mapa antiguo), **Camino de Santiago** (etapas, perfiles y albergues del IGN) y **protección** (espacios naturales, Red Natura 2000, reservas de la biosfera y Bienes de Interés Cultural), además de un tutorial guiado.
 
 | | |
 |---|---|
@@ -39,6 +39,9 @@ Todos los datos proceden de fuentes oficiales españolas o europeas (Copernicus)
 | Geología | IGME-CSIC · MAGNA 1:50.000 (descripción y tipo de roca), Mapa Geológico de España 1:1.000.000 (edad, con los colores de la Comisión Internacional de Estratigrafía), Mapa Hidrogeológico 1:200.000 (permeabilidad) e Inventario Español de Lugares de Interés Geológico |
 | Mapa histórico | Selección divulgativa de sitios y épocas (recursos/historia.json); calzadas romanas de Itiner-e 2024 (Zenodo, CC BY 4.0); labores de oro, minas de carbón y escombreras del IGME-CSIC; castillos, monasterios y yacimientos de Wikidata |
 | Camino de Santiago | IGN · Caminos de Santiago en Europa (etapas y albergues, nco.ign.es); perfil y desnivel calculados con el MDT |
+| Espacios naturales, Red Natura 2000 | Junta de Castilla y León · Red de Espacios Naturales (REN, con el Parque Nacional de Picos de Europa) y Red Natura 2000 (ZEC y ZEPA), datos abiertos de IDECyL (`opendata.jcyl.es`); fichas en patrimonionatural.org y en el formulario Natura 2000 de la Agencia Europea de Medio Ambiente |
+| Reservas de la Biosfera | MITECO-OAPN · límites y zonificación de las Reservas de la Biosfera españolas (Banco de Datos de la Naturaleza) |
+| Bienes de Interés Cultural | Junta de Castilla y León · BIC inmuebles declarados (recintos), datos abiertos de IDECyL; ficha de cada bien en el portal de Patrimonio Cultural |
 
 ## Como app en el móvil
 
@@ -85,6 +88,8 @@ python3 scripts/geologia.py        # tipo de roca, edad, permeabilidad y lugares
 python3 scripts/lugares.py         # lugares de interés de recursos/lugares.json, situados con el Nomenclátor del IGN o Wikidata
 python3 scripts/historia.py        # mapa histórico: sitios de recursos/historia.json, calzadas (Itiner-e), oro y carbón (IGME), Wikidata
 python3 scripts/camino.py          # Caminos de Santiago: etapas y albergues del IGN, perfiles con el MDT -> web/data/camino.json
+scripts/descargar_proteccion.sh    # figuras de protección (Junta de CyL y MITECO) -> raw/proteccion/
+Rscript scripts/proteccion.R       # espacios naturales, Red Natura, reservas de la biosfera y BIC -> web/data/proteccion.json (paquetes sf y jsonlite)
 ./abrir_visor.sh                  # sirve web/ en http://127.0.0.1:8800 y abre el navegador (--parar para detenerlo)
 ```
 
@@ -114,6 +119,7 @@ R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 202
 scripts/clima_aemet.py       normales 1991-2020 de AEMET (temperaturas, precipitación, heladas, días de calor) ajustadas a la altitud
 scripts/lugares.py           sitúa los lugares de interés (recursos/lugares.json): Nomenclátor del IGN, Wikidata o su pueblo
 scripts/camino.py            caminos de Santiago por la provincia: etapas, perfiles y albergues (IGN)
+scripts/descargar_proteccion.sh, scripts/proteccion.R   figuras de protección: espacios naturales, Red Natura 2000, biosfera y BIC
 scripts/historia.py          mapa histórico por épocas (castros, Roma, Reino de León, minería del carbón)
 scripts/geologia.py          tipo de roca, edad de las rocas, permeabilidad y lugares de interés geológico (IGME-CSIC)
 scripts/rios_red.py          árbol de afluentes, caudal medio estimado por tramo, estaciones de aforo, embalses y cuencas aproximadas
