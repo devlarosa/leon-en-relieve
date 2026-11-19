@@ -176,6 +176,22 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
   text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px rgba(255,255,255,.9); }
 .lbl.prot small { display: block; font-family: var(--font-ui); font-weight: 600; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; opacity: .75; }
 .lbl.prot:hover { text-decoration: underline; text-underline-offset: 3px; }
+.lbl.fuego { pointer-events: auto; cursor: pointer; font-family: var(--font-ui); font-weight: 800; font-size: 12px; color: #5a1a08;
+  text-shadow: 0 0 3px #fff6ec, 0 0 3px #fff6ec, 0 0 6px rgba(255,246,236,.95); }
+.lbl.fuego small { font-weight: 600; font-size: 10.5px; margin-left: 4px; color: #8a3a12; }
+.lbl.fuego .ic { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #d9480f; border: 1.5px solid #fff3e6; }
+.lbl.fuego:hover { text-decoration: underline; text-underline-offset: 2px; }
+.inc-anios { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 3px; align-items: end; height: 92px; padding: 0 6px; }
+.inc-anios button { font: inherit; border: 0; background: none; padding: 0; cursor: pointer; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; color: var(--ink-soft); }
+.inc-anios button i { display: block; width: 100%; min-height: 2px; border-radius: 3px 3px 0 0; background: #e2a07a; }
+.inc-anios button small { font-size: 10px; margin-top: 3px; }
+.inc-anios button[aria-pressed="true"] i { background: #c2410c; }
+.inc-anios button[aria-pressed="true"] small { color: var(--ink); font-weight: 700; }
+.inc-anios button.todos { color: var(--ink-soft); grid-column: span 2; }
+.inc-anios button.todos small { border: 1px solid var(--line); border-radius: 999px; padding: 2px 6px; }
+.inc-anios button.todos[aria-pressed="true"] small { background: #c2410c; color: #fff; border-color: #c2410c; }
+.inc-cub { display: flex; height: 12px; border-radius: 3px; overflow: hidden; margin: 4px 0 2px; }
+.inc-cub i { display: block; height: 100%; }
 .lbl.alb { pointer-events: auto; cursor: pointer; font-family: var(--font-ui); font-weight: 700; font-size: 11px; color: #7b241c; }
 .lbl.alb .ic { display: inline-block; width: 10px; height: 10px; margin-right: 3px; vertical-align: -1px;
   background: radial-gradient(circle at 50% 100%, #fff 0 18%, transparent 19%), conic-gradient(from 230deg at 50% 100%, #e6a817 0 80deg, transparent 80deg); border-radius: 50% 50% 0 0; }
@@ -503,6 +519,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <button class="cat-b" role="tab" id="tab-historia" data-cat="historia" aria-selected="false" aria-controls="cat-historia"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6M9 11h4"/></svg>Historia</button>
     <button class="cat-b" role="tab" id="tab-camino" data-cat="camino" aria-selected="false" aria-controls="cat-camino"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 C7 20 3 15.5 3 10.5 C3 7 5 4 8 4 C9.6 4 11 5 12 6.4 C13 5 14.4 4 16 4 C19 4 21 7 21 10.5 C21 15.5 17 20 12 20Z"/><path d="M12 20 V7 M12 20 L7 6 M12 20 L17 6 M12 20 L4.5 9 M12 20 L19.5 9"/></svg>Camino</button>
     <button class="cat-b" role="tab" id="tab-proteccion" data-cat="proteccion" aria-selected="false" aria-controls="cat-proteccion"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 L19.5 5.6 V11.2 C19.5 15.8 16.4 19.4 12 21.2 C7.6 19.4 4.5 15.8 4.5 11.2 V5.6 Z"/><path d="M8.6 12.2 L11 14.5 L15.6 9.6"/></svg>Protección</button>
+    <button class="cat-b" role="tab" id="tab-incendios" data-cat="incendios" aria-selected="false" aria-controls="cat-incendios"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.2 C7.8 21.2 5 18.4 5 14.6 C5 10.6 8.4 8.6 9.2 4.6 C11.6 6.4 12.4 8.6 12.2 10.6 C13.4 9.8 14.2 8.6 14.4 7.2 C17.2 9.4 19 12 19 14.8 C19 18.4 16.2 21.2 12 21.2 Z"/><path d="M12 21.2 C10.2 21.2 9 19.9 9 18.2 C9 16.3 10.6 15.5 11.2 13.6 C12.9 14.7 15 16.1 15 18.2 C15 19.9 13.8 21.2 12 21.2 Z"/></svg>Incendios</button>
     <button class="cat-b" role="tab" id="tab-escena" data-cat="escena" aria-selected="false" aria-controls="cat-escena"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>Escena</button>
   </nav>
   <label class="layer enfoque"><input type="checkbox" id="l-enfoque" checked><span class="sw"></span><span class="name">Enfocar en esta categoría<span class="note" id="enfoque-note">Oculta lo que no ayuda a leer estos datos</span></span></label>
@@ -680,6 +697,23 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
       <div class="lista-st" id="bic-lista"></div>
     </div>
     <p class="spark-note" style="padding: 0 6px">Toca el mapa para ver qué figuras protegen ese punto. Datos de la Junta de Castilla y León (Red de Espacios Naturales, Red Natura 2000 y BIC) y del MITECO (Reservas de la Biosfera).</p>
+  </section>
+  <section class="cat" id="cat-incendios" role="tabpanel" aria-labelledby="tab-incendios" hidden>
+    <div><p class="group-title">Superficie quemada en León, por año</p>
+      <div id="inc-anios" class="inc-anios" role="group" aria-label="Año"></div>
+      <p class="spark-note" id="inc-resumen" style="padding: 4px 8px 0"></p>
+    </div>
+    <div id="inc-verano">
+      <div class="slider"><div class="row"><label for="inc-dia">Día a día</label><output id="inc-dia-o">Todo el año</output></div>
+        <div style="display:flex;gap:8px;align-items:center"><button class="play" id="inc-play" aria-pressed="false" aria-label="Reproducir el verano día a día">▶</button>
+        <input type="range" id="inc-dia" min="0" max="153" step="1" value="153" aria-label="Día" style="flex:1"></div></div>
+      <p class="spark-note" style="padding: 0 8px">Del 1 de junio al 31 de octubre: en naranja, los incendios activos ese día; en carbón, los ya apagados.</p>
+    </div>
+    <div><p class="group-title" id="inc-lista-tit">Incendios</p>
+      <div class="layers"><label class="layer"><input type="checkbox" id="l-incgif"><span class="sw"></span><span class="name">Solo grandes incendios<span class="note">500 ha o más</span></span></label></div>
+      <div class="lista-st" id="inc-lista"><p class="spark-note">Cargando…</p></div>
+    </div>
+    <p class="spark-note" style="padding: 0 6px">Perímetros cartografiados por satélite por EFFIS (Copernicus, Comisión Europea), de unas 30 ha en adelante. Las cifras oficiales de la Junta pueden diferir algo. Toca el mapa para ver qué ardió en ese lugar.</p>
   </section>
   <section class="cat" id="cat-escena" role="tabpanel" aria-labelledby="tab-escena" hidden>
     <button class="tool-btn" id="tour-abrir-2">▶ Tutorial guiado<small>Dos minutos para aprender a usar el mapa</small></button>
@@ -1031,9 +1065,11 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
 let aspAnt = false;   // aspecto de mapa antiguo (Historia y Camino)
+// incendios (scripts/incendios.R): anio = año elegido (0 = todos); dia = día del verano (null = todo el año)
+const INC = { on: false, listo: false, cargando: null, J: null, anio: 2025, dia: null, sel: null, play: null };
 // figuras de protección (scripts/proteccion.R): modo = qué espacios se dibujan; sel = el elegido; cats = categorías de BIC visibles
 const PROT = { on: false, listo: false, cargando: null, J: null, modo: "espacios", sel: null, cats: new Set(), busca: "" };
-const layers = { bic: true, przon: false, camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+const layers = { incgif: false, bic: true, przon: false, camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
@@ -1063,6 +1099,7 @@ function drawOverlay() {
   if (layers.comcolor) pintarComarcas();
   if (layers.cucolor && RIO) pintarCuencas();
   if (PROT.on && PROT.listo) dibujarProteccion();
+  if (INC.on && INC.listo) dibujarIncendios();
   if (CAM.on && CAM.listo) dibujarCaminos();
   if (geol.modo && geol.listo) pintarGeo();
   ov.lineJoin = "round"; ov.lineCap = "round";
@@ -2745,7 +2782,7 @@ function updateLabels() {
   for (const L of labels) {
     const k0 = L.kind.split(" ")[0];
     let show = k0 === "mon" ? layers.mon : k0 === "sierra" ? layers.sierras : k0 === "valle" ? layers.valles : k0 === "puerto" ? layers.puertos :
-      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo && catAct === "geologia" : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : L.kind === "alb" ? layers.alb && CAM.on : L.kind === "bic" ? PROT.on && layers.bic && PROT.cats.has(L.cat) : L.kind === "prot" ? PROT.on && L.grupo === PROT.modo : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
+      k0 === "st" ? layers.est && layers.rios : L.kind === "fav" ? layers.fav : L.kind === "comarca" ? layers.comarcas || layers.comcolor : L.kind === "cuenca" ? layers.cucolor && layers.rios : L.kind === "lig" ? layers.lig && geol.listo && catAct === "geologia" : L.kind === "lugar" ? layers.lugares && LUG.listo && LUG.cats.has(L.cat) : L.kind === "alb" ? layers.alb && CAM.on : L.kind === "bic" ? PROT.on && layers.bic && PROT.cats.has(L.cat) : L.kind === "prot" ? PROT.on && L.grupo === PROT.modo : L.kind === "fuego" ? INC.on && fuegoVisible(L.f) && L.f.ha >= 500 : (k0 === "peak" ? layers.picos : L.kind === "river" || L.kind === "lake" ? (L.kind === "river" ? layers.rios : layers.aguas) : layers.pob);
     if (HIST.antiguo) show = ["hist", "histx", "pueblo", "deco"].includes(k0) ? histVisible(L) : (k0 === "peak" && L.kind.includes("top")) || k0 === "river" ? show : false;
     else if (["hist", "histx", "pueblo", "deco"].includes(k0)) show = false;
     else if (CAM.on && CAM.listo && layers.camfoco && L.kind !== "alb")   // con un camino elegido, solo sus pueblos
@@ -2921,6 +2958,7 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   if (miradorArmed || mirador) { if (p) { setArmed(true); openMirador(p.mx, p.my, null, 0); } return; }
   if (p && geol.modo && geol.listo && catAct === "geologia" && inProv(p.mx, p.my)) { showGeo(p.mx, p.my); return; }
   if (p && PROT.on && PROT.listo && inProv(p.mx, p.my)) { showProtPunto(p.mx, p.my); return; }
+  if (p && INC.on && INC.listo && inProv(p.mx, p.my)) { showIncPunto(p.mx, p.my); return; }
   if (p && CAM.on) { const ei = etapaCerca(p.mx, p.my, tolM(14)); if (ei >= 0) { showEtapa(ei, false); return; } }
   if (p && RIO && layers.rios) { const c = rioCerca(p.mx, p.my, tolM(14)); if (c) { selectRio(RIO.tramos[c.t].r, false); return; } }
   if (rioSel >= 0 || gota) closeHcard();
@@ -3196,9 +3234,11 @@ const ENFOQUE = {
     nota: "Mapa antiguo: oculta el paisaje actual" },
   geologia: { ocultar: ["l-arboles", "l-pueblos", "l-mon", "l-carr", "l-cob", "l-nubes"], calma: 0.45, nota: "Oculta árboles, pueblos, carreteras y cubierta del suelo" }
 };
+ENFOQUE.incendios = { ocultar: ["l-arboles", "l-cob", "l-carr", "l-lugares", "l-est", "l-lig", "l-mon", "l-nubes", "l-sierras", "l-valles", "l-puertos"], calma: 0.55,
+  nota: "Oculta árboles, carreteras y otros puntos de interés" };
 ENFOQUE.proteccion = { ocultar: ["l-arboles", "l-cob", "l-carr", "l-mun", "l-lugares", "l-est", "l-lig", "l-mon", "l-nubes", "l-sierras", "l-valles", "l-puertos"], calma: 0.7,
   nota: "Oculta árboles, carreteras, límites municipales y otros puntos de interés" };
-const CAT_ENFOQUE = { proteccion: "proteccion", camino: "camino", historia: "historia", mapa: null, relieve: "relieve", geologia: "geologia", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
+const CAT_ENFOQUE = { incendios: "incendios", proteccion: "proteccion", camino: "camino", historia: "historia", mapa: null, relieve: "relieve", geologia: "geologia", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
 const TODAS_OCULTABLES = [...new Set(Object.values(ENFOQUE).flatMap(e => e.ocultar))];
 let enfoqueAct = null, enfoqueGuardado = null, catAct = "mapa";
 function setEnfoque(f) {
@@ -3234,6 +3274,7 @@ function setCat(k, guardar) {
   setAntiguo(k === "historia");
   setCamino(k === "camino");   // la primera vez, el clima se enciende solo
   setProteccion(k === "proteccion");
+  setIncendios(k === "incendios");
   $("panel").scrollTop = 0;
   if (guardar) { try { localStorage.setItem("leon3d-cat", k); } catch (e) { /* sin almacenamiento */ } }
 }
@@ -3246,13 +3287,14 @@ document.querySelector(".cats").addEventListener("keydown", (e) => {   // flecha
 });
 $("l-enfoque").addEventListener("change", () => setEnfoque(!$("hcard").hidden ? "agua" : CAT_ENFOQUE[catAct]));
 function showHcard(html, kind, ref) {
-  if (!["geo", "lig", "loc", "punto", "lugar", "hist", "etapa", "alb", "prot", "protp", "bic"].includes(kind)) modoAgua(true);
+  if (!["geo", "lig", "loc", "punto", "lugar", "hist", "etapa", "alb", "prot", "protp", "bic", "fuego", "fuegop"].includes(kind)) modoAgua(true);
   $("info").hidden = true; $("mirador").hidden = true; selected = null; updateMunState();
   $("hcard-body").innerHTML = html; $("hcard").hidden = false; $("hcard").scrollTop = 0; hcardKind = kind; hcardRef = ref;
 }
 function closeHcard() {
   if (hcardKind === "etapa") { CAM.etapa = null; drawOverlay(); }
-  if (!["hist", "etapa", "alb", "prot", "protp", "bic"].includes(hcardKind)) modoAgua(false);
+  if (!["hist", "etapa", "alb", "prot", "protp", "bic", "fuego", "fuegop"].includes(hcardKind)) modoAgua(false);
+  if (hcardKind === "fuego") { INC.sel = null; listaInc(); }
   if (hcardKind === "prot") { PROT.sel = null; listaProt(); }
   $("hcard").hidden = true; hcardKind = null; rioSel = -1; rioSet = null; cuencaCv = null; $("cuenca-sel").value = "";
   if (gota) { gota = null; gotaMesh.visible = false; }
@@ -3889,6 +3931,135 @@ const PASOS_HIST = [
     f: async (tk) => { tour.objetivo = null; $("tour-sig").textContent = "Terminar"; } }
 ];
 $("hist-guia").onclick = () => empezarTour(PASOS_HIST, { titulo: "Historia", sinMano: true, arriba: true, alEmpezar: () => { setCat("historia"); cerrarPanel(); }, alSalir: () => { closeHcard(); } });
+// ---------------------------------------------------------------- grandes incendios (scripts/incendios.R, EFFIS-Copernicus)
+const DIA0 = (a) => Date.UTC(a, 5, 1);           // el «día a día» va del 1 de junio al 31 de octubre
+const diaDe = (f, a) => Math.round((Date.parse(f + "T00:00:00Z") - DIA0(a)) / 864e5);
+const fechaDia = (a, d) => { const t = new Date(DIA0(a) + d * 864e5); return `${t.getUTCDate()} de ${MESES[t.getUTCMonth()]}`; };
+const COLOR_CUB = { frondosas: ["Frondosas", "#3f7d3a"], coniferas: ["Coníferas", "#1f5b43"], mixto: ["Bosque mixto", "#5b8a4a"], matorral: ["Matorral", "#b0a24a"],
+  pastos_y_roca: ["Pastos, brezales y roca", "#c9b98a"], agricola: ["Cultivos", "#e0c068"], urbano: ["Zonas urbanas", "#9a8a8a"], otros: ["Otros", "#cccccc"] };
+function fuegoVisible(f) {
+  if (INC.anio && f.anio !== INC.anio) return false;
+  if (layers.incgif && f.ha < 500) return false;
+  if (INC.anio && INC.dia != null) return diaDe(f.ini, f.anio) <= INC.dia;
+  return true;
+}
+function fuegoActivo(f) { if (!INC.anio || INC.dia == null) return false; const d0 = diaDe(f.ini, f.anio), d1 = diaDe(f.fin || f.ini, f.anio); return INC.dia >= d0 && INC.dia <= d1; }
+function nombreFuego(f) { return f.mun + (f.prov && f.prov !== "León" ? ` (${f.prov})` : ""); }
+function dibujarIncendios() {
+  const J = INC.J, sel = INC.sel;
+  ov.save(); ov.lineJoin = "round";
+  // de más antiguo a más reciente: lo último quemado queda encima
+  for (const f of J.incendios.filter(fuegoVisible).sort((a, b) => a.ini.localeCompare(b.ini))) {
+    const act = fuegoActivo(f), elegido = sel === f, apagado = sel && !elegido;
+    const viejo = !INC.anio ? Math.max(0, Math.min(1, (2026 - f.anio) / 10)) : 0;   // en «todos los años», lo antiguo más claro
+    ringPath(ov, f.g);
+    ov.fillStyle = act ? "rgba(240, 101, 22, 0.78)" : `rgba(${Math.round(52 + viejo * 90)}, ${Math.round(34 + viejo * 70)}, ${Math.round(28 + viejo * 60)}, ${apagado ? 0.25 : elegido ? 0.85 : 0.72 - viejo * 0.3})`;
+    ov.fill("evenodd");
+    ov.strokeStyle = act ? "rgba(255, 214, 102, 0.95)" : `rgba(217, 72, 15, ${apagado ? 0.35 : 0.95})`; ov.lineWidth = (elegido ? 6 : act ? 5 : 3.2) * px1; ov.stroke();
+  }
+  ov.restore();
+}
+function cubiertaHtml(c) {
+  const k = Object.keys(c || {}).filter(x => c[x] > 0).sort((a, b) => c[b] - c[a]); if (!k.length) return "";
+  return `<div class="inc-cub">${k.map(x => `<i style="width:${c[x]}%;background:${(COLOR_CUB[x] || ["", "#ccc"])[1]}" title="${(COLOR_CUB[x] || [x])[0]}: ${c[x]} %"></i>`).join("")}</div>
+    <p style="margin:0;font-size:12px;color:var(--ink-soft);line-height:1.5">${k.map(x => `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${(COLOR_CUB[x] || ["", "#ccc"])[1]};margin-right:3px"></span>${(COLOR_CUB[x] || [x])[0]} ${c[x]} %`).join(" · ")}</p>`;
+}
+function showFuego(f, volar) {
+  INC.sel = f; listaInc();
+  const dias = f.fin ? Math.round((Date.parse(f.fin) - Date.parse(f.ini)) / 864e5) + 1 : 1;
+  const [a, m, d] = f.ini.split("-"), fin = f.fin && f.fin !== f.ini ? f.fin.split("-") : null;
+  const fechas = fin ? (fin[1] === m ? `Del ${+d} al ${+fin[2]} de ${MESES[+m - 1]} de ${a}` : `Del ${+d} de ${MESES[+m - 1]} al ${+fin[2]} de ${MESES[+fin[1] - 1]} de ${a}`) : `${+d} de ${MESES[+m - 1]} de ${a}`;
+  const h = `<h2>Incendio de ${esc(nombreFuego(f))}</h2><p class="cap">${f.ha >= 500 ? "Gran incendio forestal · " : ""}${fechas}${dias > 1 ? ` (${dias} días)` : ""}</p>
+    <dl><dt>Superficie quemada</dt><dd>${fmtHa(f.ha)}${f.haLeon < f.ha * 0.98 ? `<br><small>${fmtHa(f.haLeon)} en la provincia de León</small>` : ""}</dd>
+    ${f.natura ? `<dt>En Red Natura 2000</dt><dd>${f.natura} %</dd>` : ""}</dl>
+    ${Object.keys(f.cub || {}).length ? `<p class="group-title" style="margin-top:8px">Qué ardió</p>${cubiertaHtml(f.cub)}` : ""}
+    ${f.locs.length ? `<p class="group-title" style="margin-top:10px">Pueblos dentro o junto al perímetro</p><p style="margin:0;font-size:13px;line-height:1.5">${f.locs.map(esc).join(", ")}</p>` : ""}
+    <div class="i-acts"><button class="i-act" data-orb="${f.c[0]},${f.c[1]}">Sobrevolar</button></div>
+    <p class="hint">Perímetro y datos de EFFIS (Copernicus): el municipio es donde EFFIS sitúa el incendio; la cubierta quemada se calcula con CORINE Land Cover. «Junto al perímetro»: a menos de 300 m.</p>`;
+  showHcard(h, "fuego", -1);
+  if (volar) { const b = cajaAnillos(f.g); flyToPoint((b[0] + b[2]) / 2, (b[1] + b[3]) / 2, clampN(Math.max(b[2] - b[0], b[3] - b[1]) / 1000 * 1.7, 6, 120)); }
+  drawOverlay();
+}
+function showIncPunto(mx, my) {
+  const fs = INC.J.incendios.filter(f => { f.bb = f.bb || cajaAnillos(f.g); return mx >= f.bb[0] && mx <= f.bb[2] && my >= f.bb[1] && my <= f.bb[3] && pointInRings(mx, my, f.g); })
+    .sort((a, b) => b.ini.localeCompare(a.ini));
+  INC.punto = fs;
+  const m = munAt(mx, my);
+  const h = `<h2>${fs.length ? (fs.length === 1 ? "Aquí ardió una vez" : `Aquí ardió ${fs.length} veces`) : "Sin incendios registrados"}</h2><p class="cap">${m ? esc(m.n) + " · " : ""}${fmt.format(Math.round(heightAt(mx, my)))} m de altitud</p>
+    ${fs.length ? `<div class="lista-st" style="margin-top:6px">${fs.map((f, i) => `<button data-fp="${i}"><span><span class="ic" style="background:#c2410c"></span>${f.anio} · ${esc(nombreFuego(f))}</span><small>${fmt.format(f.ha)} ha</small></button>`).join("")}</div>`
+      : `<p class="hint">EFFIS no tiene cartografiado ningún incendio de 30 ha o más en este lugar desde 2016.</p>`}`;
+  showHcard(h, "fuegop", -1);
+}
+$("hcard").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-fp]"); if (!b || hcardKind !== "fuegop") return;
+  const f = INC.punto[+b.dataset.fp]; if (!f) return;
+  if (INC.anio && INC.anio !== f.anio) setAnioInc(f.anio);
+  showFuego(f, false);
+});
+function listaInc() {
+  if (!INC.J) return;
+  const J = INC.J, s = J.anios.find(x => x.anio === INC.anio), max = Math.max(...J.anios.map(x => x.ha));
+  $("inc-anios").innerHTML = J.anios.map(x => `<button data-ia="${x.anio}" aria-pressed="${INC.anio === x.anio}" title="${x.anio}: ${fmt.format(x.ha)} ha en ${x.n} incendios"><i style="height:${Math.max(2, Math.round(Math.sqrt(x.ha / max) * 70))}px"></i><small>${String(x.anio).slice(2)}</small></button>`).join("")
+    + `<button class="todos" data-ia="0" aria-pressed="${!INC.anio}" title="Todos los años"><small>Todos</small></button>`;
+  const enCurso = INC.anio === new Date().getFullYear() ? ` (año en curso, datos hasta el ${J.actualizado.split("-").reverse().join("/")})` : "";
+  $("inc-resumen").innerHTML = s ? `En <b>${s.anio}</b>${enCurso} ardieron <b>${fmt.format(s.ha)} ha</b> en León en ${s.n} incendios cartografiados; <b>${s.gif}</b> ${s.gif === 1 ? "superó" : "superaron"} las 500 ha.`
+    : `Desde ${J.anios[0].anio}: <b>${fmt.format(J.anios.reduce((t, x) => t + x.ha, 0))} ha</b> quemadas en León en ${fmt.format(J.anios.reduce((t, x) => t + x.n, 0))} incendios. Más oscuros, los más recientes.`;
+  $("inc-verano").hidden = !INC.anio;
+  const fs = J.incendios.filter(f => (!INC.anio || f.anio === INC.anio) && (!layers.incgif || f.ha >= 500));
+  $("inc-lista-tit").textContent = INC.anio ? `Incendios de ${INC.anio}` : "Mayores incendios desde " + J.anios[0].anio;
+  $("inc-lista").innerHTML = fs.slice(0, INC.anio ? 80 : 40).map(f => `<button data-fi="${J.incendios.indexOf(f)}" aria-pressed="${INC.sel === f}"><span><span class="ic" style="background:${f.ha >= 500 ? "#c2410c" : "#e2a07a"}"></span>${!INC.anio ? f.anio + " · " : ""}${esc(nombreFuego(f))}</span><small>${f.ini.slice(8, 10)}/${f.ini.slice(5, 7)} · ${fmt.format(f.haLeon)} ha</small></button>`).join("")
+    || `<p class="spark-note">No hay incendios con este filtro.</p>`;
+}
+function setAnioInc(a) {
+  INC.anio = a; INC.sel = null; pararIncPlay(); INC.dia = null; $("inc-dia").value = $("inc-dia").max; $("inc-dia-o").textContent = "Todo el año";
+  if (["fuego"].includes(hcardKind)) closeHcard();
+  listaInc(); drawOverlay(); needsRender = true;
+}
+function setDiaInc(d) {
+  const max = +$("inc-dia").max;
+  INC.dia = d >= max ? null : d; $("inc-dia").value = d;
+  $("inc-dia-o").textContent = INC.dia == null ? "Todo el año" : fechaDia(INC.anio, INC.dia);
+  drawOverlay(); needsRender = true;
+}
+function pararIncPlay() { clearInterval(INC.play); INC.play = null; $("inc-play").setAttribute("aria-pressed", "false"); $("inc-play").textContent = "▶"; }
+$("inc-play").onclick = () => {
+  if (INC.play) return pararIncPlay();
+  if (INC.dia == null || INC.dia >= +$("inc-dia").max) setDiaInc(0);
+  $("inc-play").setAttribute("aria-pressed", "true"); $("inc-play").textContent = "❚❚";
+  INC.play = setInterval(() => { const d = (INC.dia ?? 0) + 1; setDiaInc(d); if (d >= +$("inc-dia").max) pararIncPlay(); }, reduceMotion ? 400 : 160);
+};
+$("inc-dia").addEventListener("input", (e) => { pararIncPlay(); setDiaInc(+e.target.value); });
+$("inc-anios").addEventListener("click", (e) => { const b = e.target.closest("[data-ia]"); if (b) setAnioInc(+b.dataset.ia); });
+$("inc-lista").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-fi]"); if (!b) return;
+  showFuego(INC.J.incendios[+b.dataset.fi], true);
+  if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
+});
+bind("l-incgif", "incgif", () => { listaInc(); drawOverlay(); needsRender = true; });
+async function cargarIncendios() {
+  if (INC.listo) return true;
+  if (!INC.cargando) INC.cargando = (async () => {
+    try { INC.J = await fetch("data/incendios.json").then(r => { if (!r.ok) throw new Error("incendios.json"); return r.json(); }); }
+    catch (e) { $("inc-lista").innerHTML = `<p class="spark-note">No se pudieron cargar los incendios (${esc(e.message)}).</p>`; INC.cargando = null; return false; }
+    for (const f of INC.J.incendios) if (f.ha >= 500) {
+      addLabel("fuego", `<span class="ic"></span>${esc(nombreFuego(f))}<small>${fmt.format(f.ha)} ha</small>`, f.c[0], f.c[1], 650 + Math.log10(f.ha) * 60, f.ha >= 5000 ? 0 : 90);
+      const L = labels[labels.length - 1]; L.f = f; L.el.addEventListener("click", () => showFuego(f, false));
+    }
+    labels.sort((a, b) => b.prio - a.prio);
+    if (!INC.J.anios.some(x => x.anio === INC.anio)) INC.anio = INC.J.anios[INC.J.anios.length - 1].anio;
+    $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(INC.J.fuente) + "</li>");
+    INC.listo = true; listaInc();
+    return true;
+  })();
+  return INC.cargando;
+}
+async function setIncendios(on) {
+  if (on && !(await cargarIncendios())) return;
+  if (on === INC.on) return;
+  INC.on = on;
+  if (!on) { pararIncPlay(); INC.sel = null; if (["fuego", "fuegop"].includes(hcardKind)) closeHcard(); }
+  drawOverlay(); needsRender = true;
+}
 // ---------------------------------------------------------------- figuras de protección (scripts/proteccion.R)
 const COLOR_FIG = { PNAC: "#0b6b3a", PREG: "#1f9e5a", PNAT: "#5fb336", MNAT: "#e07a1f", ZPP: "#f2b36b", RNAT: "#2a9d8f", PPRT: "#8e6bbf",
   ZEC: "#1f78c8", ZEPA: "#8e44ad", MAB: "#d1495b" };
@@ -4492,7 +4663,7 @@ const PASOS_TUT = [
     f: async (tk) => { tour.objetivo = $("info"); await clic($("i-more"), tk); await espera(2200, tk); await clic($("i-more"), tk); } },
   { t: "Sobrevolar como un dron", x: "«Sobrevolar» da vueltas alrededor del municipio, como un dron. Toca el mapa para parar.",
     f: async (tk) => { tour.objetivo = $("i-orbit"); await clic($("i-orbit"), tk); tour.objetivo = null; await espera(4500, tk); if (orbit) stopOrbit(); showInfo(null); } },
-  { t: "Las categorías", x: "El panel se organiza por temas: Mapa, Relieve, Geología, Población, Clima, Agua, Historia, Camino, Protección y Escena. Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
+  { t: "Las categorías", x: "El panel se organiza por temas: Mapa, Relieve, Geología, Población, Clima, Agua, Historia, Camino, Protección, Incendios y Escena. Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
     f: async (tk) => { abrirPanel(); await espera(400, tk); tour.objetivo = document.querySelector(".cats"); $("panel").scrollTop = 0; await espera(1200, tk); } },
   { t: "Nivel del agua", x: "En Relieve puedes inundar el terreno hasta una altitud y ver qué cotas sobresalen. Aquí, todo lo que queda por debajo de 1.000 m.",
     f: async (tk) => {
@@ -4552,6 +4723,13 @@ const PASOS_TUT = [
       tour.objetivo = verEn($("pr-lista")); await espera(900, tk);
       const b = [...$("pr-lista").querySelectorAll("[data-pi]")].find(x => /Picos/.test(x.textContent)) || $("pr-lista").querySelector("[data-pi]");
       if (b) { await clic(b, tk); if (isPhone) cerrarPanel(); await espera(2200, tk); tour.objetivo = $("hcard"); await espera(1500, tk); }
+    } },
+  { t: "Grandes incendios", x: "En Incendios ves lo que ha ardido cada año desde 2016, con los perímetros de Copernicus. Con ▶ se reproduce el verano día a día: en naranja, lo que estaba ardiendo.",
+    f: async (tk) => {
+      if (!$("hcard").hidden) closeHcard(); abrirPanel(); await clic($("tab-incendios"), tk); await espera(1800, tk);
+      if (!INC.listo) return;
+      if (isPhone) cerrarPanel();
+      tweenTo(HOME, 900); tour.objetivo = $("inc-play"); await clic($("inc-play"), tk); await espera(6500, tk); if (INC.play) pararIncPlay();
     } },
   { t: "Luz y estación", x: "En Escena eliges el mes y la hora: el sol, la nieve y los colores del paisaje cambian con ellos.",
     f: async (tk) => {
