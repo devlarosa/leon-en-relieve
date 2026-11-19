@@ -78,6 +78,7 @@ Requisitos: `bash`, `curl`, `python3` con `numpy`, `scipy` y `Pillow`, y R con l
 scripts/descargar_datos.sh        # descarga todo en raw/ (unos 300 MB; se puede relanzar)
 Rscript R/03_admin.R              # provincia y municipios en ETRS89 / UTM 30N
 Rscript R/10_preparar_web.R       # genera web/data/relieve.png y web/data/leon.json
+Rscript scripts/cumbres.R         # todas las cumbres con nombre del IGN (unas 3.000), con altitud y aislamiento -> web/data/cumbres.json
 Rscript R/11_rejilla_poblacion.R  # genera web/data/poblacion.png (Censo 2021 en celdas de 1 km²)
 Rscript R/12_cobertura_copernicus.R  # descarga CLC+ Backbone y genera web/data/cobertura.png
 scripts/descargar_clima_aemet.sh   # rejilla diaria de 5 km de AEMET, 1991-2020 (unos 800 MB)
@@ -117,6 +118,7 @@ scripts/ine_censos.py        población histórica por municipio (censos del INE
 scripts/ine_nomenclator.py   población de cada pueblo (Nomenclátor del INE)
 R/03_admin.R                 límites administrativos
 R/10_preparar_web.R          rejilla de alturas, recortes, simplificación y JSON para la web
+scripts/cumbres.R            todas las cumbres con nombre (las 150 principales van en leon.json; el resto aparece al acercarse)
 R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del visor
 R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 2021)
 scripts/clima_aemet.py       normales 1991-2020 de AEMET (temperaturas, precipitación, heladas, días de calor) ajustadas a la altitud

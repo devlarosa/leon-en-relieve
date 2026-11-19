@@ -82,6 +82,8 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
 .lbl.puerto .notch { display: inline-block; width: 9px; height: 9px; margin-right: 4px; border: 2px solid #5a4632; border-top: 0; border-right: 0;
   transform: rotate(-45deg) translate(1px, -2px); }
 .lbl.peak.top { font-size: 14.5px; }
+.lbl.peak.menor { font-size: 12px; font-weight: 600; }
+.lbl.peak.menor .tri { transform: scale(.85); }
 .lbl.peak, .lbl.vil, .lbl.town, .lbl.city, .lbl.fav, .lbl.sierra, .lbl.valle, .lbl.puerto { pointer-events: auto; cursor: pointer; }
 .lbl.sierra:hover, .lbl.valle:hover, .lbl.puerto:hover { text-decoration: underline; text-underline-offset: 3px; }
 .lbl.vil:hover, .lbl.town:hover, .lbl.city:hover, .lbl.fav:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -532,7 +534,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
   </div>
     <div>
     <label class="group-title" for="search">Buscar municipio o pueblo</label>
-    <input id="search" list="munlist" placeholder="Ej.: Riaño, Astorga…" autocomplete="off">
+    <input id="search" list="munlist" placeholder="Ej.: Riaño, Astorga, Teleno…" autocomplete="off">
     <datalist id="munlist"></datalist>
     </div>
     <div>
@@ -1065,6 +1067,7 @@ const munAt = (x, y) => data.municipios.find(m => x >= m.bb[0] && x <= m.bb[2] &
 const ovCv = document.createElement("canvas"); ovCv.width = TW; ovCv.height = TH;
 const ov = ovCv.getContext("2d");
 let aspAnt = false;   // aspecto de mapa antiguo (Historia y Camino)
+let CUMBRES = [];     // todas las cumbres con nombre del IGN (scripts/cumbres.R); data.picos son solo las 150 principales
 // incendios (scripts/incendios.R): anio = año elegido (0 = todos); dia = día del verano (null = todo el año)
 const INC = { on: false, listo: false, cargando: null, J: null, anio: 2025, dia: null, sel: null, play: null };
 // figuras de protección (scripts/proteccion.R): modo = qué espacios se dibujan; sel = el elegido; cats = categorías de BIC visibles
@@ -2392,7 +2395,7 @@ function resolverFav(clave) {
   const de = (lista) => lista.find(x => norm(nom0(x.n)) === q);
   let o = null;
   if (tipo === "localidad") { const L = locDeClave(nombre); if (L) o = { n: L.n, xy: L.e.xy, ref: L, mun: L.mun }; }
-  else if (tipo === "cumbre") { const p = de(data.picos); if (p) o = { n: nom0(p.n), xy: p.xy, ref: p, sub: fmt.format(p.e) + " m" }; }
+  else if (tipo === "cumbre") { const p = de(data.picos) || de(CUMBRES); if (p) o = { n: nom0(p.n), xy: p.xy, ref: p, sub: fmt.format(p.e) + " m" }; }
   else if (tipo === "puerto" || tipo === "sierra" || tipo === "valle") {
     const lista = (data.orografia || {})[tipo + (tipo === "valle" ? "s" : "s")] || [], p = de(lista);
     if (p) o = { n: nom0(p.n), xy: p.xy, ref: p, sub: p.e ? fmt.format(p.e) + " m" : "" };
@@ -2934,6 +2937,9 @@ $("search").addEventListener("change", (e) => {
   if (m) { showInfo(m); flyTo(m); cerrar(); return; }
   const L = LOCS_BUSCA.find(x => norm(etiquetaLoc(x)) === q) || LOCS.find(x => norm(x.n) === q);
   if (L) { showLocalidad(L, true); cerrar(); return; }
+  // cumbres: «Pico Teleno · cumbre, 2.169 m» (de la lista) o el nombre a secas
+  const pc = todasCumbres().find(p => norm(etiquetaCumbre(p)) === q) || todasCumbres().find(p => norm(nom0(p.n)) === q);
+  if (pc) { showPunto("cumbre", pc); flyToPoint(pc.xy[0], pc.xy[1], 9); cerrar(); return; }
   const m2 = data.municipios.find(x => norm(x.n).includes(q)) , L2 = LOCS.find(x => norm(x.n).includes(q));
   if (m2) { showInfo(m2); flyTo(m2); cerrar(); } else if (L2) { showLocalidad(L2, true); cerrar(); }
 });
@@ -3931,6 +3937,32 @@ const PASOS_HIST = [
     f: async (tk) => { tour.objetivo = null; $("tour-sig").textContent = "Terminar"; } }
 ];
 $("hist-guia").onclick = () => empezarTour(PASOS_HIST, { titulo: "Historia", sinMano: true, arriba: true, alEmpezar: () => { setCat("historia"); cerrarPanel(); }, alSalir: () => { closeHcard(); } });
+// ---------------------------------------------------------------- todas las cumbres con nombre (scripts/cumbres.R)
+const todasCumbres = () => data.picos.concat(CUMBRES);
+const etiquetaCumbre = (p) => `${nom0(p.n)} · cumbre, ${fmt.format(p.e)} m`;
+async function cargarCumbres() {
+  let J;
+  try { J = await fetch("data/cumbres.json").then(r => { if (!r.ok) throw new Error("cumbres.json"); return r.json(); }); }
+  catch (e) { return; }
+  // fuera las que ya están entre las 150 principales (a menos de 200 m)
+  CUMBRES = J.cumbres.filter(c => !data.picos.some(p => Math.abs(p.xy[0] - c.xy[0]) < 200 && Math.abs(p.xy[1] - c.xy[1]) < 200));
+  for (const c of CUMBRES) {
+    // las más aisladas (dominan su entorno) aparecen antes al acercarse; las demás, ya de cerca
+    const dist = c.iso >= 5 ? 70 : c.iso >= 2.5 ? 45 : c.iso >= 1.2 ? 30 : 18;
+    addLabel("peak menor", '<span class="tri"></span>' + esc(nom0(c.n)) + "<small>" + fmt.format(c.e) + " m</small>", c.xy[0], c.xy[1], 120 + c.e / 40 + Math.min(c.iso, 10) * 6, dist);
+    const L = labels[labels.length - 1];
+    L.el.addEventListener("click", () => {
+      if (miradorArmed || mirador) { setArmed(true); openMirador(c.xy[0], c.xy[1], nom0(c.n), c.e); }
+      else showPunto("cumbre", c);
+    });
+  }
+  labels.sort((a, b) => b.prio - a.prio);
+  const ops = todasCumbres().slice().sort((a, b) => b.e - a.e).map(p => `<option value="${esc(etiquetaCumbre(p))}"></option>`).join("");
+  $("munlist").insertAdjacentHTML("beforeend", ops);
+  $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(J.fuente) + "</li>");
+  if (DESTACADAS.some(k => /^cumbre:/.test(k))) rehacerFavs();
+  needsRender = true;
+}
 // ---------------------------------------------------------------- grandes incendios (scripts/incendios.R, EFFIS-Copernicus)
 const DIA0 = (a) => Date.UTC(a, 5, 1);           // el «día a día» va del 1 de junio al 31 de octubre
 const diaDe = (f, a) => Math.round((Date.parse(f + "T00:00:00Z") - DIA0(a)) / 864e5);
@@ -4391,6 +4423,7 @@ function etapaCerca(mx, my, tol) {
 }
 cargarLugares();
 cargarRios();
+cargarCumbres();
 setCat("mapa", false);   // siempre se abre con el paisaje completo
 // vista paisaje: todo como al abrir (árboles, pueblos, luz de la tarde, cámara inicial), sin capas de datos ni fichas
 const CAPAS_INICIO = { "l-fav": true, "l-mun": true, "l-comarcas": false, "l-carr": true, "l-pob": true, "l-entorno": false, "l-picos": true, "l-sierras": true,
