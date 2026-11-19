@@ -33,6 +33,7 @@ import threading
 import time
 import mimetypes
 import os
+import re
 import sys
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -308,11 +309,15 @@ class Visor(BaseHTTPRequestHandler):
         for x in (x.strip() for x in lista):
             if x.lower() not in vista:
                 vista.add(x.lower()); limpia.append(x)
-        destino = WEB / "data" / "destacados.json"
+        # cada zona guarda los suyos: /destacados?zona=picos -> web/data/picos/destacados.json (sin zona: León)
+        zona = (parse_qs(urlsplit(self.path).query).get("zona") or ["leon"])[0]
+        if not re.fullmatch(r"[a-z0-9-]{1,20}", zona) or not (WEB / "data" / zona / "zona.json").is_file():
+            return self.enviar(400, b"Zona desconocida\n", "text/plain; charset=utf-8", None, True)
+        destino = WEB / "data" / zona / "destacados.json"
         tmp = destino.with_suffix(".json.tmp")
         tmp.write_text(json.dumps(limpia, ensure_ascii=False), encoding="utf-8")
         os.replace(tmp, destino)
-        self.log_message("destacados guardados: %d", len(limpia))
+        self.log_message("destacados guardados (%s): %d", zona, len(limpia))
         self.enviar(200, json.dumps(limpia, ensure_ascii=False).encode(), "application/json; charset=utf-8", None, True)
 
     def enviar(self, estado, datos, tipo, etag=None, cuerpo=True, comprimir=False):

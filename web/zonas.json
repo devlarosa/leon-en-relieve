@@ -1,0 +1,196 @@
+{
+  "_nota": "Una ficha por zona. La leen el visor (web/index.html) y los scripts de datos (scripts/zona.py, R/zona.R). Los datos de cada zona van en raw/<id>/ y web/data/<id>/. «extension»: X0 Y0 X1 Y1 del mapa en EPSG:25830; «bbox»: lat_min, lon_min, lat_max, lon_max para pedir datos a los servicios (WFS, OGC API).",
+  "leon": {
+    "nombre": "León en relieve",
+    "corto": "León",
+    "sub": "La provincia en 3D con datos oficiales: relieve, población, clima y agua.",
+    "lugar": "la provincia",
+    "extension": [
+      164000,
+      4655000,
+      360000,
+      4790000
+    ],
+    "celda": 100,
+    "municipios": {
+      "provincia": "24"
+    },
+    "sol": [
+      42.6,
+      -5.57
+    ],
+    "exag": 2.5,
+    "malla": [
+      2,
+      3
+    ],
+    "capital": "24089",
+    "comarcas": {
+      "titulo": "Comarca agraria",
+      "todas": "Toda la provincia",
+      "capa": "Comarcas agrarias",
+      "capaNota": "Oficiales del MAPA",
+      "colorear": "Colorear todas las comarcas",
+      "colorearNota": "Cada comarca agraria de un color",
+      "ficha": "Comarca agraria",
+      "tradicional": "Tradicional",
+      "fichaLarga": "Comarca agraria del Ministerio de Agricultura (MAPA)"
+    },
+    "entorno": "Provincias vecinas",
+    "busca": "Municipio o pueblo: Riaño, Robledo de Fenar…",
+    "nivelAgua": [
+      300,
+      2600,
+      1000
+    ],
+    "tutorial": {
+      "agua": [
+        600,
+        1000,
+        "Aquí, todo lo que queda por debajo de 1.000 m."
+      ],
+      "rio": "Río Bernesga"
+    },
+    "carga": "leon",
+    "datos": [
+      "rios",
+      "clima",
+      "geologia",
+      "historia",
+      "camino",
+      "proteccion",
+      "incendios",
+      "lugares",
+      "cumbres",
+      "cobertura",
+      "poblacion"
+    ],
+    "bbox": [
+      41.95,
+      -7.15,
+      43.3,
+      -4.65
+    ]
+  },
+  "picos": {
+    "nombre": "Picos en relieve",
+    "corto": "Picos de Europa",
+    "sub": "Los Picos de Europa en 3D con datos oficiales: relieve, cumbres, pueblos y agua.",
+    "lugar": "la zona",
+    "extension": [
+      317000,
+      4767000,
+      381000,
+      4814000
+    ],
+    "celda": 30,
+    "municipios": {
+      "lista": {
+        "33003": "Amieva",
+        "33008": "Cabrales",
+        "33012": "Cangas de Onís",
+        "33043": "Onís",
+        "33046": "Peñamellera Alta",
+        "33047": "Peñamellera Baja",
+        "39015": "Camaleño",
+        "39022": "Cillorigo de Liébana",
+        "39088": "Tresviso",
+        "24106": "Oseja de Sajambre",
+        "24116": "Posada de Valdeón"
+      },
+      "margen": 3000,
+      "nota": "Los 11 municipios con territorio en el Parque Nacional de los Picos de Europa"
+    },
+    "sol": [
+      43.2,
+      -4.85
+    ],
+    "exag": 1.5,
+    "malla": [
+      1,
+      2
+    ],
+    "capital": "33012",
+    "comarcas": {
+      "titulo": "Provincia",
+      "todas": "Toda la zona",
+      "capa": "Límites provinciales",
+      "capaNota": "Asturias, Cantabria y León",
+      "colorear": "Colorear las provincias",
+      "colorearNota": "Asturias, Cantabria y León, cada una de un color",
+      "ficha": "Provincia",
+      "tradicional": "Comarca",
+      "fichaLarga": "Provincia"
+    },
+    "entorno": "Fuera de la zona",
+    "busca": "Pueblo o cumbre: Bulnes, Sotres, Naranjo…",
+    "nivelAgua": [
+      100,
+      2650,
+      1500
+    ],
+    "tutorial": {
+      "agua": [
+        800,
+        1800,
+        "Aquí, todo lo que queda por debajo de 1.800 m: solo asoman los tres macizos."
+      ],
+      "rio": "Río Cares"
+    },
+    "carga": "naranjo",
+    "datos": [
+      "cumbres",
+      "cobertura",
+      "poblacion"
+    ],
+    "procesado": {
+      "picos": [
+        120,
+        1200
+      ],
+      "puertos": "todos",
+      "rios": [
+        2,
+        12
+      ],
+      "aguas": [
+        50000,
+        2000,
+        6
+      ],
+      "carreteras": [
+        "mainRoad",
+        "firstClass",
+        "secondClass",
+        "thirdClass"
+      ],
+      "simplificar": [
+        8,
+        8,
+        10
+      ],
+      "comarcas": "provincias",
+      "cumbresMargen": 3000,
+      "tradicional": {
+        "33003": "Oriente de Asturias",
+        "33008": "Oriente de Asturias",
+        "33012": "Oriente de Asturias",
+        "33043": "Oriente de Asturias",
+        "33046": "Oriente de Asturias",
+        "33047": "Oriente de Asturias",
+        "39015": "Liébana",
+        "39022": "Liébana",
+        "39088": "Liébana",
+        "24106": "Sajambre",
+        "24116": "Valdeón"
+      },
+      "_nota": "Valores por defecto (los de León) en R/10_preparar_web.R: picos [150, 2500], puertos «^Puerto», rios [4, 30], aguas [150000, 20000, 15], 3 clases de carretera, simplificar [carreteras 20, municipios 18, comarcas 25], comarcas agrarias del MAPA"
+    },
+    "bbox": [
+      43.0336,
+      -5.262,
+      43.4695,
+      -4.4611
+    ]
+  }
+}

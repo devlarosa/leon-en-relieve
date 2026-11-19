@@ -19,10 +19,12 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "scripts"))
+from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+sys.path.insert(0, str(RAIZ / "scripts"))
 from lugares import Contexto, situar, norm, dentro  # noqa: E402
 from rios_red import simplificar  # noqa: E402
 
-RAW = RAIZ / "raw" / "historia"
+RAW = RAIZ / "raw" / ZONA / "historia"
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
 IGME = "https://mapas.igme.es/gis/rest/services/BasesDatos"
 QUERY_WD = """SELECT ?item ?itemLabel ?itemDescription ?tipoLabel ?c ?inicio ?fin ?art WHERE {
@@ -193,8 +195,8 @@ def main():
                      "oro y carbón: IGME-CSIC (BDMIN e inventario de escombreras de 1989); más sitios: Wikidata",
            "epocas": H["epocas"], "sitios": sitios, "pueblos": pueblos, "camino": {k: v for k, v in H["camino"].items() if k != "por"} | {"g": [v for xy in camino for v in xy]},
            "calzadas": calzadas, "oro": oro, "carbon": carbon, "escombreras": escombreras, "extra": extra, "mineros": mineros}
-    (RAIZ / "web" / "data" / "historia.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
-    print("Escrito historia.json", round((RAIZ / "web" / "data" / "historia.json").stat().st_size / 1e6, 2), "MB")
+    (RAIZ / "web" / "data" / ZONA / "historia.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
+    print("Escrito historia.json", round((RAIZ / "web" / "data" / ZONA / "historia.json").stat().st_size / 1e6, 2), "MB")
     for a_ in avisos:
         print("  aviso:", a_)
 

@@ -23,10 +23,12 @@ import numpy as np
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "scripts"))
+from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+sys.path.insert(0, str(RAIZ / "scripts"))
 from rios_red import latlon_a_utm30  # noqa: E402
 
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
-CACHE = RAIZ / "raw" / "lugares" / "cache.json"
+CACHE = RAIZ / "raw" / ZONA / "lugares" / "cache.json"
 MAX_KM = 8
 
 
@@ -103,7 +105,7 @@ def dentro(x, y, rings):
 class Contexto:
     """Datos del visor necesarios para situar lugares (municipios, pueblos, malla)."""
     def __init__(self):
-        L = json.loads((RAIZ / "web" / "data" / "leon.json").read_text())
+        L = json.loads((RAIZ / "web" / "data" / ZONA / "zona.json").read_text())
         self.L, self.M = L, L["meta"]
         self.munis = {m["n"]: m for m in L["municipios"]}
         self.pueblos = [(e["n"].split(" / ")[0], e.get("c"), e["xy"]) for e in L["capitales"] + L["entidades"]]
@@ -169,7 +171,7 @@ def main():
     cx.guardar()
     out = {"fuente": "Lugares escogidos para el visor; posiciones del Nomenclátor Geográfico Básico de España (IGN) o, si no figuran, de Wikidata",
            "categorias": D["categorias"], "lugares": salida}
-    (RAIZ / "web" / "data" / "lugares.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
+    (RAIZ / "web" / "data" / ZONA / "lugares.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
     cuenta = {f: sum(1 for s in salida if s["fuente"] == f) for f in ("IGN", "Wikidata", "aprox")}
     print(f"{len(salida)} lugares: {cuenta}")
     for a in avisos:

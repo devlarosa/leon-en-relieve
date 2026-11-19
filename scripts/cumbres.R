@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Todas las cumbres con nombre de la provincia -> web/data/cumbres.json
+# Todas las cumbres con nombre de la zona -> web/data/<zona>/cumbres.json
 # leon.json solo lleva las 150 más altas y separadas (para la vista general); aquí van todas las «Montaña» del
 # Nomenclátor Geográfico Básico del IGN (raw/ngbe/Montaña.gml) dentro de la provincia, con la altitud del MDT25
 # (máximo en 60 m alrededor, como en R/10_preparar_web.R) y su aislamiento: distancia a la cumbre más alta más
@@ -9,17 +9,18 @@ suppressMessages({ library(sf); library(terra); library(jsonlite) })
 sf_use_s2(FALSE)
 args <- commandArgs(trailingOnly = FALSE)
 RAIZ <- normalizePath(file.path(dirname(sub("^--file=", "", args[grep("^--file=", args)])), ".."))
-setwd(RAIZ)
-X0 <- 164000; Y1 <- 4790000
+setwd(RAIZ); source("R/zona.R")   # ZONA, FICHA, fr() = raw/<zona>/…, fw() = web/data/<zona>/…
+X0 <- FICHA$extension[1]; Y1 <- FICHA$extension[4]
 
-prov <- st_read("raw/provincia.gpkg", quiet = TRUE)
-prov_buf <- st_buffer(prov, 400)
+prov <- st_read(fr("provincia.gpkg"), quiet = TRUE)
+margen <- FICHA$procesado$cumbresMargen; if (is.null(margen)) margen <- 400   # Picos: también las del entorno inmediato
+prov_buf <- st_buffer(prov, margen)
 cat("Mosaico MDT25...\n")
-tiles <- list.files("raw/mdt25", pattern = "\\.tif$", full.names = TRUE)
+tiles <- list.files(fr("mdt25"), pattern = "\\.tif$", full.names = TRUE)
 dem25 <- do.call(mosaic, c(lapply(tiles, rast), fun = "mean")); crs(dem25) <- "EPSG:25830"
 dem25[dem25 < -100 | dem25 > 4000] <- NA
 
-m <- st_read("raw/ngbe/Montaña.gml", quiet = TRUE)
+m <- st_read(fr("ngbe/Montaña.gml"), quiet = TRUE)
 m$nombre <- vapply(m$text, function(t) paste(unique(unlist(t)), collapse = " / "), "")
 m <- st_transform(m, 25830)["nombre"]
 m <- m[lengths(st_intersects(m, prov_buf)) > 0, ]
@@ -47,10 +48,8 @@ iso <- vapply(seq_len(nrow(m)), function(i) {
 }, 0)
 out <- lapply(seq_len(nrow(m)), function(i) list(n = m$nombre[i], e = round(m$elev[i]),
   xy = as.integer(round(c(xy[i, 1] - X0, Y1 - xy[i, 2]))), iso = round(iso[i], 1)))
-f <- file.path("web", "data", "cumbres.json")
+f <- fw("cumbres.json")
 writeLines(toJSON(list(fuente = "IGN · Nomenclátor Geográfico Básico de España (montañas con nombre); altitudes del MDT25", cumbres = out),
                   auto_unbox = TRUE, digits = NA), f, useBytes = TRUE)
 cat(sprintf("%d cumbres con nombre -> %s (%.2f MB)\n", length(out), f, file.size(f) / 1e6))
-zona <- which(xy[, 1] > 194000 & xy[, 1] < 259000 & Y1 - xy[, 2] > 70000 & Y1 - xy[, 2] < 120000)
-cat("Teleno y Montes Aquilanos (aprox.):", length(zona), "\n")
-print(head(data.frame(n = m$nombre[zona], e = round(m$elev[zona]), iso = round(iso[zona], 1)), 30))
+print(head(data.frame(n = m$nombre, e = round(m$elev), iso = round(iso, 1)), 12))

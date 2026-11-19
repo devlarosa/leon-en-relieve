@@ -3,10 +3,11 @@
 # Se descarga a 10 m en mosaicos (EPSG:3035), se une y se reduce a la malla del visor por clase mayoritaria.
 # Salida: web/data/cobertura.png  (un canal: código de clase 0–11 a 50 m, alineado con relieve.png pero al doble de resolución)
 suppressMessages({library(sf); library(terra)})
-X0 <- 164000; X1 <- 360000; Y0 <- 4655000; Y1 <- 4790000
-RES <- 50                      # m por píxel en el visor (3920 × 2700)
+source("R/zona.R")   # ZONA, FICHA, fr() = raw/<zona>/…, fw() = web/data/<zona>/…
+X0 <- FICHA$extension[1]; Y0 <- FICHA$extension[2]; X1 <- FICHA$extension[3]; Y1 <- FICHA$extension[4]
+RES <- FICHA$celda / 2          # m por píxel: el doble de resolución que relieve.png (León: 50 m; Picos: 15 m)
 SVC <- "https://image.discomap.eea.europa.eu/arcgis/rest/services/CLC_plus/CLMS_CLCplus_RASTER_2021_010m_eu/ImageServer/exportImage"
-dir.create("raw/copernicus/clcplus", recursive = TRUE, showWarnings = FALSE)
+dir.create(fr("copernicus/clcplus"), recursive = TRUE, showWarnings = FALSE)
 
 caja <- st_bbox(st_transform(st_as_sfc(st_bbox(c(xmin = X0, xmax = X1, ymin = Y0, ymax = Y1), crs = 25830)), 3035))
 caja <- c(floor(caja[c("xmin", "ymin")] / 1000) * 1000 - 2000, ceiling(caja[c("xmax", "ymax")] / 1000) * 1000 + 2000)
@@ -17,7 +18,7 @@ cat("Mosaicos:", length(xs) * length(ys), "\n")
 op <- options(HTTPUserAgent = "Mozilla/5.0 (compatible; leon3d-datos/1.0)", timeout = 600)
 ficheros <- character(0)
 for (x in xs) for (y in ys) {
-  f <- sprintf("raw/copernicus/clcplus/t_%d_%d.tif", x, y); ficheros <- c(ficheros, f)
+  f <- sprintf(fr("copernicus/clcplus/t_%d_%d.tif"), x, y); ficheros <- c(ficheros, f)
   if (file.exists(f) && file.size(f) > 10000) next
   url <- sprintf("%s?bbox=%d,%d,%d,%d&bboxSR=3035&imageSR=3035&size=4000,4000&format=tiff&pixelType=U8&interpolation=RSP_NearestNeighbor&noData=0&f=image",
                  SVC, x, y, x + TAM, y + TAM)
@@ -39,13 +40,13 @@ mos <- do.call(mosaic, c(capas, fun = "max"))
 grid <- rast(xmin = X0, xmax = X1, ymin = Y0, ymax = Y1, res = RES, crs = "EPSG:25830")
 cob <- project(mos, grid, method = "mode")
 cob[is.na(cob) | cob > 11] <- 0
-writeRaster(cob, "web/data/cobertura.png", datatype = "INT1U", overwrite = TRUE)
-unlink("web/data/cobertura.png.aux.xml")
+writeRaster(cob, fw("cobertura.png"), datatype = "INT1U", overwrite = TRUE)
+unlink(fw("cobertura.png.aux.xml"))
 
-prov <- vect(st_read("raw/provincia.gpkg", quiet = TRUE))
+prov <- vect(st_read(fr("provincia.gpkg"), quiet = TRUE))
 fr <- freq(mask(cob, prov)); fr <- fr[fr$value > 0, ]
 nombres <- c("Construido", "Coníferas", "Frondosas caducifolias", "Frondosas perennifolias", "Matorral", "Prados y pastos",
              "Cultivos", "Líquenes y musgos", "Roca y suelo desnudo", "Agua", "Nieve y hielo")
 fr$clase <- nombres[fr$value]; fr$pct <- round(100 * fr$count / sum(fr$count), 1)
 print(fr[, c("value", "clase", "pct")])
-cat("cobertura.png:", round(file.size("web/data/cobertura.png") / 1e6, 2), "MB\n")
+cat("cobertura.png:", round(file.size(fw("cobertura.png")) / 1e6, 2), "MB\n")

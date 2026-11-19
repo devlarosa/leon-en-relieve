@@ -3,7 +3,7 @@
 
 - index.html envuelto en servidor/app/cabecera.html (app instalable en la pantalla de inicio)
 - manifiesto e iconos de servidor/app/
-- web/data/ SIN destacados.json (es la lista privada; en el alojamiento estático los destacados
+- web/zonas.json y web/data/<zona>/ de cada zona con datos, SIN destacados.json (es la lista privada; en el alojamiento estático los destacados
   son efímeros: cada visitante puede marcar los suyos, pero solo duran la visita)
 - version.json con la huella de todo lo publicado, para el botón ↻ del visor
 - _headers con cabeceras de seguridad y de caché para Cloudflare Pages
@@ -40,17 +40,22 @@ CABECERAS = """/*
 
 
 def main():
-    if not (WEB / "data" / "leon.json").is_file():
-        raise SystemExit("Faltan los datos en web/data/: genéralos antes con los scripts (ver README)")
+    zonas = [p.name for p in sorted((WEB / "data").iterdir()) if (p / "zona.json").is_file()]
+    if not zonas:
+        raise SystemExit("Faltan los datos en web/data/<zona>/: genéralos antes con los scripts (ver README)")
     if OUT.exists():
         shutil.rmtree(OUT)
     (OUT / "data").mkdir(parents=True)
+    shutil.copy2(WEB / "zonas.json", OUT / "zonas.json")
     (OUT / "index.html").write_bytes((APP / "cabecera.html").read_bytes() + (WEB / "index.html").read_bytes() + b"\n</body>\n</html>\n")
     for n in APP_FICHEROS:
         shutil.copy2(APP / n, OUT / n)
-    for p in sorted((WEB / "data").iterdir()):
-        if p.is_file() and not p.name.startswith(".") and p.name not in PRIVADOS:
-            shutil.copy2(p, OUT / "data" / p.name)
+    for z in zonas:                        # todas las zonas con datos: data/leon/, data/picos/…
+        (OUT / "data" / z).mkdir()
+        for p in sorted((WEB / "data" / z).iterdir()):
+            if p.is_file() and not p.name.startswith(".") and p.name not in PRIVADOS:
+                shutil.copy2(p, OUT / "data" / z / p.name)
+    print("zonas:", ", ".join(zonas))
     (OUT / "_headers").write_text(CABECERAS, encoding="utf-8")
     h = hashlib.sha1()
     for p in sorted(OUT.rglob("*")):

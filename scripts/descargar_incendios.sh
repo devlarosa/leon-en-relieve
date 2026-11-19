@@ -6,7 +6,7 @@
 # Se vuelve a descargar siempre: el año en curso se actualiza durante la campaña.
 set -euo pipefail
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
-D="$RAIZ/raw/incendios"; mkdir -p "$D"; cd "$D"
+D="$RAIZ/raw/${ZONA:-leon}/incendios"; mkdir -p "$D"; cd "$D"
 URL="https://maps.effis.emergency.copernicus.eu/effis?service=WFS&version=1.1.0&request=GetFeature&typename=ms:modis.ba.poly&srsName=EPSG:4326&bbox=41.9,-7.2,43.35,-4.5,EPSG:4326&outputformat=geojson"
 curl -sfL --retry 3 --max-time 900 -o effis_ba.json.tmp "$URL"
 python3 -c "import json,sys; d=json.load(open(sys.argv[1])); assert d.get('features'), 'sin incendios'; print(len(d['features']), 'perímetros')" effis_ba.json.tmp

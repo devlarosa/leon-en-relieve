@@ -9,7 +9,7 @@
 # como cadena adicional. La verificación TLS nunca se desactiva.
 set -euo pipefail
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
-D="$RAIZ/raw/proteccion"; mkdir -p "$D"; cd "$D"
+D="$RAIZ/raw/${ZONA:-leon}/proteccion"; mkdir -p "$D"; cd "$D"
 
 baja() {   # baja URL FICHERO [opciones de curl]
   local url="$1" f="$2"; shift 2

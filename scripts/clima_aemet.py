@@ -14,6 +14,7 @@ Uso: python3 scripts/clima_aemet.py
 """
 import io
 import json
+import sys
 import tarfile
 from datetime import date, timedelta
 from pathlib import Path
@@ -23,8 +24,10 @@ from PIL import Image, ImageDraw
 from scipy.io import netcdf_file
 
 RAIZ = Path(__file__).resolve().parent.parent
-RAW = RAIZ / "raw" / "clima_aemet"
-WEB = RAIZ / "web" / "data"
+sys.path.insert(0, str(RAIZ / "scripts"))
+from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+RAW = RAIZ / "raw" / ZONA / "clima_aemet"
+WEB = RAIZ / "web" / "data" / ZONA
 ANIOS = range(1991, 2021)
 PASO = 1000                      # m por píxel del atlas
 POLO_LAT, LON0, ROT = 49.5, -6.0, 40.5   # polo rotado de la rejilla (comprobado con sus lat/lon)
@@ -105,7 +108,7 @@ def leer(var, ventana):
 
 # ---------------------------------------------------------------- principal
 def main():
-    meta = json.loads((WEB / "leon.json").read_text())
+    meta = json.loads((WEB / "zona.json").read_text())
     M = meta["meta"]
     x0, y1, ancho, alto, celda = M["x0"], M["y1"], M["ancho"], M["alto"], M["celda"]
     nx, ny = ancho // PASO, alto // PASO

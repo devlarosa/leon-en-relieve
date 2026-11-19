@@ -10,13 +10,16 @@ Se pide por teselas (cada servicio devuelve como mucho 1000 elementos por consul
 con la geometría ya simplificada a 20 m en el servidor (que además la recorta a cada tesela). Salida: raw/geologia/*.jsonl (caché; se puede relanzar).
 """
 import json
+import sys
 import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-OUT = RAIZ / "raw" / "geologia"
+sys.path.insert(0, str(RAIZ / "scripts"))
+from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+OUT = RAIZ / "raw" / ZONA / "geologia"
 BASE = "https://mapas.igme.es/gis/rest/services"
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
 CAJA = (164000, 4655000, 360000, 4790000)          # la del visor, en metros UTM 30

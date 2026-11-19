@@ -362,6 +362,13 @@ kbd { display: inline-block; min-width: 1.4em; padding: 1px 5px; margin: 0 1px; 
 #loading .titulo { font-family: var(--font-display); font-weight: 800; font-size: 32px; letter-spacing: .04em; opacity: 0; animation: lv-aparece .9s 1.9s forwards; }
 #loading .carga { width: 180px; height: 3px; margin: 14px auto 0; border-radius: 2px; background: rgba(122, 42, 111, .18); overflow: hidden; }
 #loading .carga i { display: block; width: 40%; height: 100%; background: #7a2a6f; border-radius: 2px; animation: lv-barra 1.4s ease-in-out infinite; }
+/* cada zona con su ilustración: el león del pendón para León, el Naranjo de Bulnes para Picos */
+#loading .c-naranjo { display: none; }
+html[data-zona="picos"] #loading .c-naranjo { display: block; } html[data-zona="picos"] #loading .c-leon { display: none; }
+#loading .monte path { stroke-dasharray: 1; stroke-dashoffset: 1; fill-opacity: 0; animation: lv-trazo 1.5s ease forwards, lv-relleno .9s 1.2s forwards; }
+#loading .monte path:nth-child(3n+2) { animation-delay: .15s, 1.35s; } #loading .monte path:nth-child(3n) { animation-delay: .3s, 1.5s; }
+.zona-sel { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px; font-size: 12.5px; color: var(--ink-soft); }
+.zona-sel select { font: inherit; font-size: 13px; padding: 3px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-solid); color: var(--ink); }
 #loading .leon path { stroke-dasharray: 1; stroke-dashoffset: 1; fill-opacity: 0; animation: lv-trazo 1.5s ease forwards, lv-relleno .9s 1.2s forwards; }
 #loading .leon path:nth-child(3n+2) { animation-delay: .15s, 1.35s; } #loading .leon path:nth-child(3n) { animation-delay: .3s, 1.5s; }
 #loading .leon .ojo { opacity: 0; animation: lv-aparece .4s 1.8s forwards; }
@@ -474,7 +481,18 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
 <div id="labels"></div>
 
 <div id="loading"><div class="box">
-  <svg class="pendon" viewBox="0 0 260 250" role="img" aria-label="León pasante, como en el pendón medieval del reino de León">
+  <svg class="pendon c-naranjo" viewBox="0 0 260 200" role="img" aria-label="El Naranjo de Bulnes (Picu Urriellu) entre las montañas">
+    <circle cx="206" cy="46" r="18" fill="#f2c14e" opacity=".85"/>
+    <g class="monte" stroke="#3b2c22" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <path pathLength="1" fill="#a9b8c9" d="M4 150 L28 112 L44 124 L66 90 L84 108 L98 98 L112 118 L150 120 L166 92 L182 106 L200 80 L222 108 L240 98 L256 132 L256 150 Z"/>
+      <path pathLength="1" fill="#e3c9a0" d="M104 156 L112 92 L116 66 L124 50 L136 46 L146 54 L150 72 L152 104 L158 156 Z"/>
+      <path pathLength="1" fill="none" stroke-width="1.3" d="M124 52 L126 96 L122 140 M138 50 L140 88 L146 130 M116 72 L120 110"/>
+      <path pathLength="1" fill="#eef2f5" stroke-width="1.4" d="M66 90 L58 102 L64 100 L68 106 L72 98 L76 101 Z M200 80 L192 92 L198 90 L202 96 L206 89 L210 92 Z"/>
+      <path pathLength="1" fill="#7fa36a" d="M4 196 L4 158 C34 146 70 166 104 156 C130 150 150 160 172 152 C204 142 230 160 256 150 L256 196 Z"/>
+      <path pathLength="1" fill="none" stroke-width="1.3" d="M20 176 C40 170 56 178 74 172 M150 176 C170 170 190 178 214 170"/>
+    </g>
+  </svg>
+  <svg class="pendon c-leon" viewBox="0 0 260 250" role="img" aria-label="León pasante, como en el pendón medieval del reino de León">
     <rect x="18" y="12" width="224" height="6" rx="3" fill="#6b4a2b"/><circle cx="18" cy="15" r="6" fill="#8a6338"/><circle cx="242" cy="15" r="6" fill="#8a6338"/>
     <path class="pano" fill="#f7efdc" stroke="#7a2a6f" stroke-width="5" d="M30 18 L230 18 L230 222 C200 214 160 230 130 222 C100 214 60 230 30 222 Z">
       <animate attributeName="d" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"
@@ -500,15 +518,16 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
         <path pathLength="1" fill="none" stroke-width="1.6" d="M40 92 l-6 -2 M41 96 l-6 1 M42 100 l-5 3 M81 147 l-5 2 M86 147 l-3 4 M173 147 l-5 2 M178 147 l-3 4 M141 147 l-5 2 M97 146 l-5 2"/>
       </g>
   </svg>
-  <div class="titulo">León en relieve</div>
+  <div class="titulo" id="z-titulo-carga">León en relieve</div>
   <small id="loading-msg">Cargando el MDT25 del IGN</small>
   <div class="carga" aria-hidden="true"><i></i></div>
 </div></div>
 
 <aside id="panel" class="card collapsed" aria-label="Panel del mapa">
   <div>
-    <h1>León en relieve</h1>
-    <p class="sub">La provincia en 3D con datos oficiales: relieve, población, clima y agua.</p>
+    <h1 id="z-nombre">León en relieve</h1>
+    <p class="sub" id="z-sub">La provincia en 3D con datos oficiales: relieve, población, clima y agua.</p>
+    <div class="zona-sel" id="zona-box" hidden><label for="zona-sel">Mapa</label><select id="zona-sel"></select></div>
     <button class="tour-btn" id="tour-abrir">▶ Tutorial: cómo se usa</button>
   </div>
   <nav class="cats" role="tablist" aria-label="Categorías de datos">
@@ -530,7 +549,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <div class="facts">
     <div class="fact"><b id="f-pop">–</b><span>habitantes</span></div>
     <div class="fact"><b id="f-area">–</b><span>km²</span></div>
-    <div class="fact"><b>211</b><span>municipios</span></div>
+    <div class="fact"><b id="f-mun">–</b><span>municipios</span></div>
   </div>
     <div>
     <label class="group-title" for="search">Buscar municipio o pueblo</label>
@@ -538,8 +557,8 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <datalist id="munlist"></datalist>
     </div>
     <div>
-    <label class="group-title" for="comarca">Comarca agraria</label>
-    <select id="comarca"><option value="">Toda la provincia</option></select>
+    <label class="group-title" for="comarca" id="z-com-tit">Comarca agraria</label>
+    <select id="comarca"><option value="" id="z-com-todas">Toda la provincia</option></select>
     </div>
     <div id="favs-box" hidden>
     <details class="fav-det" open><summary class="group-title">Lugares destacados <span id="favs-n"></span></summary>
@@ -548,15 +567,15 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <div><p class="group-title">Capas</p><div class="layers">
       <label class="layer" id="l-fav-row" hidden><input type="checkbox" id="l-fav" checked><span class="sw"></span><span class="name">Lugares destacados</span><span class="key" style="background:#f2b53a"></span></label>
       <label class="layer"><input type="checkbox" id="l-mun" checked><span class="sw"></span><span class="name">Límites municipales</span><span class="key" style="background:#fff7df;box-shadow:0 0 0 1px #8a7a52"></span></label>
-      <label class="layer"><input type="checkbox" id="l-comarcas"><span class="sw"></span><span class="name">Comarcas agrarias<span class="note">Oficiales del MAPA</span></span><span class="key" style="background:#7a4d8c"></span></label>
+      <label class="layer"><input type="checkbox" id="l-comarcas"><span class="sw"></span><span class="name"><span id="z-com-capa">Comarcas agrarias</span><span class="note" id="z-com-capa-n">Oficiales del MAPA</span></span><span class="key" style="background:#7a4d8c"></span></label>
       <label class="layer"><input type="checkbox" id="l-lugares" checked><span class="sw"></span><span class="name">Lugares de interés<span class="note">Naturaleza, patrimonio y etnografía</span></span><span class="key" style="background:#c47f12"></span></label>
       <div class="chips leg" id="lug-cats"></div>
       <details class="src" id="lug-box" style="padding: 0 6px 4px"><summary>Ver la lista de lugares</summary><div class="lista-st" id="lug-list" style="margin-top:6px"></div></details>
-      <label class="layer"><input type="checkbox" id="l-comcolor"><span class="sw"></span><span class="name">Colorear todas las comarcas<span class="note">Cada comarca agraria de un color</span></span></label>
+      <label class="layer"><input type="checkbox" id="l-comcolor"><span class="sw"></span><span class="name"><span id="z-com-col">Colorear todas las comarcas</span><span class="note" id="z-com-col-n">Cada comarca agraria de un color</span></span></label>
       <div class="chips leg" id="com-leg" hidden></div>
       <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
       <label class="layer"><input type="checkbox" id="l-pob" checked><span class="sw"></span><span class="name">Poblaciones</span><span class="key" style="background:#e9b44c"></span></label>
-      <label class="layer"><input type="checkbox" id="l-entorno"><span class="sw"></span><span class="name">Provincias vecinas</span></label>
+      <label class="layer"><input type="checkbox" id="l-entorno"><span class="sw"></span><span class="name" id="z-entorno">Provincias vecinas</span></label>
     </div></div>
     <div><p class="group-title">Mirador</p>
     <button class="tool-btn" id="mirador-btn" aria-pressed="false">¿Qué se ve desde aquí?<small>Toca un punto del mapa o el nombre de una cumbre</small></button></div>
@@ -701,7 +720,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <p class="spark-note" style="padding: 0 6px">Toca el mapa para ver qué figuras protegen ese punto. Datos de la Junta de Castilla y León (Red de Espacios Naturales, Red Natura 2000 y BIC) y del MITECO (Reservas de la Biosfera).</p>
   </section>
   <section class="cat" id="cat-incendios" role="tabpanel" aria-labelledby="tab-incendios" hidden>
-    <div><p class="group-title">Superficie quemada en León, por año</p>
+    <div><p class="group-title">Superficie quemada en <span class="z-lugar">la provincia</span>, por año</p>
       <div id="inc-anios" class="inc-anios" role="group" aria-label="Año"></div>
       <p class="spark-note" id="inc-resumen" style="padding: 4px 8px 0"></p>
     </div>
@@ -725,7 +744,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
       <input type="range" id="mes" min="0" max="11" step="1" value="10"></div>
     <div class="slider"><div class="row"><label for="hora">Hora</label><output id="hora-o">17:00</output></div>
       <input type="range" id="hora" min="6" max="23" step="0.25" value="17"></div>
-    <p class="spark-note" style="padding: 0 6px">Sol calculado para León según mes y hora. Nieve y colores orientativos según la climatología típica de cada mes.</p></div>
+    <p class="spark-note" style="padding: 0 6px">Sol calculado para <span id="z-sol">León</span> según mes y hora. Nieve y colores orientativos según la climatología típica de cada mes.</p></div>
     <div><p class="group-title">Ambiente y rendimiento</p><div class="layers">
       <label class="layer"><input type="checkbox" id="l-nubes"><span class="sw"></span><span class="name">Nubes</span></label>
       <label class="layer"><input type="checkbox" id="l-lite"><span class="sw"></span><span class="name">Modo ligero<span class="note">Menos detalle, más fluidez</span></span></label>
@@ -781,7 +800,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
   <p class="cap" id="v-cap"></p>
   <div class="big" id="v-area"></div>
   <dl>
-    <dt>De la provincia</dt><dd id="v-pct"></dd>
+    <dt>De <span class="z-lugar">la provincia</span></dt><dd id="v-pct"></dd>
     <dt>Horizonte más lejano</dt><dd id="v-far"></dd>
     <dt>Pueblos a la vista</dt><dd id="v-pue"></dd>
   </dl>
@@ -916,6 +935,14 @@ addEventListener("unhandledrejection", (e) => {
   showFatal(e.reason);
 });
 if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"));
+// zona del mapa (web/zonas.json): ?zona=picos en la dirección o la última elegida; por defecto, León
+window.leonZona = (() => {
+  let z = null;
+  try { z = new URLSearchParams(location.search).get("zona"); } catch (e) { /* sin dirección */ }
+  if (!z) try { z = localStorage.getItem("leon3d-zona"); } catch (e) { /* sin almacenamiento */ }
+  return /^[a-z0-9-]{1,20}$/.test(z || "") ? z : "leon";
+})();
+document.documentElement.dataset.zona = window.leonZona;
 // ↻ actualizar: comprueba version.json (lo da servidor/servidor.py; en el artefacto no existe y se ignora)
 // y, al pulsar, vuelve a descargar todo sin caché y recarga. Útil en el iPhone, donde la app no tiene botón de recargar.
 (function () {
@@ -936,7 +963,8 @@ if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"
   setInterval(comprobar, 5 * 60 * 1000);
   btn.addEventListener("click", async () => {
     btn.classList.add("girando");
-    const rec = ["index.html", "data/leon.json", "data/relieve.png", "data/cobertura.png", "data/poblacion.png", "data/destacados.json", "manifest.webmanifest"];
+    const d = "data/" + window.leonZona + "/";
+    const rec = ["index.html", "zonas.json", d + "zona.json", d + "relieve.png", d + "cobertura.png", d + "poblacion.png", d + "destacados.json", "manifest.webmanifest"];
     await Promise.all(rec.map(u => fetch(u, { cache: "reload" }).then(r => r.arrayBuffer()).catch(() => null)));
     location.reload();
   });
@@ -945,6 +973,31 @@ if (!window.THREE) showFatal(new Error("no se pudo cargar la librería Three.js"
 <script>
 (async function () {
 "use strict";
+// ficha de la zona (nombre, textos, sol, exageración, datos disponibles…)
+let ZONAS;
+try { ZONAS = await fetch("zonas.json").then(r => { if (!r.ok) throw new Error("zonas.json"); return r.json(); }); }
+catch (e) { throw new Error("no se pudo leer zonas.json (" + e.message + ")"); }
+const ZID = ZONAS[window.leonZona] ? window.leonZona : "leon", Z = ZONAS[ZID], DATA = `data/${ZID}/`;
+const hay = (d) => (Z.datos || []).includes(d);
+document.documentElement.dataset.zona = ZID;
+try { localStorage.setItem("leon3d-zona", ZID); } catch (e) { /* sin almacenamiento */ }
+{
+  const pon = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.textContent = v; };
+  document.title = Z.nombre; pon("z-nombre", Z.nombre); pon("z-sub", Z.sub); pon("z-titulo-carga", Z.nombre);
+  const C = Z.comarcas || {};
+  pon("z-com-tit", C.titulo); pon("z-com-todas", C.todas); pon("z-com-capa", C.capa); pon("z-com-capa-n", C.capaNota); pon("z-com-col", C.colorear); pon("z-com-col-n", C.colorearNota);
+  pon("z-entorno", Z.entorno); pon("z-sol", Z.corto);
+  for (const el of document.querySelectorAll(".z-lugar")) el.textContent = Z.lugar;
+  const zs = document.getElementById("zona-sel"), ids = Object.keys(ZONAS).filter(k => !k.startsWith("_"));
+  if (ids.length > 1) {
+    zs.innerHTML = ids.map(k => `<option value="${k}"${k === ZID ? " selected" : ""}>${ZONAS[k].corto}</option>`).join("");
+    document.getElementById("zona-box").hidden = false;
+    zs.addEventListener("change", () => { try { localStorage.setItem("leon3d-zona", zs.value); } catch (e) { /* sin almacenamiento */ } location.search = "?zona=" + zs.value; });
+  }
+  // pestañas sin datos en esta zona
+  for (const [cat, dato] of [["geologia", "geologia"], ["clima", "clima"], ["historia", "historia"], ["camino", "camino"], ["proteccion", "proteccion"], ["incendios", "incendios"]])
+    if (!hay(dato)) { const b = document.querySelector(`.cat-b[data-cat="${cat}"]`); if (b) b.hidden = true; }
+}
 const $ = (id) => document.getElementById(id);
 const fmt = new Intl.NumberFormat("es-ES");
 const fmt1 = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 });
@@ -961,12 +1014,12 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let data, H, W, R, destacadas = [], HE = null, HP = null, PD = null, PA = null, COB = null, CW = 0, CH = 0;
 try {
   const [dest, json, png] = await Promise.all([
-    fetch("data/destacados.json").then(r => r.ok ? r.json() : []).catch(() => []),
-    fetch("data/leon.json").then(r => {
+    fetch(DATA + "destacados.json").then(r => r.ok ? r.json() : []).catch(() => []),
+    fetch(DATA + "zona.json").then(r => {
       if (r.status === 401) { location.href = "entrar"; throw new Error("hay que entrar con usuario y contraseña"); }   // sesión caducada (servidor con acceso)
-      if (!r.ok) throw new Error("leon.json"); return r.json();
+      if (!r.ok) throw new Error("zona.json"); return r.json();
     }),
-    fetch("data/relieve.png").then(r => { if (!r.ok) throw new Error("relieve.png"); return r.blob(); })
+    fetch(DATA + "relieve.png").then(r => { if (!r.ok) throw new Error("relieve.png"); return r.blob(); })
   ]);
   data = json; destacadas = dest;
   msg("Decodificando alturas");
@@ -981,7 +1034,7 @@ try {
   for (let i = 0, j = 0; i < H.length; i++, j += 4) H[i] = ((px[j] * 65536 + px[j + 1] * 256 + px[j + 2]) / 10) - 10000;
   // cubierta del suelo de Copernicus (CLC+ Backbone 2021) a 50 m (opcional)
   try {
-    const rc = await fetch("data/cobertura.png");
+    const rc = await fetch(DATA + "cobertura.png");
     if (rc.ok) {
       const b3 = await createImageBitmap(await rc.blob(), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
       const c3 = document.createElement("canvas"); c3.width = b3.width; c3.height = b3.height;
@@ -999,7 +1052,9 @@ for (const m of data.municipios) { m.ph = Array.isArray(m.ph) && m.ph.length ? m
 for (const m of data.municipios) { if (typeof m.p !== "number") m.p = null; if (typeof m.cap !== "string" || m.cap === "NA") m.cap = null; if (typeof m.cm !== "string" || m.cm === "NA") m.cm = null; if (typeof m.ct !== "string" || m.ct === "NA") m.ct = null; }
 const M = data.meta;
 HE = H; HP = null;   // HE: altura efectiva; se separa de H solo si se usa el relieve de población
-const KM_W = M.ancho / 1000, KM_D = M.alto / 1000;          // 196 × 135 km
+const KM_W = M.ancho / 1000, KM_D = M.alto / 1000;          // León: 196 × 135 km; Picos: 64 × 47 km
+// árboles y casas son símbolos (no a escala): en un mapa más pequeño que el de León (196 km) se dibujan más pequeños
+const MK = Math.min(1, Math.max(0.35, KM_W / 196 * 1.4));
 const CELL_KM = M.celda / 1000;
 $("f-pop").textContent = fmt.format(M.poblacion_total);
 $("f-area").textContent = fmt.format(M.area_km2);
@@ -1244,8 +1299,9 @@ function applyCamera() {
   camera.lookAt(ctl.target); camera.updateMatrixWorld();
 }
 const controls = { target: ctl.target, update: applyCamera };
-camera.position.set(-30, 120, 150); syncFromCamera();
-const HOME = { tx: 0, ty: 2, tz: 4, dist: ctl.dist, theta: ctl.theta, phi: ctl.phi };
+const ESC = KM_W / 196;   // la vista inicial de León (196 km de ancho), escalada al ancho de este mapa
+ctl.target.set(0, 2 * ESC, 4 * ESC); camera.position.set(-30 * ESC, 120 * ESC, 150 * ESC); syncFromCamera();
+const HOME = { tx: 0, ty: 2 * ESC, tz: 4 * ESC, dist: ctl.dist, theta: ctl.theta, phi: ctl.phi };
 const navRay = new THREE.Raycaster(), navNdc = new THREE.Vector2();
 function rayPlane(x, y, h) {
   const r = renderer.domElement.getBoundingClientRect();
@@ -1466,7 +1522,7 @@ function setInfoFull(on) {
 }
 $("i-more").onclick = () => setInfoFull($("i-full").hidden);
 
-let exag = 2.5;
+let exag = Z.exag || 2.5; $("exag").value = exag;
 const ZS = () => exag / 1000;   // metros -> km de escena con exageración
 
 // mapa de normales (xz con exageración, b = pendiente real)
@@ -1496,7 +1552,7 @@ maskTex.magFilter = THREE.LinearFilter; maskTex.minFilter = THREE.LinearFilter; 
 drawOverlay();
 
 // malla del terreno
-const STEP = isPhone ? 3 : 2;
+const STEP = (Z.malla || [2, 3])[isPhone ? 1 : 0];   // cada cuántas celdas del relieve va un vértice
 const gw = Math.floor((W - 1) / STEP) + 1, gh = Math.floor((R - 1) / STEP) + 1;
 const pos = new Float32Array(gw * gh * 3), uv = new Float32Array(gw * gh * 2), hAttr = new Float32Array(gw * gh), hpAttr = new Float32Array(gw * gh), vIdx = new Uint32Array(gw * gh);
 for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
@@ -1842,7 +1898,7 @@ function ensurePop() {           // la rejilla de población se carga la primera
   if (!popLoading) popLoading = (async () => {
     try {
       $("morph-o").textContent = "Cargando…";
-      const rp = await fetch("data/poblacion.png"); if (!rp.ok) throw new Error("poblacion.png");
+      const rp = await fetch(DATA + "poblacion.png"); if (!rp.ok) throw new Error("poblacion.png");
       const b2 = await createImageBitmap(await rp.blob(), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
       if (b2.width !== W || b2.height !== R) throw new Error("tamaño");
       const c2 = document.createElement("canvas"); c2.width = W; c2.height = R;
@@ -1985,7 +2041,7 @@ function placeTrees() {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3();
   for (const tg of treeGroups) {
     if (!tg.mesh) continue;
-    tg.list.forEach((t, k) => { ps.set(sx(t[0]), heightAt(t[0], t[1]) * ZS() - 0.04, sz(t[1])); sc.setScalar(t[2]); m.compose(ps, q, sc); tg.mesh.setMatrixAt(k, m); });
+    tg.list.forEach((t, k) => { ps.set(sx(t[0]), heightAt(t[0], t[1]) * ZS() - 0.04, sz(t[1])); sc.setScalar(t[2] * MK); m.compose(ps, q, sc); tg.mesh.setMatrixAt(k, m); });
     tg.mesh.instanceMatrix.needsUpdate = true;
   }
 }
@@ -2055,8 +2111,9 @@ function hashStr(t) { let h = 2166136261; for (let i = 0; i < t.length; i++) h =
 const ADOBE = new Set(["Tierra de Campos", "Los Oteros", "Valmadrigal", "Las Matas", "Tierra de Cea", "Tierra de Sahagún", "Valderas", "Vega de Toral", "Valencia de Don Juan"]);
 const SETS = { walls: [], roofs: [], tower: [], spire: [] };
 const MON_ANCHORS = [];   // se rellenan con los monumentos para no poner casas encima
-function addInst(set, mx, my, yOff, sxv, syv, szv, rot, col) { SETS[set].push([mx, my, yOff, sxv, syv, szv, rot, col[0], col[1], col[2]]); }
+function addInst(set, mx, my, yOff, sxv, syv, szv, rot, col) { SETS[set].push([mx, my, yOff * MK, sxv * MK, syv * MK, szv * MK, rot, col[0], col[1], col[2]]); }
 function village(name, mx, my, n, radius, opts) {
+  radius *= MK;
   const r = rnd(hashStr(name) + (mx | 0));
   const hg = heightAt(mx, my), m = inProv(mx, my) ? munAt(mx, my) : null;
   const slate = hg > 950 || (m && m.bz), adobe = !slate && m && ADOBE.has(m.cm);
@@ -2065,11 +2122,11 @@ function village(name, mx, my, n, radius, opts) {
   const pick = (a) => a[(r() * a.length) | 0];
   const near = (x, y) => MON_ANCHORS.some(a => Math.hypot(a[0] - x, a[1] - y) < a[2]);
   if (!opts.noChurch && !near(mx, my)) {   // iglesia con torre o espadaña
-    const rot = r() * Math.PI, cx = mx + Math.cos(rot + 1.6) * 60, cy = my + Math.sin(rot + 1.6) * 60;
+    const rot = r() * Math.PI, cx = mx + Math.cos(rot + 1.6) * 60 * MK, cy = my + Math.sin(rot + 1.6) * 60 * MK;
     const wc = adobe ? [.78, .62, .44] : slate ? [.74, .72, .66] : [.90, .84, .70];
     addInst("walls", cx, cy, -0.03, 0.2, 0.13, 0.11, rot, wc);
     addInst("roofs", cx, cy, 0.1, 0.22, 0.06, 0.13, rot, pick(roofs));
-    const tx = cx + Math.cos(-rot) * 0.11 * 1000, ty = cy + Math.sin(-rot) * 0.11 * 1000;
+    const tx = cx + Math.cos(-rot) * 0.11 * 1000 * MK, ty = cy + Math.sin(-rot) * 0.11 * 1000 * MK;
     addInst("tower", tx, ty, -0.03, 0.065, 0.25, 0.065, rot, wc);
     addInst("spire", tx, ty, 0.22, 0.075, 0.07, 0.075, rot, pick(roofs));
   }
@@ -2104,7 +2161,7 @@ function towerRound(g, color, x, z, r, h, roofColor, roofH) {
   if (roofColor) part(g, "cone", roofColor, x, h, z, r * 2.4, roofH, r * 2.4);
   else for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; part(g, "box", color, x + Math.cos(a) * r * 0.85, h, z + Math.sin(a) * r * 0.85, r * 0.35, 0.04, r * 0.35, -a); }
 }
-const MONS = [
+const MONS = ZID !== "leon" ? [] : [   // maquetas de monumentos: de momento solo las de León
   { n: "Catedral de León", xy: [125410, 70479], build(g) {
       const S = "#ecdfc4", Rf = "#7f8796";
       part(g, "box", S, 0, -0.15, 0, 1.0, 0.57, 0.3); part(g, "prism", Rf, 0, 0.42, 0, 1.0, 0.2, 0.32);
@@ -2325,10 +2382,10 @@ function applySeason() {
 }
 // posición real del sol en León (42,6° N, 5,57° O) para el día 15 del mes y la hora oficial
 function updateSky() {
-  const m = month, hh = hour, phi = 42.6 * Math.PI / 180;
+  const m = month, hh = hour, phi = (Z.sol || [42.6])[0] * Math.PI / 180;
   const doy = 15 + m * 30.42, dec = 23.44 * Math.sin(2 * Math.PI * (doy - 81) / 365) * Math.PI / 180;
   const tz = m >= 3 && m <= 9 ? 2 : 1;                      // horario de verano (abril–octubre)
-  const H = ((hh - tz - 0.371) - 12) * 15 * Math.PI / 180;  // ángulo horario (hora solar = UTC − 5,57°/15)
+  const H = ((hh - tz + (Z.sol || [0, -5.57])[1] / 15) - 12) * 15 * Math.PI / 180;  // ángulo horario (hora solar = UTC + longitud/15)
   const el = Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
   const az = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi));   // desde el sur, + hacia el oeste
   const night = Math.min(1, Math.max(0, (0.02 - el) / 0.14));
@@ -2431,7 +2488,7 @@ for (const e of data.entidades) {       // pueblos sin ayuntamiento: aparecen al
 }
 for (const c of data.capitales) {
   const p = popBy[c.c] || 0;
-  const kind = c.c === "24089" ? "city" : p >= 3000 ? "town" : "vil";
+  const kind = c.c === Z.capital ? "city" : p >= 3000 ? "town" : "vil";
   const name = c.n.split(" / ")[0];
   addLabel(kind, '<span class="dot"></span>' + esc(name), c.xy[0], c.xy[1], kind === "city" ? 1000 : p >= 3000 ? 500 + p / 1000 : 50 + p / 100,
     kind === "vil" ? (p > 800 ? 75 : 50) : 0);
@@ -2492,7 +2549,7 @@ function modoFavsLocal() {
   renderFavList(); document.querySelectorAll("[data-favk]").forEach(pintarBotonFav);
   if (selected) updateFavBtn();
 }
-(window.leonServidor || Promise.resolve(false)).then(hay => hay ? fetch("destacados", { method: "OPTIONS" }) : null)
+(window.leonServidor || Promise.resolve(false)).then(hay => hay ? fetch("destacados?zona=" + ZID, { method: "OPTIONS" }) : null)
   .then(r => { if (r && r.status === 204) { favsEditable = true; renderFavList(); if (selected) updateFavBtn(); } else modoFavsLocal(); })
   .catch(() => modoFavsLocal());
 renderFavList();
@@ -2507,7 +2564,7 @@ async function saveFavs(list) {
     const vista = new Set(); DESTACADAS = list.map(x => String(x).trim()).filter(x => x && !vista.has(x.toLowerCase()) && vista.add(x.toLowerCase()));
     rehacerFavs(); return;
   }
-  const r = await fetch("destacados", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(list) });
+  const r = await fetch("destacados?zona=" + ZID, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(list) });
   if (!r.ok) throw new Error("HTTP " + r.status);
   DESTACADAS = await r.json();
   rehacerFavs();
@@ -2554,7 +2611,7 @@ function showPunto(tipo, o) {
   const mx = o.xy[0], my = o.xy[1], m = inProv(mx, my) ? munAt(mx, my) : null, n = nom0(o.n);
   const alt = o.e || Math.round(heightAt(mx, my));
   const html = `<h2>${esc(n)}</h2><p class="cap">${esc(TIPO_FAV[tipo])}${m ? " · " + esc(m.n) : ""}</p>
-    <dl><dt>Altitud</dt><dd>${fmt.format(alt)} m</dd>${m && m.cm ? `<dt>Comarca</dt><dd>${esc(m.cm)}</dd>` : ""}</dl>
+    <dl><dt>Altitud</dt><dd>${fmt.format(alt)} m</dd>${m && m.cm ? `<dt>${esc(Z.comarcas.ficha)}</dt><dd>${esc(m.cm)}${m.ct && m.ct !== m.cm && ZID !== "leon" ? " · " + esc(m.ct) : ""}</dd>` : ""}</dl>
     <div class="i-acts">${botonFav(claveFav(tipo, n))}
       <button class="i-act" data-orb="${mx},${my}">Sobrevolar</button>
       ${tipo === "cumbre" || tipo === "puerto" ? `<button class="i-act" data-mir="${mx},${my},${alt}">Mirador</button>` : ""}</div>
@@ -2587,7 +2644,7 @@ function showLocalidad(L, volar) {
   const pob = typeof e.p === "number" ? e.p : null;
   const html = `<h2>${esc(L.n)}</h2><p class="cap">${L.cap ? "Capital del municipio" : "Localidad del municipio"}${m ? ` de <button class="lnk" data-mun="${esc(m.c)}">${esc(m.n)}</button>` : ""}</p>
     <dl>${pob != null ? `<dt>Habitantes</dt><dd>${fmt.format(pob)}</dd>` : ""}<dt>Altitud</dt><dd>${fmt.format(Math.round(h))} m</dd>
-    ${m && m.cm ? `<dt>Comarca</dt><dd>${esc(m.cm)}</dd>` : ""}</dl>
+    ${m && m.cm ? `<dt>${esc(Z.comarcas.ficha)}</dt><dd>${esc(m.cm)}${m.ct && m.ct !== m.cm && ZID !== "leon" ? " · " + esc(m.ct) : ""}</dd>` : ""}</dl>
     <div class="i-acts">
       ${botonFav(claveLoc(L))}
       <button class="i-act" id="loc-orb"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><ellipse cx="12" cy="14" rx="9" ry="4.5"/><path d="M12 14 L12 6"/><circle cx="12" cy="5" r="1.6" fill="currentColor"/></svg>Sobrevolar</button>
@@ -2680,7 +2737,7 @@ function onLoc(pos) {
   loc = { mx, my, acc: accuracy }; meGroup.visible = true;
   meAcc.scale.setScalar(Math.max(accuracy, 30) / 1000); placeMe(); needsRender = true;
   const ip = inProv(mx, my), m = ip ? munAt(mx, my) : null;
-  $("readout").innerHTML = `<b>Estás aquí</b>` + (m ? ` · ${esc(m.n)}` : ip ? "" : " · fuera de la provincia") + ` · ${fmt.format(Math.round(heightAt(mx, my)))} m · precisión ±${fmt.format(Math.round(accuracy))} m`;
+  $("readout").innerHTML = `<b>Estás aquí</b>` + (m ? ` · ${esc(m.n)}` : ip ? "" : " · fuera de " + Z.lugar) + ` · ${fmt.format(Math.round(heightAt(mx, my)))} m · precisión ±${fmt.format(Math.round(accuracy))} m`;
   if (locFirst) { locFirst = false; flyToPoint(mx, my, 14); }
 }
 $("nav-loc").onclick = toggleLoc;
@@ -2749,7 +2806,7 @@ function openMirador(mx, my, name, hKnown) {
   const m = inProv(mx, my) ? munAt(mx, my) : null;
   $("v-name").textContent = name || (m ? "Desde " + m.n : "Mirador");
   $("v-cap").textContent = fmt.format(Math.round(h)) + " m de altitud" + (m ? " · " + m.n + (m.cm ? " (" + m.cm + ")" : "") : "");
-  $("v-area").innerHTML = fmt.format(Math.round(r.km2)) + "<small>km² visibles en la provincia</small>";
+  $("v-area").innerHTML = fmt.format(Math.round(r.km2)) + "<small>km² visibles en " + Z.lugar + "</small>";
   $("v-pct").textContent = fmt1.format(r.pct) + " %";
   $("v-far").textContent = fmt1.format(r.far / 1000) + " km";
   $("v-pue").textContent = fmt.format(pueblos);
@@ -2859,13 +2916,13 @@ function showInfo(m) {
   $("i-l4").textContent = "Código INE"; $("i-code").textContent = m.c;
   $("i-histbox").hidden = !m.ph;
   if (m.ph) { sparkline($("i-spark"), m.ph, yearIdx); $("i-histnote").textContent = histNote(m.ph, m.abs.length ? " Incluye municipios que absorbió: " + m.abs.join(", ") + "." : ""); }
-  $("i-com").textContent = (m.cm ? "Comarca agraria: " + m.cm : "") + (m.bz && m.cm !== "El Bierzo" ? " · El Bierzo (Ley 1/1991)" : "") +
-    (m.ct && m.ct !== m.cm ? " · Tradicional: " + m.ct : "");
+  $("i-com").textContent = (m.cm ? Z.comarcas.ficha + ": " + m.cm : "") + (m.bz && m.cm !== "El Bierzo" ? " · El Bierzo (Ley 1/1991)" : "") +
+    (m.ct && m.ct !== m.cm ? " · " + Z.comarcas.tradicional + ": " + m.ct : "");
   const lo = 200, hi = 2650, pct = (v) => ((v - lo) / (hi - lo) * 100).toFixed(1) + "%";
   $("i-mk-min").style.left = pct(m.amin); $("i-mk-med").style.left = pct(m.amed); $("i-mk-max").style.left = pct(m.amax);
   $("i-amin").textContent = "mín. " + fmt.format(m.amin) + " m"; $("i-amed").textContent = "media " + fmt.format(m.amed) + " m"; $("i-amax").textContent = "máx. " + fmt.format(m.amax) + " m";
   const rank = [...data.municipios].filter(x => x.p != null).sort((a, b) => b.p - a.p).indexOf(m) + 1;
-  $("i-hint").textContent = (rank ? "Puesto " + rank + " de 211 por población en la provincia." : "") +
+  $("i-hint").textContent = (rank ? "Puesto " + rank + " de " + data.municipios.filter(x => x.t === "municipio").length + " por población en " + Z.lugar + "." : "") +
     (comarcaSel ? " Pulsa × para volver a la comarca " + (comarcaSel.n === BIERZO_OFICIAL ? "El Bierzo" : comarcaSel.n) + "." : "");
   $("i-sum").textContent = [m.p != null ? fmt.format(m.p) + " hab." : null, fmt1.format(m.a) + " km²", fmt.format(m.amed) + " m"].filter(Boolean).join(" · ");
 }
@@ -2883,7 +2940,7 @@ function showComarca(c) {
   const muns = c.muns, area = muns.reduce((s, m) => s + m.a, 0);
   $("info").hidden = false;
   $("i-name").textContent = c.n === BIERZO_OFICIAL ? "El Bierzo" : c.n;
-  $("i-cap").textContent = c.n === BIERZO_OFICIAL ? "Comarca oficial (Ley 1/1991 de Castilla y León)" : "Comarca agraria del Ministerio de Agricultura (MAPA)";
+  $("i-cap").textContent = c.n === BIERZO_OFICIAL ? "Comarca oficial (Ley 1/1991 de Castilla y León)" : Z.comarcas.fichaLarga;
   $("i-com").textContent = "";
   $("i-pop").textContent = fmt.format(c.p) + " hab.";
   $("i-area").textContent = fmt1.format(area) + " km²";
@@ -2929,7 +2986,7 @@ const etiquetaLoc = (L) => L.mun && norm(L.mun.n) !== norm(L.n) ? `${L.n} (${L.m
 const LOCS_BUSCA = LOCS.filter(L => !(L.cap && L.mun && norm(L.mun.n) === norm(L.n)));     // la capital homónima ya sale como municipio
 $("munlist").innerHTML = data.municipios.filter(m => m.t === "municipio").map(m => m.n).concat(LOCS_BUSCA.map(etiquetaLoc))
   .sort((a, b) => a.localeCompare(b, "es")).map(n => `<option value="${esc(n)}">`).join("");
-$("search").placeholder = "Municipio o pueblo: Riaño, Robledo de Fenar…";
+$("search").placeholder = Z.busca; $("f-mun").textContent = fmt.format(data.municipios.filter(x => x.t === "municipio").length);
 $("search").addEventListener("change", (e) => {
   const q = norm(e.target.value); if (!q) return;
   const cerrar = () => { if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } };
@@ -2938,7 +2995,8 @@ $("search").addEventListener("change", (e) => {
   const L = LOCS_BUSCA.find(x => norm(etiquetaLoc(x)) === q) || LOCS.find(x => norm(x.n) === q);
   if (L) { showLocalidad(L, true); cerrar(); return; }
   // cumbres: «Pico Teleno · cumbre, 2.169 m» (de la lista) o el nombre a secas
-  const pc = todasCumbres().find(p => norm(etiquetaCumbre(p)) === q) || todasCumbres().find(p => norm(nom0(p.n)) === q);
+  const pc = todasCumbres().find(p => norm(etiquetaCumbre(p)) === q) || todasCumbres().find(p => nombresCumbre(p).includes(q))
+    || todasCumbres().filter(p => nombresCumbre(p).some(a => a.includes(q))).sort((a, b) => b.e - a.e)[0];
   if (pc) { showPunto("cumbre", pc); flyToPoint(pc.xy[0], pc.xy[1], 9); cerrar(); return; }
   const m2 = data.municipios.find(x => norm(x.n).includes(q)) , L2 = LOCS.find(x => norm(x.n).includes(q));
   if (m2) { showInfo(m2); flyTo(m2); cerrar(); } else if (L2) { showLocalidad(L2, true); cerrar(); }
@@ -2991,7 +3049,7 @@ function doHover() {
     const cv = coverAt(p.mx, p.my), covTxt = cv && layers.cob ? ` · ${COVER_NAMES[cv]}` : "";
     const popTxt = PD && morph > 0 ? (PD[ci] > 0 ? ` · <b>${fmt.format(PD[ci])} hab/km²</b> · ${Math.round(PA[ci] / 2.55)} % con más de 64 años` : " · sin población") : "";
     txt = `${lat.toFixed(3)}° N · ${Math.abs(lon).toFixed(3)}° O · <b>${fmt.format(Math.round(morph > 0 ? hReal : h))} m</b>` + popTxt +
-      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de la provincia") + covTxt + climaTxt(p.mx, p.my, hReal) + geoTxt(p.mx, p.my) + rioTxt(p.mx, p.my) + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
+      (m ? ` · <b>${esc(m.n)}</b>` + (m.cm ? ` (${esc(m.cm)})` : "") : ip ? "" : " · fuera de " + Z.lugar) + covTxt + climaTxt(p.mx, p.my, hReal) + geoTxt(p.mx, p.my) + rioTxt(p.mx, p.my) + (near ? ` · ${esc(near.n.split(" / ")[0])}` + (typeof near.p === "number" ? ` (${fmt.format(near.p)} hab.)` : "") : "");
   }
   $("readout").innerHTML = txt;
   hovered = m;
@@ -3002,7 +3060,8 @@ const bind = (id, key, fn) => $(id).addEventListener("change", (e) => { layers[k
 bind("l-mun", "mun", drawOverlay); bind("l-rios", "rios", drawOverlay); bind("l-aguas", "aguas", drawOverlay); bind("l-pob", "pob", drawOverlay);
 bind("l-picos", "picos");
 // nivel del agua: qué sobresale por encima de una altitud
-const sea = { on: false, level: 1000, hist: null, total: 0 };
+const sea = { on: false, level: (Z.nivelAgua || [])[2] || 1000, hist: null, total: 0 };
+if (Z.nivelAgua) { $("sea").min = Z.nivelAgua[0]; $("sea").max = Z.nivelAgua[1]; $("sea").value = sea.level; $("sea-o").textContent = fmt.format(sea.level) + " m"; }
 function seaStats() {
   if (!sea.hist) {              // histograma de altitudes de la provincia en tramos de 10 m (se calcula una vez)
     sea.hist = new Float64Array(400);
@@ -3012,7 +3071,7 @@ function seaStats() {
   const pue = data.entidades.concat(data.capitales).filter(e => inProv(e.xy[0], e.xy[1]));
   const arriba = pue.filter(e => H[Math.min(R - 1, (e.xy[1] / M.celda) | 0) * W + Math.min(W - 1, (e.xy[0] / M.celda) | 0)] >= sea.level);
   const muns = data.municipios.filter(m => m.t === "municipio" && m.amax >= sea.level).length;
-  $("sea-note").textContent = `Por encima de ${fmt.format(sea.level)} m: ${fmt1.format(above / sea.total * 100)} % de la provincia (${fmt.format(Math.round(above * CELL_KM * CELL_KM))} km²), ` +
+  $("sea-note").textContent = `Por encima de ${fmt.format(sea.level)} m: ${fmt1.format(above / sea.total * 100)} % de ${Z.lugar} (${fmt.format(Math.round(above * CELL_KM * CELL_KM))} km²), ` +
     `${fmt.format(arriba.length)} de ${fmt.format(pue.length)} pueblos y ${muns} municipios con alguna cota más alta.`;
 }
 function applySea() {
@@ -3040,8 +3099,8 @@ function ensureClima() {
   if (!clima.loading) clima.loading = (async () => {
     try {
       $("cl-note").textContent = "Cargando datos de AEMET…";
-      const [mj, im] = await Promise.all([fetch("data/clima.json").then(r => { if (!r.ok) throw new Error("clima.json"); return r.json(); }),
-        fetch("data/clima.png").then(r => { if (!r.ok) throw new Error("clima.png"); return r.blob(); })]);
+      const [mj, im] = await Promise.all([fetch(DATA + "clima.json").then(r => { if (!r.ok) throw new Error("clima.json"); return r.json(); }),
+        fetch(DATA + "clima.png").then(r => { if (!r.ok) throw new Error("clima.png"); return r.blob(); })]);
       const bmp = await createImageBitmap(im, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
       const c = document.createElement("canvas"); c.width = bmp.width; c.height = bmp.height;
       const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(bmp, 0, 0);
@@ -3096,7 +3155,7 @@ function climaApply() {
     .map(i => `<span style="left:${(i / n * 100).toFixed(2)}%">${fmt1.format(esc_.b0 + i * esc_.step)}</span>`).join("");
   $("cl-leg").hidden = false;
   const periodo = clima.anual ? "en el año" : "en " + MESES[month];
-  $("cl-note").textContent = `${vr.nombre} ${periodo}: media de la provincia ${climaFmt(g.media, vr.unidad)}. Tramos de ${fmt.format(esc_.step)} ${vr.unidad === "días" ? "días" : vr.unidad}; ` +
+  $("cl-note").textContent = `${vr.nombre} ${periodo}: media de ${Z.lugar} ${climaFmt(g.media, vr.unidad)}. Tramos de ${fmt.format(esc_.step)} ${vr.unidad === "días" ? "días" : vr.unidad}; ` +
     (g.b ? `al subir 100 m: ${g.b > 0 ? "+" : "−"}${climaFmt(Math.abs(g.b * 100), vr.unidad)}.` : "sin ajuste por altitud.");
   needsRender = true;
 }
@@ -3325,7 +3384,7 @@ function selectRio(i, volar) {
     <p class="ruta"><span style="color:var(--ink-soft)">Desemboca en</span> ${rutaHtml(i)}</p>
     <dl><dt>Longitud</dt><dd>${fmt1.format(r.L)} km</dd>
     <dt>Cuenca</dt><dd>${r.A ? fmt.format(Math.round(r.A)) + " km²" : "≈ " + fmt.format(Math.round(r.Am)) + " km²"}</dd>` +
-    (cu ? `<dt>En la provincia</dt><dd>${fmt.format(Math.round(cu.prov))} km² · ${fmt1.format(cu.pct)} %</dd>` : "") +
+    (cu ? `<dt>En ${Z.lugar}</dt><dd>${fmt.format(Math.round(cu.prov))} km² · ${fmt1.format(cu.pct)} %</dd>` : "") +
     (r.q != null ? `<dt>Caudal medio</dt><dd>≈ ${fmtQ(r.q)} m³/s</dd>` : "") + `</dl>`;
   if (hijos.length) h += `<p class="group-title">Afluentes (${hijos.length})</p><div class="chips">` +
     visibles.map(k => `<button class="chip" data-rio="${k}">${esc(RIO.rios[k].n)}<small>${RIO.rios[k].q != null ? fmtQ(RIO.rios[k].q) + " m³/s" : ""}</small></button>`).join("") +
@@ -3474,8 +3533,8 @@ bind("l-est", "est");
 async function cargarRios() {
   let rj, cb;
   try {
-    [rj, cb] = await Promise.all([fetch("data/rios.json").then(r => { if (!r.ok) throw new Error("rios.json"); return r.json(); }),
-      fetch("data/cuencas.png").then(r => r.ok ? r.blob() : null).catch(() => null)]);
+    [rj, cb] = await Promise.all([fetch(DATA + "rios.json").then(r => { if (!r.ok) throw new Error("rios.json"); return r.json(); }),
+      fetch(DATA + "cuencas.png").then(r => r.ok ? r.blob() : null).catch(() => null)]);
   } catch (e) { $("rios-cargando").textContent = "No se pudo cargar la red de ríos."; return; }
   RIO = rj;
   RX.hijos = RIO.rios.map(() => []);
@@ -3620,7 +3679,7 @@ function ensureGeo() {
       const leerPng = async (u) => { const b = await (await fetch(u)).blob(); const bm = await createImageBitmap(b, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
         const c = document.createElement("canvas"); c.width = bm.width; c.height = bm.height; const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(bm, 0, 0);
         return x.getImageData(0, 0, bm.width, bm.height).data; };
-      const [J, a, b] = await Promise.all([fetch("data/geologia.json").then(r => { if (!r.ok) throw new Error("geologia.json"); return r.json(); }), leerPng("data/geologia.png"), leerPng("data/permeab.png")]);
+      const [J, a, b] = await Promise.all([fetch(DATA + "geologia.json").then(r => { if (!r.ok) throw new Error("geologia.json"); return r.json(); }), leerPng(DATA + "geologia.png"), leerPng(DATA + "permeab.png")]);
       const n = W * R; geol.mg = new Uint16Array(n); geol.g1 = new Uint8Array(n); geol.pm = new Uint8Array(n);
       for (let i = 0; i < n; i++) { geol.mg[i] = a[i * 4] * 256 + a[i * 4 + 1]; geol.g1[i] = a[i * 4 + 2]; geol.pm[i] = b[i * 4]; }
       geol.J = J; geol.listo = true;
@@ -3740,7 +3799,7 @@ $("lug-list").addEventListener("click", (e) => {
 });
 bind("l-lugares", "lugares", () => { $("lug-cats").hidden = !layers.lugares; });
 async function cargarLugares() {
-  try { LUG.J = await fetch("data/lugares.json").then(r => { if (!r.ok) throw new Error("lugares.json"); return r.json(); }); }
+  try { LUG.J = await fetch(DATA + "lugares.json").then(r => { if (!r.ok) throw new Error("lugares.json"); return r.json(); }); }
   catch (e) { $("l-lugares").closest("label").hidden = true; $("lug-box").hidden = true; return; }
   LUG.cats = new Set(Object.keys(LUG.J.categorias)); LUG.listo = true;
   for (const g of LUG.J.lugares) {
@@ -3833,7 +3892,7 @@ function showHist(it) {
 }
 async function cargarHistoria() {
   if (HIST.listo) return true;
-  try { HIST.J = await fetch("data/historia.json").then(r => { if (!r.ok) throw new Error("historia.json"); return r.json(); }); }
+  try { HIST.J = await fetch(DATA + "historia.json").then(r => { if (!r.ok) throw new Error("historia.json"); return r.json(); }); }
   catch (e) { $("hist-nota").textContent = "No se pudo cargar la historia (" + e.message + ")."; return false; }
   const J = HIST.J, E = J.epocas, col = (id) => (E.find(e => e.id === id) || E[0]).color;
   for (const it of J.sitios) {
@@ -3939,10 +3998,11 @@ const PASOS_HIST = [
 $("hist-guia").onclick = () => empezarTour(PASOS_HIST, { titulo: "Historia", sinMano: true, arriba: true, alEmpezar: () => { setCat("historia"); cerrarPanel(); }, alSalir: () => { closeHcard(); } });
 // ---------------------------------------------------------------- todas las cumbres con nombre (scripts/cumbres.R)
 const todasCumbres = () => data.picos.concat(CUMBRES);
-const etiquetaCumbre = (p) => `${nom0(p.n)} · cumbre, ${fmt.format(p.e)} m`;
+const etiquetaCumbre = (p) => `${String(p.n).split(" / ").join(" o ")} · cumbre, ${fmt.format(p.e)} m`;   // con todos sus nombres (castellano, asturiano…)
+const nombresCumbre = (p) => String(p.n).split(" / ").map(norm);
 async function cargarCumbres() {
   let J;
-  try { J = await fetch("data/cumbres.json").then(r => { if (!r.ok) throw new Error("cumbres.json"); return r.json(); }); }
+  try { J = await fetch(DATA + "cumbres.json").then(r => { if (!r.ok) throw new Error("cumbres.json"); return r.json(); }); }
   catch (e) { return; }
   // fuera las que ya están entre las 150 principales (a menos de 200 m)
   CUMBRES = J.cumbres.filter(c => !data.picos.some(p => Math.abs(p.xy[0] - c.xy[0]) < 200 && Math.abs(p.xy[1] - c.xy[1]) < 200));
@@ -4002,7 +4062,7 @@ function showFuego(f, volar) {
   const [a, m, d] = f.ini.split("-"), fin = f.fin && f.fin !== f.ini ? f.fin.split("-") : null;
   const fechas = fin ? (fin[1] === m ? `Del ${+d} al ${+fin[2]} de ${MESES[+m - 1]} de ${a}` : `Del ${+d} de ${MESES[+m - 1]} al ${+fin[2]} de ${MESES[+fin[1] - 1]} de ${a}`) : `${+d} de ${MESES[+m - 1]} de ${a}`;
   const h = `<h2>Incendio de ${esc(nombreFuego(f))}</h2><p class="cap">${f.ha >= 500 ? "Gran incendio forestal · " : ""}${fechas}${dias > 1 ? ` (${dias} días)` : ""}</p>
-    <dl><dt>Superficie quemada</dt><dd>${fmtHa(f.ha)}${f.haLeon < f.ha * 0.98 ? `<br><small>${fmtHa(f.haLeon)} en la provincia de León</small>` : ""}</dd>
+    <dl><dt>Superficie quemada</dt><dd>${fmtHa(f.ha)}${f.haLeon < f.ha * 0.98 ? `<br><small>${fmtHa(f.haLeon)} en ${Z.lugar}</small>` : ""}</dd>
     ${f.natura ? `<dt>En Red Natura 2000</dt><dd>${f.natura} %</dd>` : ""}</dl>
     ${Object.keys(f.cub || {}).length ? `<p class="group-title" style="margin-top:8px">Qué ardió</p>${cubiertaHtml(f.cub)}` : ""}
     ${f.locs.length ? `<p class="group-title" style="margin-top:10px">Pueblos dentro o junto al perímetro</p><p style="margin:0;font-size:13px;line-height:1.5">${f.locs.map(esc).join(", ")}</p>` : ""}
@@ -4034,8 +4094,8 @@ function listaInc() {
   $("inc-anios").innerHTML = J.anios.map(x => `<button data-ia="${x.anio}" aria-pressed="${INC.anio === x.anio}" title="${x.anio}: ${fmt.format(x.ha)} ha en ${x.n} incendios"><i style="height:${Math.max(2, Math.round(Math.sqrt(x.ha / max) * 70))}px"></i><small>${String(x.anio).slice(2)}</small></button>`).join("")
     + `<button class="todos" data-ia="0" aria-pressed="${!INC.anio}" title="Todos los años"><small>Todos</small></button>`;
   const enCurso = INC.anio === new Date().getFullYear() ? ` (año en curso, datos hasta el ${J.actualizado.split("-").reverse().join("/")})` : "";
-  $("inc-resumen").innerHTML = s ? `En <b>${s.anio}</b>${enCurso} ardieron <b>${fmt.format(s.ha)} ha</b> en León en ${s.n} incendios cartografiados; <b>${s.gif}</b> ${s.gif === 1 ? "superó" : "superaron"} las 500 ha.`
-    : `Desde ${J.anios[0].anio}: <b>${fmt.format(J.anios.reduce((t, x) => t + x.ha, 0))} ha</b> quemadas en León en ${fmt.format(J.anios.reduce((t, x) => t + x.n, 0))} incendios. Más oscuros, los más recientes.`;
+  $("inc-resumen").innerHTML = s ? `En <b>${s.anio}</b>${enCurso} ardieron <b>${fmt.format(s.ha)} ha</b> en ${Z.lugar} en ${s.n} incendios cartografiados; <b>${s.gif}</b> ${s.gif === 1 ? "superó" : "superaron"} las 500 ha.`
+    : `Desde ${J.anios[0].anio}: <b>${fmt.format(J.anios.reduce((t, x) => t + x.ha, 0))} ha</b> quemadas en ${Z.lugar} en ${fmt.format(J.anios.reduce((t, x) => t + x.n, 0))} incendios. Más oscuros, los más recientes.`;
   $("inc-verano").hidden = !INC.anio;
   const fs = J.incendios.filter(f => (!INC.anio || f.anio === INC.anio) && (!layers.incgif || f.ha >= 500));
   $("inc-lista-tit").textContent = INC.anio ? `Incendios de ${INC.anio}` : "Mayores incendios desde " + J.anios[0].anio;
@@ -4071,7 +4131,7 @@ bind("l-incgif", "incgif", () => { listaInc(); drawOverlay(); needsRender = true
 async function cargarIncendios() {
   if (INC.listo) return true;
   if (!INC.cargando) INC.cargando = (async () => {
-    try { INC.J = await fetch("data/incendios.json").then(r => { if (!r.ok) throw new Error("incendios.json"); return r.json(); }); }
+    try { INC.J = await fetch(DATA + "incendios.json").then(r => { if (!r.ok) throw new Error("incendios.json"); return r.json(); }); }
     catch (e) { $("inc-lista").innerHTML = `<p class="spark-note">No se pudieron cargar los incendios (${esc(e.message)}).</p>`; INC.cargando = null; return false; }
     for (const f of INC.J.incendios) if (f.ha >= 500) {
       addLabel("fuego", `<span class="ic"></span>${esc(nombreFuego(f))}<small>${fmt.format(f.ha)} ha</small>`, f.c[0], f.c[1], 650 + Math.log10(f.ha) * 60, f.ha >= 5000 ? 0 : 90);
@@ -4155,7 +4215,7 @@ function showProt(it, volar) {
   let h = `<h2>${esc(o.n)}</h2><p class="cap"><span class="ic" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${it.color};margin-right:6px;vertical-align:-1px"></span>${esc(it.tipo === "natura" ? (o.tipo === "ZEC" ? "Zona Especial de Conservación (ZEC)" : "Zona de Especial Protección para las Aves (ZEPA)") : it.sub)}</p><dl>`;
   if (o.fecha) h += `<dt>${it.tipo === "biosfera" ? "Declarada por la UNESCO" : "Declaración"}</dt><dd>${fmtFecha(o.fecha)}${o.ampl ? ` <small>(ampliada en ${esc(o.ampl)})</small>` : ""}</dd>`;
   if (o.estado && o.estado !== "Declarado") h += `<dt>Estado</dt><dd>${esc(o.estado)}</dd>`;
-  h += `<dt>Superficie</dt><dd>${fmtHa(o.ha)}${o.haLeon < o.ha * 0.98 ? `<br><small>${fmtHa(o.haLeon)} en la provincia de León</small>` : ""}</dd>`;
+  h += `<dt>Superficie</dt><dd>${fmtHa(o.ha)}${o.haLeon < o.ha * 0.98 ? `<br><small>${fmtHa(o.haLeon)} en ${Z.lugar}</small>` : ""}</dd>`;
   if (o.zonas && o.zonas.length) h += `<dt>Zonas en León</dt><dd>${o.zonas.map(z => `<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${COLOR_ZONA[z.z]};margin-right:4px"></span>${esc(z.z)}: ${fmtHa(z.ha)}`).join("<br>")}</dd>`;
   if (o.gestor) h += `<dt>Gestión</dt><dd>${esc(o.gestor)}</dd>`;
   if (o.porn) h += `<dt>Plan de ordenación (PORN)</dt><dd>${esc(o.porn)}</dd>`;
@@ -4243,7 +4303,7 @@ bind("l-przon", "przon", () => { drawOverlay(); needsRender = true; });
 async function cargarProteccion() {
   if (PROT.listo) return true;
   if (!PROT.cargando) PROT.cargando = (async () => {
-    try { PROT.J = await fetch("data/proteccion.json").then(r => { if (!r.ok) throw new Error("proteccion.json"); return r.json(); }); }
+    try { PROT.J = await fetch(DATA + "proteccion.json").then(r => { if (!r.ok) throw new Error("proteccion.json"); return r.json(); }); }
     catch (e) { $("pr-lista").innerHTML = `<p class="spark-note">No se pudieron cargar las figuras de protección (${esc(e.message)}).</p>`; PROT.cargando = null; return false; }
     const J = PROT.J;
     for (const [modo, its] of [["espacios", itemsProt("espacios")], ["zec", itemsProt("zec")], ["zepa", itemsProt("zepa")], ["biosfera", itemsProt("biosfera")]]) for (const it of its) {
@@ -4395,7 +4455,7 @@ function marcarPueblosCamino() {
 }
 async function cargarCamino() {
   if (CAM.listo) return true;
-  try { CAM.J = await fetch("data/camino.json").then(r => { if (!r.ok) throw new Error("camino.json"); return r.json(); }); }
+  try { CAM.J = await fetch(DATA + "camino.json").then(r => { if (!r.ok) throw new Error("camino.json"); return r.json(); }); }
   catch (e) { $("cam-lista").innerHTML = `<p class="spark-note">No se pudieron cargar los caminos (${esc(e.message)}).</p>`; return false; }
   for (const a of CAM.J.albergues) {
     addLabel("alb", '<span class="ic"></span>' + esc(a.n), a.xy[0], a.xy[1], 110, 30);
@@ -4421,9 +4481,9 @@ function etapaCerca(mx, my, tol) {
   CAM.J.etapas.forEach((e, i) => { for (const g of e.g) { const d = distSeg(mx, my, g); if (d < bd) { bd = d; best = i; } } });
   return best;
 }
-cargarLugares();
-cargarRios();
-cargarCumbres();
+if (hay("lugares")) cargarLugares(); else { $("l-lugares").closest("label").hidden = true; $("lug-box").hidden = true; }
+if (hay("rios")) cargarRios();
+if (hay("cumbres")) cargarCumbres();
 setCat("mapa", false);   // siempre se abre con el paisaje completo
 // vista paisaje: todo como al abrir (árboles, pueblos, luz de la tarde, cámara inicial), sin capas de datos ni fichas
 const CAPAS_INICIO = { "l-fav": true, "l-mun": true, "l-comarcas": false, "l-carr": true, "l-pob": true, "l-entorno": false, "l-picos": true, "l-sierras": true,
@@ -4443,7 +4503,7 @@ function vistaPaisaje() {
   if (morph > 0) { $("morph").value = 0; $("morph").dispatchEvent(new Event("input")); }
   for (const [id, v] of Object.entries(CAPAS_INICIO)) { const el = $(id); if (el && el.checked !== v) { el.checked = v; el.dispatchEvent(new Event("change")); } }
   const pon = (id, v) => { const el = $(id); if (String(el.value) !== String(v)) { el.value = v; el.dispatchEvent(new Event("input")); } };
-  pon("exag", 2.5); pon("hora", 17); pon("mes", new Date().getMonth());
+  pon("exag", Z.exag || 2.5); pon("hora", 17); pon("mes", new Date().getMonth());
   tweenTo(HOME, 1400);
   $("readout").textContent = "Vista paisaje";
   if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
@@ -4672,9 +4732,9 @@ async function escribir(el, texto, tk) {
 const abrirPanel = () => { if (isPhone) { $("panel").classList.remove("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "true"); } };
 const cerrarPanel = () => { if (isPhone) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); } };
 const verEn = (el) => { el.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" }); return el; };
-const capLeon = data.capitales.find(c => c.c === "24089"), munLeon = data.municipios.find(m => m.c === "24089");
+const capLeon = data.capitales.find(c => c.c === Z.capital), munLeon = data.municipios.find(m => m.c === Z.capital);   // la villa principal de la zona
 const PASOS_TUT = [
-  { t: "Bienvenido a León en relieve", x: "La provincia en 3D con datos oficiales. En tres minutos te enseño a moverte, a consultar cualquier lugar y a usar las capas de datos. Puedes pausar o saltar pasos cuando quieras.",
+  { t: "Bienvenido a " + Z.nombre, x: Z.sub.replace(/:.*/, ".") + " En tres minutos te enseño a moverte, a consultar cualquier lugar y a usar las capas de datos. Puedes pausar o saltar pasos cuando quieras.",
     f: async (tk) => { tour.objetivo = null; cerrarPanel(); tweenTo(HOME, 900); await espera(900, tk); } },
   { t: "Moverse por el mapa", x: "Arrastra para desplazarte. Con la rueda o pellizcando con dos dedos te acercas. Con el botón derecho, o girando dos dedos, cambias el ángulo y la orientación.",
     f: async (tk) => {
@@ -4686,7 +4746,7 @@ const PASOS_TUT = [
     } },
   { t: "Los controles", x: "Aquí tienes zoom, la brújula (norte arriba), la vista cenital 2D o inclinada 3D, el sobrevuelo de dron, tu ubicación, la ayuda y ↻ para cargar cambios.",
     f: async (tk) => { tour.objetivo = $("nav"); await espera(700, tk); await clic($("nav-tilt"), tk); await espera(1300, tk); await clic($("nav-tilt"), tk); } },
-  { t: "Toca un municipio", x: "Al tocar el mapa aparece la ficha del municipio con su población, superficie y altitud. Probemos con León.",
+  { t: "Toca un municipio", x: "Al tocar el mapa aparece la ficha del municipio con su población, superficie y altitud. Probemos con " + (munLeon ? munLeon.n : "la villa principal") + ".",
     f: async (tk) => {
       cerrarPanel(); flyToPoint(capLeon.xy[0], capLeon.xy[1], 32); await espera(1600, tk);
       tour.objetivo = { mx: capLeon.xy[0], my: capLeon.xy[1] }; await espera(400, tk);
@@ -4696,12 +4756,12 @@ const PASOS_TUT = [
     f: async (tk) => { tour.objetivo = $("info"); await clic($("i-more"), tk); await espera(2200, tk); await clic($("i-more"), tk); } },
   { t: "Sobrevolar como un dron", x: "«Sobrevolar» da vueltas alrededor del municipio, como un dron. Toca el mapa para parar.",
     f: async (tk) => { tour.objetivo = $("i-orbit"); await clic($("i-orbit"), tk); tour.objetivo = null; await espera(4500, tk); if (orbit) stopOrbit(); showInfo(null); } },
-  { t: "Las categorías", x: "El panel se organiza por temas: Mapa, Relieve, Geología, Población, Clima, Agua, Historia, Camino, Protección, Incendios y Escena. Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
+  { t: "Las categorías", x: "El panel se organiza por temas: " + [...document.querySelectorAll(".cat-b:not([hidden])")].map(b => b.textContent.trim()).join(", ").replace(/, ([^,]*)$/, " y $1") + ". Con «Enfocar» se ocultan los árboles, pueblos o carreteras cuando estorban para leer los datos.",
     f: async (tk) => { abrirPanel(); await espera(400, tk); tour.objetivo = document.querySelector(".cats"); $("panel").scrollTop = 0; await espera(1200, tk); } },
-  { t: "Nivel del agua", x: "En Relieve puedes inundar el terreno hasta una altitud y ver qué cotas sobresalen. Aquí, todo lo que queda por debajo de 1.000 m.",
+  { t: "Nivel del agua", x: "En Relieve puedes inundar el terreno hasta una altitud y ver qué cotas sobresalen. " + Z.tutorial.agua[2],
     f: async (tk) => {
       abrirPanel(); await clic($("tab-relieve"), tk); tour.objetivo = verEn($("sea-box")); await espera(600, tk);
-      if (!$("l-sea").checked) await clic($("l-sea").parentElement, tk); await mano($("sea"), tk, 0.25); await deslizar($("sea"), 600, 1000, 1800, tk);
+      if (!$("l-sea").checked) await clic($("l-sea").parentElement, tk); await mano($("sea"), tk, 0.25); await deslizar($("sea"), Z.tutorial.agua[0], Z.tutorial.agua[1], 1800, tk);
       cerrarPanel(); tweenTo(HOME, 900); await espera(2200, tk); abrirPanel(); await clic($("l-sea").parentElement, tk);
     } },
   { t: "Geología", x: "Colorea el terreno por tipo de roca, edad o permeabilidad. Toca un color de la leyenda para verlo solo, o toca el terreno para ver qué roca hay.",
@@ -4717,7 +4777,7 @@ const PASOS_TUT = [
   { t: "Ríos y afluentes", x: "En Agua, busca un río para ver su cuenca, sus afluentes, el caudal y las estaciones de aforo.",
     f: async (tk) => {
       abrirPanel(); await clic($("tab-agua"), tk); await espera(600, tk);
-      if (RIO) { tour.objetivo = verEn($("rio-search")); await mano($("rio-search"), tk, 0.3); await escribir($("rio-search"), "Río Bernesga", tk); cerrarPanel(); await espera(900, tk); tour.objetivo = $("hcard"); await espera(2500, tk); }
+      if (RIO) { tour.objetivo = verEn($("rio-search")); await mano($("rio-search"), tk, 0.3); await escribir($("rio-search"), Z.tutorial.rio, tk); cerrarPanel(); await espera(900, tk); tour.objetivo = $("hcard"); await espera(2500, tk); }
     } },
   { t: "¿Adónde va esta gota?", x: "Suelta una gota en cualquier punto y mira el camino del agua, río a río, hasta el mar.",
     f: async (tk) => {
@@ -4816,7 +4876,11 @@ $("tour-sig").onclick = () => { if (tour.i >= tour.pasos.length - 1) salirTour()
 $("tour-ant").onclick = () => { if (tour.i > 0) correrPaso(tour.i - 1); };
 $("tour-salir").onclick = salirTour;
 $("tour-pausa").onclick = () => { tour.pausa = !tour.pausa; $("tour-pausa").textContent = tour.pausa ? "▶" : "❚❚"; $("tour-pausa").setAttribute("aria-label", tour.pausa ? "Seguir" : "Pausar"); };
-for (const id of ["tour-abrir", "tour-abrir-2", "tour-abrir-3", "tour-invita-ver"]) $(id).onclick = () => empezarTour(PASOS_TUT);
+// pasos del tutorial de pestañas que esta zona no tiene: fuera
+const PASO_DATO = { "Geología": "geologia", "El clima": "clima", "Historia": "historia", "Visita guiada por la historia": "historia", "El Camino de Santiago": "camino",
+  "Recorrer la etapa": "camino", "Figuras de protección": "proteccion", "Grandes incendios": "incendios", "Ríos y afluentes": "rios", "¿Adónde va esta gota?": "rios" };
+const pasosTutorial = () => PASOS_TUT.filter(p => !PASO_DATO[p.t] || hay(PASO_DATO[p.t]));
+for (const id of ["tour-abrir", "tour-abrir-2", "tour-abrir-3", "tour-invita-ver"]) $(id).onclick = () => empezarTour(pasosTutorial());
 $("tour-invita-no").onclick = () => { $("tour-invita").hidden = true; try { localStorage.setItem("leon3d-tour", "visto"); } catch (e) { /* sin almacenamiento */ } };
 addEventListener("keydown", (e) => {          // durante el tutorial, el teclado lo maneja él
   if (!tour.on) return;

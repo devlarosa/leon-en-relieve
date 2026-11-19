@@ -1,23 +1,29 @@
-# Prepara los datos oficiales para el visor web 3D de la provincia de León.
+# Prepara los datos oficiales para el visor web 3D de una zona (web/zonas.json; ZONA=leon por defecto).
 # Fuentes: IGN (MDT25, unidades administrativas, hidrografía, NGBE) e INE (Padrón 2025).
-# Salida: web/data/relieve.png (alturas codificadas RGB) y web/data/leon.json
+# Salida: web/data/<zona>/relieve.png (alturas codificadas RGB) y web/data/<zona>/zona.json
+# Los parámetros que cambian de una zona a otra están en «procesado» de su ficha; por defecto, los de León.
 suppressMessages({library(sf); library(terra); library(dplyr); library(jsonlite)})
+source("R/zona.R")   # ZONA, FICHA, fr() = raw/<zona>/…, fw() = web/data/<zona>/…
 sf_use_s2(FALSE)
-dir.create("web/data", recursive = TRUE, showWarnings = FALSE)
 
-X0 <- 164000; X1 <- 360000; Y0 <- 4655000; Y1 <- 4790000; CELL <- 100
+
+X0 <- FICHA$extension[1]; Y0 <- FICHA$extension[2]; X1 <- FICHA$extension[3]; Y1 <- FICHA$extension[4]; CELL <- FICHA$celda
+P <- FICHA$procesado; if (is.null(P)) P <- list()
+opc <- function(k, v) if (is.null(P[[k]])) v else P[[k]]
+P_PICOS <- opc("picos", c(150, 2500)); P_RIOS <- opc("rios", c(4, 30)); P_AGUAS <- opc("aguas", c(150000, 20000, 15))
+P_SIMPL <- opc("simplificar", c(20, 18, 25)); P_CARR <- opc("carreteras", c("mainRoad", "firstClass", "secondClass"))
 loc <- function(m) cbind(round(m[,1] - X0), round(Y1 - m[,2]))   # metros locales, y hacia el sur
 
 # ---------- Administrativo ----------
-prov <- st_read("raw/provincia.gpkg", quiet = TRUE)
-mun  <- st_read("raw/municipios.gpkg", quiet = TRUE)
-pob  <- read.csv("raw/poblacion_ine_2025.csv", colClasses = c(code = "character"))
+prov <- st_read(fr("provincia.gpkg"), quiet = TRUE)
+mun  <- st_read(fr("municipios.gpkg"), quiet = TRUE)
+pob  <- read.csv(fr("poblacion_ine_2025.csv"), colClasses = c(code = "character"))
 mun  <- mun %>% left_join(pob[, c("code", "pob2025")], by = "code")
 prov_buf <- st_buffer(prov, 400)
 
 # ---------- Relieve (MDT25 IGN) ----------
 cat("Mosaico MDT25...\n")
-tiles <- list.files("raw/mdt25", pattern = "\\.tif$", full.names = TRUE)
+tiles <- list.files(fr("mdt25"), pattern = "\\.tif$", full.names = TRUE)
 dem25 <- do.call(mosaic, c(lapply(tiles, rast), fun = "mean"))
 crs(dem25) <- "EPSG:25830"
 dem25[dem25 < -100 | dem25 > 4000] <- NA
@@ -30,8 +36,8 @@ cat("Rejilla:", ncol(dem), "x", nrow(dem), " rango:", unlist(global(dem, "range"
 v <- round((values(dem)[,1] + 10000) * 10)
 rgbr <- rast(dem, nlyrs = 3)
 values(rgbr) <- cbind(v %/% 65536, (v %/% 256) %% 256, v %% 256)
-writeRaster(rgbr, "web/data/relieve.png", datatype = "INT1U", overwrite = TRUE)
-unlink("web/data/relieve.png.aux.xml")
+writeRaster(rgbr, fw("relieve.png"), datatype = "INT1U", overwrite = TRUE)
+unlink(fw("relieve.png.aux.xml"))
 
 # ---------- Estadísticas municipales ----------
 ex <- terra::extract(dem25, vect(mun), fun = function(x, ...) c(min(x, na.rm=TRUE), max(x, na.rm=TRUE), mean(x, na.rm=TRUE)))
@@ -40,21 +46,22 @@ mun$area_km2 <- round(as.numeric(st_area(mun)) / 1e6, 2)
 
 # ---------- Nomenclátor (NGBE) ----------
 rd_pts <- function(f) {
-  p <- st_read(f, quiet = TRUE)
+  p <- tryCatch(st_read(f, quiet = TRUE), error = function(e) NULL)   # capa vacía (p. ej., sin capital de provincia en la zona)
+  if (is.null(p) || !nrow(p)) return(st_sf(nombre = character(0), geometry = st_sfc(crs = 25830)))
   p$nombre <- vapply(p$text, function(t) paste(unique(unlist(t)), collapse = " / "), "")
   p <- st_transform(p, 25830) %>% select(nombre)
   p[lengths(st_intersects(p, prov_buf)) > 0, ]
 }
-capprov <- rd_pts("raw/ngbe/Capital_de_provincia.gml")
-capmun  <- rd_pts("raw/ngbe/Capital_de_municipio.gml")
+capprov <- rd_pts(fr("ngbe/Capital_de_provincia.gml"))
+capmun  <- rd_pts(fr("ngbe/Capital_de_municipio.gml"))
 # localidades: entidades singulares, núcleos, capitales de junta vecinal (EATIM) y entidades menores del NGBE
 tipos_loc <- c("Entidad_singular", "Núcleos_de_población", "Capital_de_EATIM", "Entidad_menor_de_población")
-ent <- do.call(rbind, lapply(tipos_loc, function(t) { f <- sprintf("raw/ngbe/%s.gml", t); if (file.exists(f)) rd_pts(f) }))
-mont    <- rd_pts("raw/ngbe/Montaña.gml")
+ent <- do.call(rbind, lapply(tipos_loc, function(t) { f <- sprintf(fr("ngbe/%s.gml"), t); if (file.exists(f)) rd_pts(f) }))
+mont    <- rd_pts(fr("ngbe/Montaña.gml"))
 
 capmun <- st_join(capmun, mun[, c("code")], join = st_within) %>% filter(!is.na(code)) %>%
   group_by(code) %>% slice(1) %>% ungroup()
-capmun$capital_prov <- capmun$code == "24089"
+capmun$capital_prov <- capmun$code == FICHA$capital
 mun <- mun %>% left_join(st_drop_geometry(capmun)[, c("code", "nombre")] %>% rename(capital = nombre), by = "code")
 # normalización de nombres para cruzar IGN e INE ("UÑA (LA)" = "La Uña"; sin tildes ni signos)
 norm_nom <- function(x) {
@@ -74,7 +81,7 @@ for (i in seq_len(nrow(ent))[-1]) {
 }
 ent <- ent[!dup, ]
 # población de cada pueblo: Nomenclátor del INE (entidades singulares), cruzado por municipio y nombre
-ine_ent <- read.csv("raw/nomenclator/entidades_ine.csv", colClasses = c(codigo = "character", municipio_ine = "character"))
+ine_ent <- read.csv(fr("nomenclator/entidades_ine.csv"), colClasses = c(codigo = "character", municipio_ine = "character"))
 names(ine_ent)[5] <- "pob"
 ine_ent$clave <- norm_nom(ine_ent$nombre_ine)
 k_ign <- paste(ent$municipio, ent$clave); k_ine <- paste(ine_ent$municipio_ine, ine_ent$clave)
@@ -103,9 +110,9 @@ cat("Capitales:", nrow(capmun), " Localidades (sin capitales):", nrow(ent), "\n"
 mont$elev <- terra::extract(dem25, vect(st_buffer(mont, 60)), fun = max, na.rm = TRUE)[,2]
 mont <- mont %>% filter(!is.na(elev)) %>% arrange(desc(elev))
 keep <- integer(0); xy <- st_coordinates(mont)
-for (i in seq_len(nrow(mont))) {
-  if (length(keep) >= 150) break
-  if (!length(keep) || min(sqrt((xy[keep,1]-xy[i,1])^2 + (xy[keep,2]-xy[i,2])^2)) > 2500) keep <- c(keep, i)
+for (i in seq_len(nrow(mont))) {     # las principales y separadas (el resto lo añade scripts/cumbres.R)
+  if (length(keep) >= P_PICOS[1]) break
+  if (!length(keep) || min(sqrt((xy[keep,1]-xy[i,1])^2 + (xy[keep,2]-xy[i,2])^2)) > P_PICOS[2]) keep <- c(keep, i)
 }
 picos <- mont[keep, ]
 picos <- picos[lengths(st_intersects(picos, prov_buf)) > 0, ]
@@ -118,22 +125,22 @@ relieve_local <- function(p, r) {           # máximo y mínimo del MDT en un ra
         terra::extract(dem25, vect(p))[,2])
 }
 prov_in <- function(x) x[lengths(st_intersects(x, prov)) > 0, ]
-sierras <- rd_pts("raw/ngbe/Alineación_montañosa.gml"); sierras <- sierras[lengths(st_intersects(sierras, st_buffer(prov, 1000))) > 0, ]
+sierras <- rd_pts(fr("ngbe/Alineación_montañosa.gml")); sierras <- sierras[lengths(st_intersects(sierras, st_buffer(prov, 1000))) > 0, ]
 rs <- relieve_local(sierras, 2500); sierras$elev <- rs[,1]; sierras$imp <- rs[,1] - rs[,2]
 sierras <- sierras %>% filter(!is.na(imp)) %>% arrange(desc(imp + elev / 4))
-valles <- prov_in(rd_pts("raw/ngbe/Depresión.gml"))
+valles <- prov_in(rd_pts(fr("ngbe/Depresión.gml")))
 rv <- relieve_local(valles, 1500); valles$elev <- rv[,3]; valles$imp <- rv[,1] - rv[,3]
 valles <- valles %>% filter(!is.na(imp), grepl("^(Valle|Val|Vega|Hoya|Foz|Garganta|Hoces|Desfiladero|Cañón)", nombre)) %>% arrange(desc(imp)) %>% slice_head(n = 260)
-puertos <- rd_pts("raw/ngbe/Paso_de_montaña.gml"); puertos <- puertos[lengths(st_intersects(puertos, st_buffer(prov, 1000))) > 0, ]
+puertos <- rd_pts(fr("ngbe/Paso_de_montaña.gml")); puertos <- puertos[lengths(st_intersects(puertos, st_buffer(prov, 1000))) > 0, ]
 puertos$elev <- terra::extract(dem25, vect(puertos))[,2]
-puertos <- puertos %>% filter(grepl("^Puerto", nombre), !is.na(elev)) %>% arrange(desc(elev))
+puertos <- puertos %>% filter(opc("puertos", "") == "todos" | grepl("^Puerto", nombre), !is.na(elev)) %>% arrange(desc(elev))   # «todos»: también collados, horcadas…
 cat("Sierras:", nrow(sierras), " Valles:", nrow(valles), " Puertos:", nrow(puertos), "\n")
 cat("  sierras principales:", paste(head(sierras$nombre, 10), collapse = ", "), "\n")
 cat("  puertos:", paste(paste0(puertos$nombre, " ", round(puertos$elev)), collapse = ", "), "\n")
 
 # ---------- Ríos (IGN hidrografía, cursos con nombre "Río ...") ----------
 cat("Ríos...\n")
-rf <- list.files("raw/rios", pattern = "\\.gml$", full.names = TRUE)
+rf <- list.files(fr("rios"), pattern = "\\.gml$", full.names = TRUE)
 rios <- do.call(rbind, lapply(rf, function(f) st_read(f, quiet = TRUE)[, c("gml_id", "text", "upper")]))
 rios <- rios[!duplicated(rios$gml_id), ]
 cat("tramos únicos:", nrow(rios), "\n")
@@ -144,32 +151,42 @@ rios <- rios[st_geometry_type(rios) %in% c("LINESTRING", "MULTILINESTRING"), ]
 rios <- rios %>% group_by(nombre = text) %>% summarise(ancho = max(upper, na.rm = TRUE), .groups = "drop") %>% st_cast("MULTILINESTRING") %>%
   st_line_merge()
 rios$long_km <- round(as.numeric(st_length(rios)) / 1000, 1)
-rios <- rios %>% filter(long_km >= 4) %>% arrange(desc(long_km))
-rios <- st_simplify(rios, dTolerance = 30)
+rios <- rios %>% filter(long_km >= P_RIOS[1]) %>% arrange(desc(long_km))
+rios <- st_simplify(rios, dTolerance = P_RIOS[2])
 cat("ríos:", nrow(rios), " principales:", paste(head(rios$nombre, 12), collapse = ", "), "\n")
 
 # ---------- Embalses y lagos (IGN, OGC API Features de la IDEE) ----------
-aguas <- st_read("raw/aguas_api/standingwater.geojson", quiet = TRUE) %>% st_transform(25830) %>% st_zm() %>% st_make_valid()
+aguas <- st_read(fr("aguas_api/standingwater.geojson"), quiet = TRUE) %>% st_transform(25830) %>% st_zm() %>% st_make_valid()
 aguas <- aguas[lengths(st_intersects(aguas, prov)) > 0, ]
 aguas$area <- as.numeric(st_area(aguas))
-aguas <- aguas %>% filter(area > 150000 | (tipo_aestd == "Lago" & area > 20000)) %>%
-  transmute(nombre, tipo = tipo_aestd) %>% st_simplify(dTolerance = 15)
+aguas <- aguas %>% filter(area > P_AGUAS[1] | (tipo_aestd %in% c("Lago", "Laguna") & area > P_AGUAS[2])) %>%
+  transmute(nombre, tipo = tipo_aestd) %>% st_simplify(dTolerance = P_AGUAS[3])
 cat("aguas:", nrow(aguas), " con nombre:", paste(na.omit(aguas$nombre[aguas$tipo == "Embalse"]), collapse = ", "), "\n")
 
 # ---------- Carreteras (IGN, red de transporte, clase funcional) ----------
-clases <- c(mainRoad = 1, firstClass = 2, secondClass = 3)
+clases <- c(mainRoad = 1, firstClass = 2, secondClass = 3, thirdClass = 3)[P_CARR]
 carr <- do.call(rbind, lapply(names(clases), function(cl) {
-  x <- st_read(sprintf("raw/carreteras/%s.geojson", cl), quiet = TRUE)[, "functionalclass"]
+  x <- st_read(sprintf(fr("carreteras/%s.geojson"), cl), quiet = TRUE)[, "functionalclass"]
   x$clase <- clases[[cl]]; x[, "clase"] }))
 carr <- st_transform(carr, 25830) %>% st_zm()
 carr <- st_intersection(carr, st_geometry(st_buffer(prov, 1500)))
 carr <- carr[st_geometry_type(carr) %in% c("LINESTRING", "MULTILINESTRING"), ]
 carr <- carr %>% group_by(clase) %>% summarise(.groups = "drop") %>% st_cast("MULTILINESTRING") %>% st_line_merge() %>%
-  st_simplify(dTolerance = 20)
+  st_simplify(dTolerance = P_SIMPL[1])
 cat("carreteras km por clase:", round(as.numeric(st_length(carr)) / 1000), "\n")
 
+if (opc("comarcas", "agrarias") == "provincias") {
+# ---------- Provincias (hacen de «comarcas» en el visor) y comarca tradicional de cada municipio (de la ficha) ----------
+TRADICIONAL <- unlist(opc("tradicional", list()))
+mun$comarca <- mun$provincia
+mun$tradicional <- unname(TRADICIONAL[mun$code])
+mun$bierzo <- FALSE
+grp <- mun %>% group_by(nombre = comarca) %>% summarise(n = n(), pob = sum(pob2025, na.rm = TRUE), bierzo = FALSE, .groups = "drop")
+grp <- st_simplify(grp, dTolerance = P_SIMPL[3])
+cat("provincias:", paste(grp$nombre, grp$n), "\n")
+} else {
 # ---------- Comarcas tradicionales (ficha de cada municipio en Wikipedia) y El Bierzo (Ley 1/1991 de CyL) ----------
-cw <- jsonlite::fromJSON("raw/comarcas/comarca_wikipedia.json")
+cw <- jsonlite::fromJSON(fr("comarcas/comarca_wikipedia.json"))
 mun$comarca <- vapply(mun$code, function(k) if (!is.null(cw[[k]])) cw[[k]]$comarca else NA_character_, "")
 mun$comarca[mun$comarca == "Cabrera"] <- "La Cabrera"
 bierzo_ley <- c("Arganza","Balboa","Barjas","Bembibre","Benuza","Berlanga del Bierzo","Borrenes","Cabañas Raras","Cacabelos",
@@ -193,7 +210,7 @@ cat("Unidades sin comarca:", length(sin), paste(sin, collapse = ", "), "\n")
 NOMBRES_AGR <- c("BIERZO" = "El Bierzo", "LA MONTAÑA DE LUNA" = "La Montaña de Luna", "LA MONTAÑA DE RIAÑO" = "La Montaña de Riaño",
   "LA CABRERA" = "La Cabrera", "ASTORGA" = "Astorga", "TIERRAS DE LEON" = "Tierras de León", "LA BAÑEZA" = "La Bañeza",
   "EL PARAMO" = "El Páramo", "ESLA-CAMPOS" = "Esla-Campos", "SAHAGUN" = "Sahagún")
-cag <- st_read("raw/comarcas_agrarias/comarcas_agrarias.gpkg", quiet = TRUE) %>% filter(cpro == "24") %>%
+cag <- st_read(fr("comarcas_agrarias/comarcas_agrarias.gpkg"), quiet = TRUE) %>% filter(cpro == "24") %>%
   st_transform(25830) %>% select(CO_COMARCA, DS_COMARCA)
 ixa <- suppressWarnings(st_intersection(mun[, "code"], cag)); ixa$a <- as.numeric(st_area(ixa))
 best <- ixa %>% st_drop_geometry() %>% group_by(code) %>% slice_max(a, n = 1, with_ties = FALSE) %>% ungroup()
@@ -203,8 +220,10 @@ cat("Comarcas agrarias: sin asignar", sum(is.na(mun$comarca)), "\n"); print(tabl
 grp <- mun %>% filter(!is.na(comarca)) %>% group_by(nombre = comarca) %>%
   summarise(n = n(), pob = sum(pob2025, na.rm = TRUE), bierzo = all(bierzo), .groups = "drop")
 grp <- rbind(grp, mun %>% filter(bierzo) %>% summarise(nombre = "El Bierzo (comarca oficial)", n = n(), pob = sum(pob2025, na.rm = TRUE), bierzo = TRUE))
-grp <- st_simplify(grp, dTolerance = 25)
+grp <- st_simplify(grp, dTolerance = P_SIMPL[3])
 cat("comarcas:", nrow(grp), "\n")
+
+}
 
 # ---------- Serialización compacta ----------
 poly_coords <- function(g) {           # lista de polígonos -> lista de anillos (int planos)
@@ -221,29 +240,30 @@ pt <- function(p) { xy <- loc(st_coordinates(p)); lapply(seq_len(nrow(xy)), func
 
 # ---------- Población histórica (INE, censos 1900-2021 + Padrón 2025, sumando municipios absorbidos) ----------
 ANIOS <- c(1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1981, 1991, 2001, 2011, 2021, 2025)
-hist <- if (file.exists("raw/historico/censos.json")) jsonlite::fromJSON("raw/historico/censos.json", simplifyVector = FALSE) else list()
+hist <- if (file.exists(fr("historico/censos.json"))) jsonlite::fromJSON(fr("historico/censos.json"), simplifyVector = FALSE) else list()
 serie <- function(k) if (is.null(hist[[k]])) NULL else vapply(as.character(ANIOS), function(a) as.numeric(hist[[k]]$pob[[a]]), 0)
 absorbidos <- function(k) if (is.null(hist[[k]])) character(0) else vapply(hist[[k]]$absorbidos, function(x) sub("^\\d+ ", "", x), "")
 cat("Series históricas:", sum(vapply(mun$code, function(k) !is.null(hist[[k]]), TRUE)), "\n")
-munS <- st_simplify(mun, dTolerance = 18, preserveTopology = TRUE)
-provS <- st_simplify(prov, dTolerance = 18)
+munS <- st_simplify(mun, dTolerance = P_SIMPL[2], preserveTopology = TRUE)
+provS <- st_simplify(prov, dTolerance = P_SIMPL[2])
 out <- list(
   meta = list(x0 = X0, y1 = Y1, ancho = X1 - X0, alto = Y1 - Y0, celda = CELL,
               cols = ncol(dem), filas = nrow(dem), crs = "EPSG:25830",
               anios = ANIOS,
               poblacion_total = sum(mun$pob2025, na.rm = TRUE), area_km2 = round(as.numeric(st_area(prov))/1e6),
-              fuentes = list(
+              fuentes = Filter(Negate(is.null), list(
                 relieve = "IGN · MDT25 (WCS servicios.idee.es/wcs-inspire/mdt)",
                 limites = "IGN · Unidades administrativas INSPIRE (www.ign.es/wfs-inspire/unidades-administrativas)",
                 hidrografia = "IGN · Hidrografía INSPIRE (servicios.idee.es/wfs-inspire/hidrografia)",
                 toponimia = "IGN · Nomenclátor Geográfico Básico de España (www.ign.es/wfs-inspire/ngbe)",
-                poblacion = "INE · Padrón municipal a 1 de enero de 2025 (tabla 2877)",
+                poblacion = if (is.null(FICHA$municipios$lista)) "INE · Padrón municipal a 1 de enero de 2025 (tabla 2877)" else "INE · Padrón municipal a 1 de enero de 2025 (tablas 2886, 2893 y 2877: Asturias, Cantabria y León)",
                 carreteras = "IGN · Red de transporte, clase funcional (api-features.idee.es, roadlink)",
                 historico = "INE · Alteraciones de los municipios en los Censos de Población desde 1842 (población de derecho; se suman los municipios absorbidos)",
                 localidades = "IGN · NGBE (entidades singulares, núcleos, capitales de EATIM y entidades menores); población: INE · Nomenclátor a 1 de enero de 2025",
                 orografia = "IGN · Nomenclátor Geográfico Básico (cumbres, alineaciones montañosas, depresiones y pasos); altitudes del MDT25",
-                comarcas = "MAPA · Comarcas agrarias (ComarcasAgrarias.shp de la IDE del MAPA, vía rOpenSpain/mapSpain); El Bierzo oficial: Ley 1/1991 de Castilla y León",
-                comarcas_tradicionales = "Comarca tradicional de cada municipio según su ficha en es.wikipedia.org (no oficial)")),
+                comarcas = if (opc("comarcas", "agrarias") == "provincias") "IGN · provincias (unidades administrativas INSPIRE)" else "MAPA · Comarcas agrarias (ComarcasAgrarias.shp de la IDE del MAPA, vía rOpenSpain/mapSpain); El Bierzo oficial: Ley 1/1991 de Castilla y León",
+                comarcas_tradicionales = if (opc("comarcas", "agrarias") == "provincias") NULL else "Comarca tradicional de cada municipio según su ficha en es.wikipedia.org (no oficial)",
+                zona = FICHA$municipios$nota))),
   provincia = poly_coords(provS)[[1]],
   municipios = lapply(seq_len(nrow(munS)), function(i) list(
     c = munS$code[i], n = munS$nombre[i], t = munS$tipo[i], p = munS$pob2025[i], a = munS$area_km2[i],
@@ -267,5 +287,5 @@ out <- list(
   picos = lapply(seq_len(nrow(picos)), function(i) list(n = picos$nombre[i], e = round(picos$elev[i]),
     xy = pt(picos[i, ])[[1]]))
 )
-write_json(out, "web/data/leon.json", auto_unbox = TRUE, digits = NA)
-cat("JSON:", round(file.size("web/data/leon.json")/1e6, 2), "MB\n")
+write_json(out, fw("zona.json"), auto_unbox = TRUE, digits = NA)
+cat("JSON:", round(file.size(fw("zona.json"))/1e6, 2), "MB\n")

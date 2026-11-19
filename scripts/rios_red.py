@@ -20,6 +20,7 @@ Método
 import csv
 import io
 import json
+import sys
 import math
 import re
 import unicodedata
@@ -31,9 +32,11 @@ from PIL import Image
 from scipy.ndimage import distance_transform_edt
 
 RAIZ = Path(__file__).resolve().parent.parent
-RED = RAIZ / "raw" / "rios_red"
-AF = RAIZ / "raw" / "rios_mapa"
-WEB = RAIZ / "web" / "data"
+sys.path.insert(0, str(RAIZ / "scripts"))
+from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+RED = RAIZ / "raw" / ZONA / "rios_red"
+AF = RAIZ / "raw" / ZONA / "rios_mapa"
+WEB = RAIZ / "web" / "data" / ZONA
 DESTINO = {"ES020": "el Atlántico (por Portugal)", "ES010": "el océano Atlántico", "ES018": "el mar Cantábrico", "ES017": "el mar Cantábrico"}
 CUENCA_AF = {"ES020": "DUERO", "ES010": "MIÑO-SIL", "ES018": "CANTABRICO"}
 MESES_HIDRO = ["moct", "mnov", "mdic", "mene", "mfeb", "mmar", "mabr", "mmay", "mjun", "mjul", "mago", "msep"]
@@ -96,7 +99,7 @@ def num(s):
 
 
 def main():
-    M = json.loads((WEB / "leon.json").read_text())["meta"]
+    M = json.loads((WEB / "zona.json").read_text())["meta"]
     x0, y1, ancho, alto, celda = M["x0"], M["y1"], M["ancho"], M["alto"], M["celda"]
 
     # ---------------------------------------------------------------- red

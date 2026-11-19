@@ -13,6 +13,17 @@ También tiene pestañas de **geología** (IGME), **clima** (normales de AEMET 1
 | ![Historia: el Reino de León sobre un mapa antiguo, con la línea del tiempo](docs/capturas/historia.jpg) | ![Camino de Santiago: el Camino Francés con sus pueblos y etapas](docs/capturas/camino.jpg) |
 | **Historia** · línea del tiempo sobre un mapa antiguo | **Camino de Santiago** · caminos, etapas y albergues |
 
+## Zonas: León y Picos de Europa
+
+El mismo visor sirve para varias zonas. Cada una tiene su ficha en `web/zonas.json` (nombre, extensión del mapa, tamaño de celda, municipios, latitud del sol, exageración del relieve, textos y qué capas de datos tiene) y sus datos en `web/data/<zona>/`. Se elige con la dirección (`index.html?zona=picos`) o con el selector «Mapa» del panel; el visor recuerda la última.
+
+| Zona | Qué abarca | Celda | Capas |
+|---|---|---|---|
+| `leon` (por defecto) | La provincia de León (196 × 135 km) | 100 m | todas |
+| `picos` | Los 11 municipios con territorio en el Parque Nacional de los Picos de Europa (Asturias, Cantabria y León) y su entorno (64 × 47 km) | 30 m | relieve, ~1.300 cumbres, pueblos, ríos, población, cubierta del suelo |
+
+Las pestañas cuyas capas no tiene una zona no aparecen. Para Picos están pendientes protección (Parque Nacional, Red Natura, biosfera), rutas y refugios, clima, geología e historia.
+
 ## Fuentes
 
 Todos los datos proceden de fuentes oficiales españolas o europeas (Copernicus); la comarca tradicional que aparece en la ficha de cada municipio es el único dato no oficial:
@@ -74,10 +85,11 @@ Quien publique los datos procesados (por ejemplo, el visor con `web/data/`) debe
 
 Requisitos: `bash`, `curl`, `python3` con `numpy`, `scipy` y `Pillow`, y R con los paquetes `sf`, `terra`, `dplyr` y `jsonlite`. Todas las fuentes se descargan sin registro.
 
+Todos los scripts trabajan con la zona de la variable `ZONA` (por defecto `leon`): leen de `raw/<zona>/` y escriben en `web/data/<zona>/`. Para Picos, por ejemplo: `ZONA=picos scripts/descargar_datos.sh`, `ZONA=picos Rscript R/10_preparar_web.R`… Los parámetros que cambian de una zona a otra (cuántas cumbres principales, umbrales de ríos y lagos, simplificación, comarcas o provincias) están en el apartado `procesado` de su ficha. De momento las capas temáticas (clima, ríos con caudales, geología, lugares, historia, Camino, protección e incendios) solo están preparadas para León.
+
 ```bash
-scripts/descargar_datos.sh        # descarga todo en raw/ (unos 300 MB; se puede relanzar)
-Rscript R/03_admin.R              # provincia y municipios en ETRS89 / UTM 30N
-Rscript R/10_preparar_web.R       # genera web/data/relieve.png y web/data/leon.json
+scripts/descargar_datos.sh        # descarga todo en raw/<zona>/ (León: unos 300 MB; se puede relanzar); incluye R/03_admin.R
+Rscript R/10_preparar_web.R       # genera web/data/<zona>/relieve.png y zona.json
 Rscript scripts/cumbres.R         # todas las cumbres con nombre del IGN (unas 3.000), con altitud y aislamiento -> web/data/cumbres.json
 Rscript R/11_rejilla_poblacion.R  # genera web/data/poblacion.png (Censo 2021 en celdas de 1 km²)
 Rscript R/12_cobertura_copernicus.R  # descarga CLC+ Backbone y genera web/data/cobertura.png
@@ -90,9 +102,9 @@ python3 scripts/geologia.py        # tipo de roca, edad, permeabilidad y lugares
 python3 scripts/lugares.py         # lugares de interés de recursos/lugares.json, situados con el Nomenclátor del IGN o Wikidata
 python3 scripts/historia.py        # mapa histórico: sitios de recursos/historia.json, calzadas (Itiner-e), oro y carbón (IGME), Wikidata
 python3 scripts/camino.py          # Caminos de Santiago: etapas y albergues del IGN, perfiles con el MDT -> web/data/camino.json
-scripts/descargar_proteccion.sh    # figuras de protección (Junta de CyL y MITECO) -> raw/proteccion/
+scripts/descargar_proteccion.sh    # figuras de protección (Junta de CyL y MITECO) -> raw/<zona>/proteccion/
 Rscript scripts/proteccion.R       # espacios naturales, Red Natura, reservas de la biosfera y BIC -> web/data/proteccion.json (paquetes sf y jsonlite)
-scripts/descargar_incendios.sh     # perímetros de incendios de EFFIS (Copernicus) -> raw/incendios/
+scripts/descargar_incendios.sh     # perímetros de incendios de EFFIS (Copernicus) -> raw/<zona>/incendios/
 Rscript scripts/incendios.R        # incendios desde 2016 recortados a la provincia -> web/data/incendios.json
 ./abrir_visor.sh                  # sirve web/ en http://127.0.0.1:8800 y abre el navegador (--parar para detenerlo)
 ```
@@ -101,15 +113,17 @@ Los servidores del IGN fallan a veces (errores 502 o respuestas cortadas). El sc
 
 ## Lugares destacados (opcional y privado)
 
-Si existe `web/data/destacados.json` con una lista de nombres del Nomenclátor, el visor los marca con un pilar de luz y los añade al panel. Ese fichero no se sube al repositorio. Hay un ejemplo en `web/destacados.ejemplo.json`:
+Si existe `web/data/<zona>/destacados.json` con una lista de nombres del Nomenclátor, el visor los marca con un pilar de luz y los añade al panel. Ese fichero no se sube al repositorio. Hay un ejemplo en `web/destacados.ejemplo.json`:
 
 ```bash
-cp web/destacados.ejemplo.json web/data/destacados.json
+cp web/destacados.ejemplo.json web/data/leon/destacados.json
 ```
 
 ## Estructura
 
 ```
+web/zonas.json               ficha de cada zona (la leen el visor y los scripts)
+scripts/zona.py, R/zona.R    zona de trabajo (variable ZONA) y rutas raw/<zona>/ y web/data/<zona>/
 scripts/descargar_datos.sh   descarga de todas las fuentes
 scripts/fetch_ogcapi.py      cliente paginado de la OGC API Features de la IDEE
 scripts/ine_poblacion.py     padrón del INE
@@ -118,7 +132,7 @@ scripts/ine_censos.py        población histórica por municipio (censos del INE
 scripts/ine_nomenclator.py   población de cada pueblo (Nomenclátor del INE)
 R/03_admin.R                 límites administrativos
 R/10_preparar_web.R          rejilla de alturas, recortes, simplificación y JSON para la web
-scripts/cumbres.R            todas las cumbres con nombre (las 150 principales van en leon.json; el resto aparece al acercarse)
+scripts/cumbres.R            todas las cumbres con nombre (las principales van en zona.json; el resto aparece al acercarse)
 R/11_rejilla_poblacion.R     población del Censo 2021 por km² en la malla del visor
 R/12_cobertura_copernicus.R  cubierta del suelo de Copernicus (CLC+ Backbone 2021)
 scripts/clima_aemet.py       normales 1991-2020 de AEMET (temperaturas, precipitación, heladas, días de calor) ajustadas a la altitud

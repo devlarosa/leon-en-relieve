@@ -1,7 +1,7 @@
-"""Población histórica de los municipios de León (INE, Alteraciones de los municipios en los Censos desde 1842).
+"""Población histórica de los municipios de la zona (INE, Alteraciones de los municipios en los Censos desde 1842).
 
 Para cada municipio actual descarga su ficha censal y la de los municipios que absorbió
-(siguiendo las notas "incorpora a 24xxx" de forma recursiva) y suma la población de derecho
+(siguiendo las notas "incorpora a 33xxx" de forma recursiva) y suma la población de derecho
 censo a censo, para comparar siempre el mismo territorio. Añade la cifra del Padrón 2025.
 
 Uso: python3 scripts/ine_censos.py raw/poblacion_ine_2025.csv raw/historico/censos.json
@@ -34,7 +34,7 @@ def get(url):
 
 
 def ficha(code):
-    html = get(f"{BASE}intercensal.do?search=3&codigoProvincia=24&codigoMunicipio={code[2:]}&btnBuscarCod=Consultar")
+    html = get(f"{BASE}intercensal.do?search=3&codigoProvincia={code[:2]}&codigoMunicipio={code[2:]}&btnBuscarCod=Consultar")
     filas = []
     for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", html, re.S):
         celdas = [re.sub(r"\s+", " ", re.sub(r"<[^>]*>|&nbsp;", " ", c)).strip() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", tr, re.S)]
@@ -53,10 +53,11 @@ def ficha(code):
     for f in filas:
         texto = " ".join(f)
         # "porque incorpora a 24500 (Armunia)" = absorbe; "se incorpora a ..." = cede territorio (no se suma)
-        for m in re.finditer(r"(?<!se )incorpora a ((?:\s*(?:,|y)?\s*24\d{3} \([^)]*\))+)", texto):
-            incorpora += re.findall(r"\b(24\d{3})\b", m.group(1))
+        pr = code[:2]   # los municipios absorbidos son siempre de la misma provincia
+        for m in re.finditer(r"(?<!se )incorpora a ((?:\s*(?:,|y)?\s*" + pr + r"\d{3} \([^)]*\))+)", texto):
+            incorpora += re.findall(r"\b(" + pr + r"\d{3})\b", m.group(1))
         if "aparece este municipio porque" in texto:   # creado por fusión o por cambio de nombre de otro
-            incorpora += re.findall(r"\b(24\d{3})\b", texto.split("aparece este municipio porque", 1)[1])
+            incorpora += re.findall(r"\b(" + pr + r"\d{3})\b", texto.split("aparece este municipio porque", 1)[1])
     nombre = re.search(r"Municipio:\s*\d+\s+(.+)", " ".join(filas[0])) if filas else None
     return {"nombre": nombre.group(1).strip() if nombre else code, "pob": pob, "incorpora": sorted(set(incorpora))}
 

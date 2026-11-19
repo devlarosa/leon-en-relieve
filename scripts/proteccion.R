@@ -11,8 +11,9 @@ suppressMessages({ library(sf); library(jsonlite) })
 sf_use_s2(FALSE)
 args <- commandArgs(trailingOnly = FALSE)
 RAIZ <- normalizePath(file.path(dirname(sub("^--file=", "", args[grep("^--file=", args)])), ".."))
-RAW <- file.path(RAIZ, "raw", "proteccion")
-L <- fromJSON(file.path(RAIZ, "web", "data", "leon.json"), simplifyVector = FALSE)
+setwd(RAIZ); source("R/zona.R")   # ZONA, FICHA, fr() = raw/<zona>/…, fw() = web/data/<zona>/…
+RAW <- file.path(RAIZ, "raw", ZONA, "proteccion")
+L <- fromJSON(file.path(RAIZ, "web", "data", ZONA, "zona.json"), simplifyVector = FALSE)
 M <- L$meta
 
 # provincia (desde leon.json, en EPSG:25830)
@@ -89,14 +90,14 @@ for (tipo in c("ZEC", "ZEPA")) {
 # ---- Reservas de la Biosfera (límites y zonificación)
 mab <- en_leon(leer("mab_limites/MAB_LIMITE_PyB_EPSG25830.geojson"))
 zon <- leer("mab_zonif/MAB_ZONIFICACION_PyB_EPSG25830.geojson")
-ZONA <- c(NU = "Núcleo", TA = "Tampón", TR = "Transición")
+ZONA_MAB <- c(NU = "Núcleo", TA = "Tampón", TR = "Transición")
 biosfera <- lapply(seq_len(nrow(mab)), function(i) { r <- mab[i, ]
   z <- zon[zon$reserva == r$MAB_NAME, ]
   zonas <- list()
   if (nrow(z)) {
     gz <- suppressWarnings(st_intersection(st_geometry(z), prov))
     for (k in seq_len(nrow(z))) if (!st_is_empty(gz[[k]]) && as.numeric(st_area(gz[k])) > 1e4)
-      zonas[[length(zonas) + 1]] <- list(z = unname(ZONA[z$zona[k]]), ha = round(as.numeric(st_area(gz[k])) / 1e4), g = anillos_visor(gz[[k]], 40))
+      zonas[[length(zonas) + 1]] <- list(z = unname(ZONA_MAB[z$zona[k]]), ha = round(as.numeric(st_area(gz[k])) / 1e4), g = anillos_visor(gz[[k]], 40))
   }
   list(id = r$SITE_MAB, n = r$MAB_NAME, fecha = fecha(r$MAB_DECLAR), ampl = if (is.na(r$MAB_AMPLIA)) NULL else as.character(r$MAB_AMPLIA),
        gestor = r$MAB_EG, ha = r$ha_tot, haLeon = r$ha_leon, c = rotulo(st_geometry(r)[[1]]), g = anillos_visor(st_geometry(r)[[1]], 40), zonas = zonas) })
@@ -117,7 +118,7 @@ out <- list(
   fuente = paste("Junta de Castilla y León: Red de Espacios Naturales, Red Natura 2000 (ZEC y ZEPA) y Bienes de Interés Cultural inmuebles",
                  "(datos abiertos, IDECyL); MITECO-OAPN: Reservas de la Biosfera (límites y zonificación)"),
   espacios = espacios, natura = natura, biosfera = biosfera, bic = bic)
-f <- file.path(RAIZ, "web", "data", "proteccion.json")
+f <- file.path(RAIZ, "web", "data", ZONA, "proteccion.json")
 writeLines(toJSON(out, auto_unbox = TRUE, digits = NA, null = "null", na = "null"), f, useBytes = TRUE)
 cat(sprintf("%d espacios naturales, %d de Red Natura (%d ZEC, %d ZEPA), %d reservas de la biosfera, %d BIC -> %s (%.2f MB)\n",
             length(espacios), length(natura), sum(vapply(natura, function(x) x$tipo == "ZEC", TRUE)), sum(vapply(natura, function(x) x$tipo == "ZEPA", TRUE)),

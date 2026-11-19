@@ -18,10 +18,12 @@ from PIL import Image
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "scripts"))
+from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+sys.path.insert(0, str(RAIZ / "scripts"))
 from rios_red import simplificar  # noqa: E402
 from lugares import dentro  # noqa: E402
 
-RAW = RAIZ / "raw" / "camino"
+RAW = RAIZ / "raw" / ZONA / "camino"
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
 BASE = "https://nco.ign.es/server/rest/services/ccsseu"
 COLORES = {"Camino Francés": "#c0392b", "Camino de El Salvador": "#2471a3", "Vía de la Plata de Zamora a Astorga": "#b9770e",
@@ -50,8 +52,8 @@ def campo(a, sufijo):
 
 
 def main():
-    L = json.loads((RAIZ / "web" / "data" / "leon.json").read_text()); M = L["meta"]
-    px = np.asarray(Image.open(RAIZ / "web" / "data" / "relieve.png").convert("RGB"), dtype=np.float64)
+    L = json.loads((RAIZ / "web" / "data" / ZONA / "zona.json").read_text()); M = L["meta"]
+    px = np.asarray(Image.open(RAIZ / "web" / "data" / ZONA / "relieve.png").convert("RGB"), dtype=np.float64)
     H = (px[..., 0] * 65536 + px[..., 1] * 256 + px[..., 2]) / 10 - 10000
     R, W = H.shape
 
@@ -130,9 +132,9 @@ def main():
                           "anual": bool(a.get("anual")), "xy": [round(x), round(y)]})
     out = {"fuente": "IGN, Caminos de Santiago en Europa (etapas y albergues, nco.ign.es); perfiles calculados con el MDT del IGN",
            "caminos": sorted(caminos.values(), key=lambda c: -c["km"]), "etapas": etapas, "albergues": albergues}
-    (RAIZ / "web" / "data" / "camino.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
+    (RAIZ / "web" / "data" / ZONA / "camino.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")))
     print(f"{len(out['caminos'])} caminos, {len(etapas)} etapas, {len(albergues)} albergues en la provincia;",
-          round((RAIZ / "web" / "data" / "camino.json").stat().st_size / 1e6, 2), "MB")
+          round((RAIZ / "web" / "data" / ZONA / "camino.json").stat().st_size / 1e6, 2), "MB")
     for c in out["caminos"]:
         print(f"  {c['n']:40} {c['km']:6} km (etapas en la provincia) · {len(c['etapas'])} tramos")
     fr = [e for e in etapas if e["c"] == "Camino Francés" and not e["variante"]]

@@ -10,7 +10,8 @@ suppressMessages({ library(sf); library(jsonlite) })
 sf_use_s2(FALSE)
 args <- commandArgs(trailingOnly = FALSE)
 RAIZ <- normalizePath(file.path(dirname(sub("^--file=", "", args[grep("^--file=", args)])), ".."))
-L <- fromJSON(file.path(RAIZ, "web", "data", "leon.json"), simplifyVector = FALSE)
+setwd(RAIZ); source("R/zona.R")   # ZONA, FICHA, fr() = raw/<zona>/…, fw() = web/data/<zona>/…
+L <- fromJSON(file.path(RAIZ, "web", "data", ZONA, "zona.json"), simplifyVector = FALSE)
 M <- L$meta
 anillos <- lapply(L$provincia, function(r) {
   v <- unlist(r); a <- cbind(v[c(TRUE, FALSE)] + M$x0, M$y1 - v[c(FALSE, TRUE)])
@@ -18,7 +19,7 @@ anillos <- lapply(L$provincia, function(r) {
 })
 prov <- st_make_valid(st_sfc(st_multipolygon(lapply(anillos, function(a) list(a))), crs = 25830))
 
-x <- st_make_valid(st_transform(st_read(file.path(RAIZ, "raw", "incendios", "effis_ba.json"), quiet = TRUE), 25830))
+x <- st_make_valid(st_transform(st_read(file.path(RAIZ, "raw", ZONA, "incendios", "effis_ba.json"), quiet = TRUE), 25830))
 x <- x[!duplicated(x$id), ]
 x <- x[lengths(st_intersects(x, prov)) > 0, ]
 dentro <- suppressWarnings(st_intersection(st_geometry(x), prov))
@@ -61,7 +62,7 @@ resumen <- lapply(anios, function(a) { fs <- Filter(function(f) f$anio == a, fue
   list(anio = a, n = length(fs), ha = sum(vapply(fs, function(f) f$haLeon, 0)), gif = sum(vapply(fs, function(f) f$ha >= 500, TRUE))) })
 out <- list(fuente = "EFFIS, Sistema Europeo de Información sobre Incendios Forestales (Copernicus, Centro Común de Investigación de la Comisión Europea): superficies quemadas cartografiadas por satélite (modis.ba.poly)",
             actualizado = format(Sys.Date()), anios = resumen, incendios = fuegos)
-f <- file.path(RAIZ, "web", "data", "incendios.json")
+f <- file.path(RAIZ, "web", "data", ZONA, "incendios.json")
 writeLines(toJSON(out, auto_unbox = TRUE, digits = NA), f, useBytes = TRUE)
 cat(sprintf("%d incendios (%s) -> %s (%.2f MB)\n", length(fuegos), paste(range(anios), collapse = "–"), f, file.size(f) / 1e6))
 for (s in resumen) cat(sprintf("  %d: %3d incendios, %7.0f ha en León, %d de más de 500 ha\n", s$anio, s$n, s$ha, s$gif))

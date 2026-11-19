@@ -14,6 +14,7 @@ y los listados de situación de las estaciones, que usa scripts/rios_red.py para
 Salida: raw/rios_red/*.jsonl y raw/rios_mapa/ (caché; se puede relanzar).
 """
 import json
+import sys
 import time
 import urllib.parse
 import urllib.request
@@ -22,7 +23,9 @@ import numpy as np
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-OUT = RAIZ / "raw" / "rios_red"
+sys.path.insert(0, str(RAIZ / "scripts"))
+from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+OUT = RAIZ / "raw" / ZONA / "rios_red"
 API = "https://api-features.idee.es/collections"
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
 BBOX = "-7.15,41.95,-4.65,43.30"   # la misma caja que el resto de descargas del visor
@@ -108,7 +111,7 @@ def leer(nombre):
 
 def anuario_aforos():
     import zipfile
-    dest = RAIZ / "raw" / "rios_mapa"; dest.mkdir(parents=True, exist_ok=True)
+    dest = RAIZ / "raw" / ZONA / "rios_mapa"; dest.mkdir(parents=True, exist_ok=True)
     for nombre, solo in ((AFOROS_ZIP, CUENCAS_AFOROS), ("listado-estaciones-aforo.zip", None)):
         z = dest / nombre
         if not z.exists() or not zipfile.is_zipfile(z):

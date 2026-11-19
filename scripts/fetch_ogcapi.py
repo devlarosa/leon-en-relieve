@@ -2,7 +2,10 @@
 import json, sys, time, urllib.request, urllib.parse
 UA = {"User-Agent": "Mozilla/5.0 (compatible; leon3d-datos/1.0)"}
 col, out, *filters = sys.argv[1:]
-params = {"f": "json", "limit": "2000", "bbox": "-7.1,42.0,-4.7,43.25"}
+sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.abspath(__file__)))
+from zona import FICHA  # noqa: E402  (ZONA=… en el entorno; por defecto «leon»)
+la0, lo0, la1, lo1 = FICHA["bbox"]
+params = {"f": "json", "limit": "2000", "bbox": f"{lo0},{la0},{lo1},{la1}"}
 for f in filters:
     k, v = f.split("=", 1); params[k] = v
 url = f"https://api-features.idee.es/collections/{col}/items?" + urllib.parse.urlencode(params)

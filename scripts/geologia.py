@@ -12,6 +12,7 @@ Tipo de roca: la descripción de cada unidad del MAGNA se clasifica por la prime
 describen primero la roca dominante); los depósitos cuaternarios se reconocen por sus palabras propias.
 """
 import json
+import sys
 import re
 import unicodedata
 from collections import Counter
@@ -21,8 +22,10 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 RAIZ = Path(__file__).resolve().parent.parent
-RAW = RAIZ / "raw" / "geologia"
-WEB = RAIZ / "web" / "data"
+sys.path.insert(0, str(RAIZ / "scripts"))
+from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+RAW = RAIZ / "raw" / ZONA / "geologia"
+WEB = RAIZ / "web" / "data" / ZONA
 
 # colores oficiales de la Comisión Internacional de Estratigrafía (carta cronoestratigráfica)
 ICS = {"RIFEENSE": "#f4a67a", "VENDIENSE": "#feb342", "PROTEROZOICO": "#f73563", "PRECAMBRICO": "#f74370",
@@ -130,7 +133,7 @@ def rasterizar(feats, valor, W, R, x0, y1, celda):
 
 
 def main():
-    M = json.loads((WEB / "leon.json").read_text())["meta"]
+    M = json.loads((WEB / "zona.json").read_text())["meta"]
     x0, y1, celda = M["x0"], M["y1"], M["celda"]; W, R = M["ancho"] // celda, M["alto"] // celda
 
     # --- 1:1.000.000: edad
@@ -185,7 +188,7 @@ def main():
 
     # superficies en la provincia para las leyendas
     prov = Image.new("L", (W, R), 0); dr = ImageDraw.Draw(prov)
-    for r in json.loads((WEB / "leon.json").read_text())["provincia"]:
+    for r in json.loads((WEB / "zona.json").read_text())["provincia"]:
         dr.polygon([(r[k] / celda, r[k + 1] / celda) for k in range(0, len(r), 2)], fill=255)
     pv = np.asarray(prov) > 127; km2 = (celda / 1000) ** 2
     tipos = np.array([d["t"] if d["t"] is not None else -1 for d in descs])

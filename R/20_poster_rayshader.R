@@ -14,6 +14,7 @@
 # Uso:   Rscript R/20_poster_rayshader.R      (prueba rápida: PRUEBA=1 Rscript R/20_poster_rayshader.R)
 # Salida: salida/poster_leon.png (y los intermedios en salida/cache/)
 suppressMessages({library(sf); library(terra); library(rayshader); library(jsonlite); library(png)})
+source("R/zona.R")   # ZONA, FICHA, fr() = raw/<zona>/…, fw() = web/data/<zona>/…
 
 # ---------------- parámetros (ajusta aquí) ----------------
 RES_MALLA   <- 100      # m por celda de la malla 3D (100 = unos 2,8 M celdas para León)
@@ -43,8 +44,8 @@ mem  <- function() {                   # memoria actual y pico del proceso (incl
 }
 cache <- function(f) file.path("salida/cache", f)
 
-prov <- vect(st_read("raw/provincia.gpkg", quiet = TRUE))
-mdt  <- vrt(list.files("raw/mdt25", pattern = "\\.tif$", full.names = TRUE))   # mosaico virtual: no carga nada en RAM
+prov <- vect(st_read(fr("provincia.gpkg"), quiet = TRUE))
+mdt  <- vrt(list.files(fr("mdt25"), pattern = "\\.tif$", full.names = TRUE))   # mosaico virtual: no carga nada en RAM
 crs(mdt) <- "EPSG:25830"
 ext_p <- ext(prov) + 2000
 
@@ -79,7 +80,7 @@ f_tex2 <- cache(sprintf("textura_rios_%dm.tif", RES_TEXTURA))
 if (!file.exists(f_tex2)) {
   paso("Ríos y límite sobre la textura ·", mem())
   tex <- rast(f_tex)
-  web <- fromJSON("web/data/leon.json", simplifyVector = FALSE)
+  web <- fromJSON(fw("zona.json"), simplifyVector = FALSE)
   a_utm <- function(v) cbind(web$meta$x0 + unlist(v)[c(TRUE, FALSE)], web$meta$y1 - unlist(v)[c(FALSE, TRUE)])
   lineas <- function(lista, ancho) {
     g <- lapply(lista, function(r) st_multilinestring(lapply(r$g, a_utm)))
