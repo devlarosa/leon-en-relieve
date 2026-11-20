@@ -538,7 +538,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <button class="cat-b" role="tab" id="tab-clima" data-cat="clima" aria-selected="false" aria-controls="cat-clima"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.2"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1"/><path d="M10 19h8a3 3 0 0 0 0-6 4.5 4.5 0 0 0-8.6-1A3.5 3.5 0 0 0 10 19z"/></svg>Clima</button>
     <button class="cat-b" role="tab" id="tab-agua" data-cat="agua" aria-selected="false" aria-controls="cat-agua"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z"/></svg>Agua</button>
     <button class="cat-b" role="tab" id="tab-historia" data-cat="historia" aria-selected="false" aria-controls="cat-historia"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/><path d="M9 8h6M9 11h4"/></svg>Historia</button>
-    <button class="cat-b" role="tab" id="tab-camino" data-cat="camino" aria-selected="false" aria-controls="cat-camino"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 C7 20 3 15.5 3 10.5 C3 7 5 4 8 4 C9.6 4 11 5 12 6.4 C13 5 14.4 4 16 4 C19 4 21 7 21 10.5 C21 15.5 17 20 12 20Z"/><path d="M12 20 V7 M12 20 L7 6 M12 20 L17 6 M12 20 L4.5 9 M12 20 L19.5 9"/></svg>Camino</button>
+    <button class="cat-b" role="tab" id="tab-camino" data-cat="camino" aria-selected="false" aria-controls="cat-camino"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20 C7 20 3 15.5 3 10.5 C3 7 5 4 8 4 C9.6 4 11 5 12 6.4 C13 5 14.4 4 16 4 C19 4 21 7 21 10.5 C21 15.5 17 20 12 20Z"/><path d="M12 20 V7 M12 20 L7 6 M12 20 L17 6 M12 20 L4.5 9 M12 20 L19.5 9"/></svg><span id="z-cam-tab">Camino</span></button>
     <button class="cat-b" role="tab" id="tab-proteccion" data-cat="proteccion" aria-selected="false" aria-controls="cat-proteccion"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 L19.5 5.6 V11.2 C19.5 15.8 16.4 19.4 12 21.2 C7.6 19.4 4.5 15.8 4.5 11.2 V5.6 Z"/><path d="M8.6 12.2 L11 14.5 L15.6 9.6"/></svg>Protección</button>
     <button class="cat-b" role="tab" id="tab-incendios" data-cat="incendios" aria-selected="false" aria-controls="cat-incendios"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.2 C7.8 21.2 5 18.4 5 14.6 C5 10.6 8.4 8.6 9.2 4.6 C11.6 6.4 12.4 8.6 12.2 10.6 C13.4 9.8 14.2 8.6 14.4 7.2 C17.2 9.4 19 12 19 14.8 C19 18.4 16.2 21.2 12 21.2 Z"/><path d="M12 21.2 C10.2 21.2 9 19.9 9 18.2 C9 16.3 10.6 15.5 11.2 13.6 C12.9 14.7 15 16.1 15 18.2 C15 19.9 13.8 21.2 12 21.2 Z"/></svg>Incendios</button>
     <button class="cat-b" role="tab" id="tab-escena" data-cat="escena" aria-selected="false" aria-controls="cat-escena"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>Escena</button>
@@ -687,13 +687,13 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
     <p class="spark-note" id="hist-nota" style="padding: 0 6px">Mueve la línea del tiempo de abajo o pulsa una época. Toca un lugar del mapa para leer su historia.</p>
   </section>
   <section class="cat" id="cat-camino" role="tabpanel" aria-labelledby="tab-camino" hidden>
-    <div><p class="group-title">Caminos de Santiago en la provincia</p><div class="lista-st" id="cam-lista"><p class="spark-note">Cargando…</p></div></div>
+    <div><p class="group-title" id="z-cam-tit">Caminos de Santiago en la provincia</p><div class="lista-st" id="cam-lista"><p class="spark-note">Cargando…</p></div></div>
     <div id="cam-etapas"></div>
     <div><p class="group-title">Capas</p><div class="layers">
-      <label class="layer"><input type="checkbox" id="l-alb" checked><span class="sw"></span><span class="name">Albergues<span class="note">IGN, con plazas y servicios</span></span></label>
-      <label class="layer"><input type="checkbox" id="l-camfoco" checked><span class="sw"></span><span class="name">Solo nombres del Camino<span class="note">Albergues y pueblos que atraviesa; oculta el resto</span></span></label>
+      <label class="layer"><input type="checkbox" id="l-alb" checked><span class="sw"></span><span class="name"><span id="z-cam-capa">Albergues</span><span class="note" id="z-cam-capa-n">IGN, con plazas y servicios</span></span></label>
+      <label class="layer"><input type="checkbox" id="l-camfoco" checked><span class="sw"></span><span class="name"><span id="z-cam-foco">Solo nombres del Camino</span><span class="note" id="z-cam-foco-n">Albergues y pueblos que atraviesa; oculta el resto</span></span></label>
     </div></div>
-    <p class="spark-note" style="padding: 0 6px">Trazados, etapas y albergues del IGN (Caminos de Santiago en Europa). Perfiles calculados con el MDT. Toca una etapa para ver su perfil y recorrerla.</p>
+    <p class="spark-note" style="padding: 0 6px" id="z-cam-nota">Trazados, etapas y albergues del IGN (Caminos de Santiago en Europa). Perfiles calculados con el MDT. Toca una etapa para ver su perfil y recorrerla.</p>
   </section>
   <section class="cat" id="cat-proteccion" role="tabpanel" aria-labelledby="tab-proteccion" hidden>
     <div><p class="group-title">Espacios protegidos</p>
@@ -987,6 +987,10 @@ try { localStorage.setItem("leon3d-zona", ZID); } catch (e) { /* sin almacenamie
   const C = Z.comarcas || {};
   pon("z-com-tit", C.titulo); pon("z-com-todas", C.todas); pon("z-com-capa", C.capa); pon("z-com-capa-n", C.capaNota); pon("z-com-col", C.colorear); pon("z-com-col-n", C.colorearNota);
   pon("z-entorno", Z.entorno); pon("z-sol", Z.corto);
+  if (Z.camino) {   // la pestaña del Camino sirve para otras rutas (Picos: rutas de montaña, refugios y majadas)
+    pon("z-cam-tab", Z.camino.tab); pon("z-cam-tit", Z.camino.titulo); pon("z-cam-capa", Z.camino.capa); pon("z-cam-capa-n", Z.camino.capaNota);
+    pon("z-cam-nota", Z.camino.nota); pon("z-cam-foco", "Solo nombres de las rutas"); pon("z-cam-foco-n", "Refugios, majadas y pueblos de las rutas; oculta el resto");
+  }
   for (const el of document.querySelectorAll(".z-lugar")) el.textContent = Z.lugar;
   const zs = document.getElementById("zona-sel"), ids = Object.keys(ZONAS).filter(k => !k.startsWith("_"));
   if (ids.length > 1) {
@@ -3303,6 +3307,7 @@ ENFOQUE.incendios = { ocultar: ["l-arboles", "l-cob", "l-carr", "l-lugares", "l-
   nota: "Oculta árboles, carreteras y otros puntos de interés" };
 ENFOQUE.proteccion = { ocultar: ["l-arboles", "l-cob", "l-carr", "l-mun", "l-lugares", "l-est", "l-lig", "l-mon", "l-nubes", "l-sierras", "l-valles", "l-puertos"], calma: 0.7,
   nota: "Oculta árboles, carreteras, límites municipales y otros puntos de interés" };
+if (Z.camino) ENFOQUE.camino.nota = "Oculta carreteras y otras capas que no son de las rutas";
 const CAT_ENFOQUE = { incendios: "incendios", proteccion: "proteccion", camino: "camino", historia: "historia", mapa: null, relieve: "relieve", geologia: "geologia", poblacion: "poblacion", clima: "clima", agua: "agua", escena: null };
 const TODAS_OCULTABLES = [...new Set(Object.values(ENFOQUE).flatMap(e => e.ocultar))];
 let enfoqueAct = null, enfoqueGuardado = null, catAct = "mapa";
@@ -3335,7 +3340,7 @@ function setCat(k, guardar) {
   // las capas de geología son de su pestaña: se apagan al salir y vuelven como estaban al entrar
   if (k !== "geologia" && geol.modo) { geol.ultimo = geol.modo; setGeoModo(""); if (hcardKind === "geo" || hcardKind === "lig") closeHcard(); }
   else if (k === "geologia" && !geol.modo && geol.ultimo) { setGeoModo(geol.ultimo); geol.ultimo = ""; }
-  aspectoAntiguo(k === "historia" || k === "camino");
+  aspectoAntiguo(k === "historia" || (k === "camino" && !(Z.camino && Z.camino.antiguo === false)));
   setAntiguo(k === "historia");
   setCamino(k === "camino");   // la primera vez, el clima se enciende solo
   setProteccion(k === "proteccion");
@@ -4380,14 +4385,15 @@ function showEtapa(ei, volar) {
   const J = CAM.J, e = J.etapas[ei], c = J.caminos.find(c => c.n === e.c), col = c ? c.color : "#c0392b";
   CAM.etapa = ei; drawOverlay();
   const albs = J.albergues.filter(a => e.g.some(g => distSeg(a.xy[0], a.xy[1], g) < 700));
-  const pobl = [...new Set(albs.map(a => a.p))];
+  const pobl = [...new Set(albs.map(a => a.p).filter(Boolean))];
   const html = `<h2>${esc(e.n.replace(/-/g, " → "))}</h2><p class="cap" style="color:${col};font-weight:700">${esc(e.c)}${e.variante ? " · variante" : ""}</p>
     <dl><dt>Distancia</dt><dd>${fmt1.format(e.km)} km</dd><dt>Desnivel</dt><dd>+${fmt.format(e.sube)} m · −${fmt.format(e.baja)} m</dd>
-    <dt>Altitud</dt><dd>${fmt.format(e.zmin)}–${fmt.format(e.zmax)} m</dd>${albs.length ? `<dt>Albergues</dt><dd>${albs.length}</dd>` : ""}</dl>
+    <dt>Altitud</dt><dd>${fmt.format(e.zmin)}–${fmt.format(e.zmax)} m</dd>${albs.length ? `<dt>${Z.camino ? "Refugios y majadas" : "Albergues"}</dt><dd>${albs.length}</dd>` : ""}</dl>
+    ${e.desc ? `<p style="font-size:13.5px;line-height:1.5;margin:8px 0 0">${esc(e.desc)}</p>` : ""}
     <p class="group-title">Perfil de altitud</p>${perfilSvg(e, col)}
-    <div class="i-acts"><button class="i-act" id="cam-rec">▶ Recorrer la etapa</button></div>
+    <div class="i-acts"><button class="i-act" id="cam-rec">▶ Recorrer ${Z.camino ? "la ruta" : "la etapa"}</button></div>
     ${pobl.length ? `<p class="hint">Albergues en ${pobl.slice(0, 10).map(esc).join(", ")}${pobl.length > 10 ? "…" : ""}.</p>` : ""}
-    <p class="hint">Distancia oficial del IGN; desnivel calculado con el MDT (cambios de más de 5 m).</p>`;
+    <p class="hint">${Z.camino ? (e.variante ? "Trazado del cable según la red de transporte del IGN." : "Trazado por el camino más corto de la red de sendas, pistas y carreteras del IGN entre «" + esc(e.desde || "") + "» y «" + esc(e.hasta || "") + "»: puede no coincidir con la senda señalizada.") + " Desnivel calculado con el MDT (cambios de más de 5 m)." : "Distancia oficial del IGN; desnivel calculado con el MDT (cambios de más de 5 m)."}</p>`;
   showHcard(html, "etapa", ei);
   $("cam-rec").onclick = () => recorrerEtapa(ei);
   if (volar) {
@@ -4397,6 +4403,13 @@ function showEtapa(ei, volar) {
   }
 }
 function showAlbergue(a) {
+  if (Z.camino) {   // refugio o majada del Nomenclátor: nombre, tipo, altitud y municipio
+    const m = munAt(a.xy[0], a.xy[1]);
+    showHcard(`<h2>${esc(a.n)}</h2><p class="cap">${esc(a.t)}${m ? " · " + esc(m.n) : ""}</p><dl><dt>Altitud</dt><dd>${fmt.format(a.e || Math.round(heightAt(a.xy[0], a.xy[1])))} m</dd></dl>
+      <div class="i-acts"><button class="i-act" data-orb="${a.xy[0]},${a.xy[1]}">Sobrevolar</button><button class="i-act" data-mir="${a.xy[0]},${a.xy[1]},${a.e || 0}">Mirador</button></div>
+      <p class="hint">${a.t.startsWith("Refugio") ? "Refugio de montaña según el Nomenclátor del IGN: confirma si está abierto y guardado antes de ir." : "Majada: el lugar donde se reúne el ganado en los puertos de verano, con sus cabañas."}</p>`, "alb", -1);
+    return;
+  }
   const html = `<h2>${esc(a.n)}</h2><p class="cap">${esc(a.t || "Albergue")} · ${esc(a.p)}</p>
     <dl><dt>Camino</dt><dd>${esc(a.c)}</dd>${a.pl ? `<dt>Plazas</dt><dd>${a.pl}</dd>` : ""}${a.don ? "<dt>Precio</dt><dd>donativo</dd>" : a.eur ? `<dt>Precio</dt><dd>${fmt1.format(a.eur)} € la noche</dd>` : ""}
     ${a.ges ? `<dt>Gestión</dt><dd>${esc(a.ges)}</dd>` : ""}<dt>Abierto</dt><dd>${a.anual ? "todo el año" : "por temporada"}</dd></dl>
@@ -4432,7 +4445,7 @@ function listaCaminos() {
   $("cam-lista").innerHTML = J.caminos.map((c, i) => `<button class="cam-c" data-ci="${i}" aria-pressed="${CAM.sel === i}"><i style="background:${c.color}"></i><span style="flex:1;text-align:left">${esc(c.n)}</span><small>${fmt.format(Math.round(c.km))} km</small></button>`).join("");
   if (CAM.sel == null) { $("cam-etapas").innerHTML = ""; return; }
   const c = J.caminos[CAM.sel];
-  $("cam-etapas").innerHTML = `<p class="group-title" style="color:${c.color}">Etapas · ${esc(c.n)}</p><div class="lista-st">` +
+  $("cam-etapas").innerHTML = `<p class="group-title" style="color:${c.color}">${Z.camino ? "" : "Etapas · "}${esc(c.n)}</p><div class="lista-st">` +
     c.etapas.map(ei => { const e = J.etapas[ei]; return `<button data-ei="${ei}"><span>${e.variante ? "↳ " : ""}${esc(e.n.replace(/-/g, " → "))}</span><small>${fmt1.format(e.km)} km · +${fmt.format(e.sube)} m</small></button>`; }).join("") + `</div>`;
 }
 $("cam-lista").addEventListener("click", (ev) => {
@@ -4469,7 +4482,7 @@ async function cargarCamino() {
   labels.sort((x, y) => y.prio - x.prio);
   marcarPueblosCamino();
   $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(CAM.J.fuente) + "</li>");
-  CAM.listo = true; CAM.sel = CAM.J.caminos.findIndex(c => c.n === "Camino Francés"); if (CAM.sel < 0) CAM.sel = null;
+  CAM.listo = true; CAM.sel = CAM.J.caminos.findIndex(c => c.n === "Camino Francés"); if (CAM.sel < 0) CAM.sel = CAM.J.caminos.length ? 0 : null;
   listaCaminos();
   return true;
 }
@@ -4884,7 +4897,7 @@ $("tour-pausa").onclick = () => { tour.pausa = !tour.pausa; $("tour-pausa").text
 // pasos del tutorial de pestañas que esta zona no tiene: fuera
 const PASO_DATO = { "Geología": "geologia", "El clima": "clima", "Historia": "historia", "Visita guiada por la historia": "historia", "El Camino de Santiago": "camino",
   "Recorrer la etapa": "camino", "Figuras de protección": "proteccion", "Grandes incendios": "incendios", "Ríos y afluentes": "rios", "¿Adónde va esta gota?": "rios" };
-const pasosTutorial = () => PASOS_TUT.filter(p => !PASO_DATO[p.t] || hay(PASO_DATO[p.t]));
+const pasosTutorial = () => PASOS_TUT.filter(p => !PASO_DATO[p.t] || (hay(PASO_DATO[p.t]) && !(PASO_DATO[p.t] === "camino" && Z.camino)));
 for (const id of ["tour-abrir", "tour-abrir-2", "tour-abrir-3", "tour-invita-ver"]) $(id).onclick = () => empezarTour(pasosTutorial());
 $("tour-invita-no").onclick = () => { $("tour-invita").hidden = true; try { localStorage.setItem("leon3d-tour", "visto"); } catch (e) { /* sin almacenamiento */ } };
 addEventListener("keydown", (e) => {          // durante el tutorial, el teclado lo maneja él

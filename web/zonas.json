@@ -145,7 +145,8 @@
       "proteccion",
       "incendios",
       "clima",
-      "geologia"
+      "geologia",
+      "camino"
     ],
     "procesado": {
       "picos": [
@@ -196,6 +197,74 @@
       -5.262,
       43.4695,
       -4.4611
-    ]
+    ],
+    "rutas": {
+      "grupo": "Rutas clásicas",
+      "color": "#b5541b",
+      "lista": [
+        {
+          "n": "Ruta del Cares (Caín – Poncebos)",
+          "desde": "Caín",
+          "hasta": "Poncebos",
+          "desc": "La garganta divina: la senda excavada en la roca sobre el canal del Cares, entre León y Asturias."
+        },
+        {
+          "n": "Poncebos – Bulnes por la canal del Tejo",
+          "desde": "Poncebos",
+          "hasta": "Bulnes",
+          "desc": "La subida a pie al pueblo de Bulnes, que hasta 2001 no tuvo funicular."
+        },
+        {
+          "n": "Pandébano – Vega de Urriellu",
+          "desde": "Collado de Pandébano",
+          "hasta": "Refugio Vega de Urriellu / Julián Delgado Úbeda",
+          "desc": "Hasta el pie del Naranjo de Bulnes (Picu Urriellu) y su refugio."
+        },
+        {
+          "n": "Lago de la Ercina – Vega de Ario",
+          "desde": "Lago de la Ercina",
+          "hasta": "Refugio Vega de Ario",
+          "desc": "Desde los Lagos de Covadonga hasta el balcón sobre el macizo central."
+        },
+        {
+          "n": "Lago de Enol – Vegarredonda",
+          "desde": "Lago de Enol",
+          "hasta": "Refugio Vegarredonda",
+          "desc": "La ruta del Cornión hasta el refugio de Vegarredonda, camino del mirador de Ordiales."
+        },
+        {
+          "n": "Sotres – Puertos de Áliva",
+          "desde": "Sotres",
+          "hasta": "Refugio de Áliva",
+          "desc": "Por la pista de los puertos, entre el macizo central y el oriental."
+        },
+        {
+          "n": "Cordiñanes – Collado Jermoso",
+          "desde": "Cordiñanes de Valdeón",
+          "hasta": "Collado Jermoso",
+          "desc": "Una de las subidas más bellas de Valdeón, hasta el refugio colgado bajo los Llambriones."
+        },
+        {
+          "n": "Soto de Sajambre – Vegabaño",
+          "desde": "Soto de Sajambre",
+          "hasta": "Refugio de Vegabaño",
+          "desc": "Hacia el hayedo y la vega de Vegabaño, en Sajambre."
+        },
+        {
+          "n": "Lagos de Covadonga: Enol y la Ercina",
+          "desde": "Lago de Enol",
+          "hasta": "Lago de la Ercina",
+          "desc": "El paseo entre los dos lagos glaciares del Cornión."
+        }
+      ]
+    },
+    "camino": {
+      "tab": "Rutas",
+      "titulo": "Rutas de montaña",
+      "capa": "Refugios y majadas",
+      "capaNota": "Nomenclátor del IGN",
+      "antiguo": false,
+      "nota": "Trazados por el camino más corto de la red de sendas, pistas y carreteras del IGN; perfiles calculados con el MDT. Toca una ruta para ver su perfil y recorrerla."
+    }
   }
 }
