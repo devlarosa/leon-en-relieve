@@ -22,7 +22,8 @@ from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «le
 OUT = RAIZ / "raw" / ZONA / "geologia"
 BASE = "https://mapas.igme.es/gis/rest/services"
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
-CAJA = (164000, 4655000, 360000, 4790000)          # la del visor, en metros UTM 30
+from zona import FICHA  # noqa: E402
+CAJA = tuple(FICHA["extension"])                 # la del mapa de la zona, en metros UTM 30
 CAPAS = {
     "g1m": ("Cartografia_Geologica/IGME_Geologico_1M", 4, "OBJECTID,ID,SIGLA,LITOGENER,DLO,EON_ERA,SUBERA,SISTEMA,SERIE,PISO", 40000),
     "magna": ("Cartografia_Geologica/IGME_MAGNA_50", 11, "OBJECTID,HOJA,ID,DLO", 10000),

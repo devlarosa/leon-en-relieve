@@ -144,7 +144,8 @@
       "poblacion",
       "proteccion",
       "incendios",
-      "clima"
+      "clima",
+      "geologia"
     ],
     "procesado": {
       "picos": [
