@@ -33,7 +33,7 @@ from scipy.ndimage import distance_transform_edt
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "scripts"))
-from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+from zona import ZONA, FICHA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
 RED = RAIZ / "raw" / ZONA / "rios_red"
 AF = RAIZ / "raw" / ZONA / "rios_mapa"
 WEB = RAIZ / "web" / "data" / ZONA
@@ -119,12 +119,30 @@ def main():
     cursos = {(c["dm"], c["c"]): c for c in jsonl("cursos.jsonl")}
 
     # aguas abajo: un único sucesor por tramo (el del mismo curso si hay varios; si no, el no ficticio)
+    # El identificador de nudo del IGN no siempre es único en una demarcación (en la del Cantábrico occidental el
+    # nudo «79» está a la vez en la boca del Cares, del Navia, del Nalón…): cada nudo se distingue también por su
+    # posición, agrupando los extremos de tramo a menos de 50 m. Donde el nudo es único, la clave es la de siempre.
+    puntos = defaultdict(list)                      # (dm, nudo) -> [(x, y), …] de sus apariciones (inicio o final de tramo)
+    for t in links:
+        puntos[(t["dm"], t["i"])].append(t["xy"][0]); puntos[(t["dm"], t["f"])].append(t["xy"][-1])
+    grupos = {}
+    for k, ps in puntos.items():
+        cs = []
+        for p in ps:
+            if not any(math.dist(p, c) < 50 for c in cs):
+                cs.append(p)
+        grupos[k] = cs
+    def nudo(dm, nd, p):
+        cs = grupos[(dm, nd)]
+        if len(cs) == 1:
+            return (dm, nd)
+        return (dm, nd, min(range(len(cs)), key=lambda q: math.dist(p, cs[q])))
     salida = defaultdict(list)
     for i, t in enumerate(links):
-        salida[(t["dm"], t["i"])].append(i)
+        salida[nudo(t["dm"], t["i"], t["xy"][0])].append(i)
     abajo = np.full(n, -1)
     for i, t in enumerate(links):
-        cand = [j for j in salida.get((t["dm"], t["f"]), []) if j != i]
+        cand = [j for j in salida.get(nudo(t["dm"], t["f"], t["xy"][-1]), []) if j != i]
         if cand:
             cand.sort(key=lambda j: (links[j]["c"] != t["c"], links[j]["x"]))
             abajo[i] = cand[0]
@@ -233,6 +251,16 @@ def main():
     # ---------------------------------------------------------------- modelo de caudal Q = a·L^b
     X = np.log([Lup[e["t"]] for e in utiles]); Y = np.log([e["q"] for e in utiles])
     b, a = np.polyfit(X, Y, 1)
+    POR_AREA = None                   # caudal específico (m³/s por km²) cuando el ajuste con la red no es fiable
+    if not 0.3 <= b <= 1.2 or len(utiles) < 15:
+        con_a = [e["q"] / e["A"] for e in utiles if e.get("A")]
+        if con_a:
+            POR_AREA = float(np.median(con_a))
+            print(f"  caudal de cada río con su cuenca oficial: {POR_AREA * 1000:.1f} l/s por km² (mediana de {len(con_a)} estaciones)")
+        # pocas estaciones o un ajuste sin sentido (en Picos el karst y los canales de las centrales lo desbaratan):
+        # se fija el exponente que sale con las 86 estaciones de León y se ajusta solo la escala con las de la zona
+        print(f"  ajuste libre poco fiable (L^{b:.3f}, {len(utiles)} estaciones): exponente fijo 0,494")
+        b = 0.494; a = float(np.median(Y - b * X))
     print(f"Caudal ≈ {math.exp(a):.4f}·L^{b:.3f} (L en km de red aguas arriba), {len(utiles)} estaciones")
     qfit = lambda L: math.exp(a) * max(L, 0.1) ** b
     st_en = defaultdict(list)
@@ -375,7 +403,8 @@ def main():
                 A = round(c["a"] / 1e6, 1)
         salida_rios.append({"n": r["n"], "dm": r["dm"], "p": rid.get(r["padre"], -1),
                             "fin": None if r["padre"] else DESTINO.get(r["dm"], "el mar"),
-                            "L": r["L"], "A": A, "Am": round(float(area_total[i]), 1), "q": r["q"], "d": k in dibujar})
+                            "L": r["L"], "A": A, "Am": round(float(area_total[i]), 1),
+                            "q": round(POR_AREA * A, 2) if POR_AREA and A else r["q"], "d": k in dibujar})
     # embalses
     capac = {r["COD_HIDRO"].strip(): r for r in csv_latin(AF / "Situac 2_Embalse.csv")}
     embalses = []
@@ -423,6 +452,7 @@ def main():
                              "a0": serie[0][0] // 100 if serie else None, "anual": anual,
                              "min": [mn[1], mn[0]] if mn else None, "max": [mxr[1], mxr[0]] if mxr else None,
                              "ult": [[am, round(v, 1)] for am, v, _, _ in ultimo]})
+    embalses = [e for e in embalses if e["cap"] or any(v is not None for v in e["m"])]   # fuera los azudes sin ningún dato
     print("Embalses:", len(embalses))
     for e in embalses[:25]:
         pm = [round(v / e["cap"] * 100) if v and e["cap"] else None for v in e["m"]]
