@@ -103,6 +103,26 @@ body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); o
   width: 30px; height: 30px; border-radius: 8px; }
 #mirador button.x:hover { background: var(--moss-soft); }
 #mirador .hint { margin: 10px 0 0; font-size: 11.5px; color: var(--ink-soft); }
+/* skyline: panorama del horizonte desde el mirador */
+#skyline { position: fixed; left: 300px; right: 312px; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); height: min(330px, 46vh);
+  padding: 10px 12px 10px; display: flex; flex-direction: column; gap: 6px; box-sizing: border-box; z-index: 4; }
+#skyline .sk-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#skyline h2 { margin: 0; font-family: var(--font-display); font-size: 19px; font-weight: 800; line-height: 1.1; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#skyline .sk-ctl { display: flex; gap: 4px; align-items: center; }
+#skyline .sk-ctl button { font: inherit; font-size: 12.5px; font-weight: 600; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+#skyline .sk-ctl button[aria-pressed="true"] { background: var(--moss-soft); border-color: var(--moss); }
+#skyline .sk-ctl button:hover { background: var(--moss-soft); }
+#skyline .sk-ctl button:focus-visible { outline: 2px solid var(--moss); outline-offset: 1px; }
+#skyline .sk-ctl .sk-lbl { font-size: 11.5px; color: var(--ink-soft); margin: 0 2px 0 6px; }
+#sk-wrap { position: relative; flex: 1 1 auto; min-height: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+#sk-cv { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; display: block; }
+#sk-cv.drag { cursor: grabbing; }
+#sk-info { font-size: 12.5px; color: var(--ink-soft); min-height: 18px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+#sk-info b { color: var(--ink); }
+#sk-info button { font: inherit; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 7px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+#skyline button.x { border: 0; background: transparent; color: var(--ink-soft); font-size: 20px; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; line-height: 1; }
+#skyline button.x:hover { background: var(--moss-soft); }
+@media (max-width: 1100px) { #skyline { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); } }
 .tool-btn { width: 100%; font: inherit; font-size: 14px; font-weight: 700; padding: 9px 10px; border-radius: 10px; cursor: pointer;
   border: 1.5px solid #2f8fae; background: transparent; color: var(--ink); text-align: left; }
 .tool-btn:hover, .tool-btn[aria-pressed="true"] { background: #2f8fae; color: #fff; }
@@ -403,6 +423,8 @@ html[data-zona="picos"] #loading .c-naranjo { display: block; } html[data-zona="
   #info.mini h2 { font-size: 19px; }
   #hcard { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto; max-height: 42%; padding: 12px 14px; }
   #hcard h2 { font-size: 20px; }
+  #skyline { bottom: calc(48px + env(safe-area-inset-bottom, 0px)); height: 44vh; padding: 8px 10px; }
+  #skyline .sk-ctl .sk-lbl { display: none; }
   #mirador { left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto;
     max-height: 40%; overflow: auto; padding: 12px 14px; box-sizing: border-box; }
   #info .altbar { margin-top: 8px; }
@@ -806,7 +828,21 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
   </dl>
   <p class="group-title" style="margin:14px 0 0">Cumbres a la vista</p>
   <ul id="v-picos"></ul>
-  <p class="hint">Cálculo sobre el MDT del IGN a 100 m, con curvatura terrestre y refracción, para un observador de 1,7 m. No tiene en cuenta árboles ni edificios.</p>
+  <div class="i-acts" style="margin-top:12px"><button class="i-act" id="v-sky">Ver skyline</button></div>
+  <p class="hint">Cálculo sobre el MDT del IGN a <span id="v-celda">100</span> m, con curvatura terrestre y refracción, para un observador de 1,7 m. No tiene en cuenta árboles ni edificios.</p>
+</section>
+
+<section id="skyline" class="card" hidden aria-label="Skyline: el horizonte desde el mirador">
+  <div class="sk-top">
+    <h2 id="sk-name">Skyline</h2>
+    <div class="sk-ctl" role="group" aria-label="Exageración vertical"><span class="sk-lbl">Relieve</span>
+      <button data-skx="1" aria-pressed="false">×1</button><button data-skx="2" aria-pressed="true">×2</button><button data-skx="3" aria-pressed="false">×3</button></div>
+    <div class="sk-ctl"><span class="sk-lbl">Zoom</span><button id="sk-zout" aria-label="Alejar">−</button><button id="sk-zin" aria-label="Acercar">+</button>
+      <button id="sk-png" title="Descargar el panorama de 360° como imagen">PNG</button></div>
+    <button class="x" id="sk-close" aria-label="Cerrar skyline">×</button>
+  </div>
+  <div id="sk-wrap"><canvas id="sk-cv" aria-label="Panorama del horizonte; arrastra para girar"></canvas></div>
+  <div id="sk-info">Arrastra para girar · rueda o pellizco para el zoom · toca un nombre</div>
 </section>
 
 <div id="lite-banner" class="card" hidden role="alert">
@@ -1446,6 +1482,7 @@ addEventListener("keydown", (e) => {
   else if (k === "u") { toggleLoc(); }
   else if (k === "escape") {
     if (!$("help").hidden) toggleHelp(false);
+    else if (SKY.on) cerrarSkyline();
     else if (!$("mirador").hidden || miradorArmed) closeMirador();
     else if (!$("hcard").hidden) closeHcard();
     else if (!$("info").hidden) $("info-close").click();
@@ -2818,14 +2855,253 @@ function openMirador(mx, my, name, hKnown) {
     (pk.length > 8 ? `<li><span>y ${pk.length - 8} más</span><span></span></li>` : "") : "<li><span>Ninguna de las principales</span><span></span></li>";
   if (!$("hcard").hidden) closeHcard();
   $("info").hidden = true; selected = null; updateMunState();
-  $("mirador").hidden = false;
+  $("mirador").hidden = false; $("v-celda").textContent = M.celda;
   $("readout").textContent = "Mirador activo: toca otro punto para cambiarlo";
+  if (SKY.on) abrirSkyline(true);
 }
 function closeMirador() {
-  mirador = null; U.uViewOn.value = 0; eyeGroup.visible = false; $("mirador").hidden = true; setArmed(false);
+  mirador = null; U.uViewOn.value = 0; eyeGroup.visible = false; $("mirador").hidden = true; setArmed(false); cerrarSkyline();
   $("readout").textContent = "Pasa el cursor por el mapa";
 }
 $("mirador-close").onclick = closeMirador;
+// ---------------------------------------------------------------- skyline: panorama de 360° del horizonte desde el mirador
+// Para cada rumbo (7.200 rayos, uno cada 0,05°) se recorre el relieve hacia fuera y se guarda cada punto que asoma por
+// encima de todo lo anterior: ángulo de elevación, distancia y luz del sol. Esa lista basta para pintar las capas del
+// paisaje (las lejanas más azuladas), las crestas y la línea del cielo, y para saber qué cumbres con nombre se ven.
+const SKY = { on: false, NR: 7200, off: null, A: null, D: null, S: null, top: null, picos: [], az: 0, fov: 100, exag: 2,
+  mx: 0, my: 0, h0: 0, name: "", hits: [], sel: null, fan: null, raf: 0, cut: 0 };
+const RUMBOS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSO", "SO", "OSO", "O", "ONO", "NO", "NNO"];
+const rumbo = (a) => RUMBOS[Math.round(((a % 360) + 360) % 360 / 22.5) % 16];
+function hBil(fx, fy) {          // altura real bilineal, en coordenadas de celda
+  const x0 = fx | 0, y0 = fy | 0, tx = fx - x0, ty = fy - y0, i = y0 * W + x0;
+  return (H[i] * (1 - tx) + H[i + 1] * tx) * (1 - ty) + (H[i + W] * (1 - tx) + H[i + W + 1] * tx) * ty;
+}
+const skyPaso = (d, c) => Math.max(c * 0.6, d * 0.0022);
+function calcSkyline(mx, my, h) {
+  const c = M.celda, NR = SKY.NR, gx0 = mx / c - 0.5, gy0 = my / c - 0.5, h0 = h + OBS;
+  const su = U.uSun.value, Lx = su.x, Ly = su.z, Lz = Math.max(su.y, 0.15);   // sol: este, sur, arriba
+  let cap = NR * 90, A = new Float32Array(cap), D = new Float32Array(cap), S = new Uint8Array(cap), n = 0;
+  const off = new Int32Array(NR + 1), top = new Float32Array(NR);
+  let cut = 0;
+  for (let r = 0; r < NR; r++) {
+    off[r] = n;
+    const a = r / NR * Math.PI * 2, dx = Math.sin(a), dy = -Math.cos(a);   // rumbo desde el norte; y crece hacia el sur
+    let maxT = -Infinity, lastD = 0;
+    for (let d = c * 0.5; d <= MAX_D; d += skyPaso(d, c)) {
+      const fx = gx0 + dx * d / c, fy = gy0 + dy * d / c;
+      if (fx < 1 || fy < 1 || fx > W - 2.01 || fy > R - 2.01) { if (lastD > 0) cut++; break; }
+      lastD = d;
+      const t = (hBil(fx, fy) - d * d * K_CURV - h0) / d;
+      if (t > maxT) {
+        maxT = t;
+        if (n >= cap) { cap *= 2; const A2 = new Float32Array(cap), D2 = new Float32Array(cap), S2 = new Uint8Array(cap); A2.set(A); D2.set(D); S2.set(S); A = A2; D = D2; S = S2; }
+        const i = (fy | 0) * W + (fx | 0), gx = (H[i + 1] - H[i - 1]) / (2 * c), gy = (H[i + W] - H[i - W]) / (2 * c);
+        const sh = (-gx * Lx - gy * Ly + Lz) / Math.sqrt(gx * gx + gy * gy + 1);
+        A[n] = Math.atan(t) * 180 / Math.PI; D[n] = d; S[n] = Math.max(0, Math.min(255, Math.round(sh * 255))); n++;
+      }
+    }
+    top[r] = n > off[r] ? A[n - 1] : -90;
+  }
+  off[NR] = n;
+  Object.assign(SKY, { off, A, D, S, top, mx, my, h0, cut: cut / NR });
+  // cumbres con nombre que asoman: el rayo hasta la cumbre no tropieza con nada más alto antes de llegar
+  const vistas = [], cand = data.picos.map(p => [p, true]).concat(CUMBRES.map(p => [p, false]));
+  for (const [p, prin] of cand) {
+    const ddx = p.xy[0] - mx, ddy = p.xy[1] - my, dp = Math.hypot(ddx, ddy);
+    if (dp < 250 || dp > MAX_D) continue;
+    const fxp = p.xy[0] / c - 0.5, fyp = p.xy[1] / c - 0.5;
+    if (fxp < 1 || fyp < 1 || fxp > W - 2.01 || fyp > R - 2.01) continue;
+    const ep = Math.max(p.e || 0, hBil(fxp, fyp)), tp = (ep - dp * dp * K_CURV - h0) / dp, tol = 12 / dp;
+    const ux = ddx / dp, uy = ddy / dp, fin = dp - Math.max(2 * c, dp * 0.012);
+    let ok = true;
+    for (let d = c * 0.5; d < fin; d += skyPaso(d, c)) {
+      if ((hBil(gx0 + ux * d / c, gy0 + uy * d / c) - d * d * K_CURV - h0) / d > tp + tol) { ok = false; break; }
+    }
+    if (!ok) continue;
+    const az = (Math.atan2(ddx, -ddy) * 180 / Math.PI + 360) % 360;
+    vistas.push({ p, prin, az, ang: Math.atan(tp) * 180 / Math.PI, d: dp, e: Math.round(ep), n: nom0(p.n) });
+  }
+  // prioridad para el rótulo: las principales y las altas, y algo las cercanas
+  SKY.picos = vistas.sort((a, b) => (b.prin * 4000 + b.e - b.d / 40) - (a.prin * 4000 + a.e - a.d / 40));
+}
+function skyColor(d, sh, edge) {   // perspectiva aérea: lo lejano se funde con la bruma del horizonte
+  const f = 1 - Math.exp(-d / 26000), l = 0.5 + 0.62 * sh / 255;
+  let r = 74 * l, g = 96 * l, b = 64 * l;
+  if (edge) { r *= 0.55; g *= 0.58; b *= 0.62; }
+  r = r + (205 - r) * f * (edge ? 0.86 : 1); g = g + (219 - g) * f * (edge ? 0.86 : 1); b = b + (232 - b) * f * (edge ? 0.86 : 1);
+  return (255 << 24) | (Math.round(b) << 16) | (Math.round(g) << 8) | Math.round(r);
+}
+// dibuja una ventana del panorama: centro az (grados), campo fov; w×h en píxeles del lienzo
+function dibujarSkyline(ctx, w, h, az, fov, dpr, conRotulos) {
+  const NR = SKY.NR, ppd = w / fov, a0 = az - fov / 2, { off, A, D, S, top } = SKY;
+  const ri = (px) => { const g = (((a0 + (px + 0.5) / ppd) % 360) + 360) % 360; return Math.floor(g / 360 * NR) % NR; };
+  let amax = -90, amin = 90;
+  for (let px = 0; px < w; px += 2) { const t = top[ri(px)]; if (t > amax) amax = t; if (t < amin) amin = t; }
+  const room = Math.min(112 * dpr, h * 0.42), pie = 22 * dpr;
+  const vs = Math.min(ppd * SKY.exag, (h - room - pie - 10 * dpr) / Math.max(0.3, amax - amin));
+  const Y = (ang) => room + (amax - ang) * vs;
+  const img = ctx.createImageData(w, h), P = new Uint32Array(img.data.buffer);
+  for (let y = 0; y < h; y++) {   // cielo
+    const k = Math.min(1, y / Math.max(1, Y(amax) + 30 * dpr)), r = 146 + 66 * k, g = 186 + 41 * k, b = 226 + 12 * k;
+    const col = (255 << 24) | (b << 16) | (g << 8) | r; P.fill(col, y * w, y * w + w);
+  }
+  for (let px = 0; px < w; px++) {
+    const r = ri(px); let yb = h;
+    for (let k = off[r]; k < off[r + 1]; k++) {
+      let yt = Math.max(0, Math.round(Y(A[k]))); if (yt >= yb) continue;
+      const salto = k + 1 < off[r + 1] && D[k + 1] > D[k] * 1.12 + 400, ult = k === off[r + 1] - 1;
+      const col = skyColor(D[k], S[k], false);
+      for (let y = yt; y < yb; y++) P[y * w + px] = col;
+      if (salto || ult) { const ce = skyColor(D[k], S[k], true), gr = Math.max(1, Math.round(dpr * (D[k] < 8000 ? 1.6 : 1))); for (let y = yt; y < Math.min(yb, yt + gr); y++) P[y * w + px] = ce; }
+      yb = yt;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  // rosa de los vientos y grados
+  ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "rgba(255,255,255,.78)"; ctx.fillRect(0, h - pie, w, pie);
+  ctx.fillStyle = "#23352f"; ctx.strokeStyle = "rgba(35,53,47,.55)"; ctx.lineWidth = dpr;
+  const paso = [1, 2, 5, 10, 15, 30, 45].find(g => g * ppd >= 34 * dpr) || 45;
+  for (let g = Math.ceil(a0 / paso) * paso; g <= a0 + fov; g += paso) {
+    const x = (g - a0) * ppd, gg = ((g % 360) + 360) % 360, card = gg % 22.5 === 0;
+    ctx.beginPath(); ctx.moveTo(x, h - pie); ctx.lineTo(x, h - pie + (card ? 6 : 4) * dpr); ctx.stroke();
+    if (card) { ctx.font = `700 ${12 * dpr}px system-ui, sans-serif`; ctx.fillText(rumbo(gg), x, h - 5 * dpr); }
+    else if (!RUMBOS.some((_, k) => Math.abs(k * 22.5 - gg) * ppd < 22 * dpr) || ppd * paso > 60 * dpr) { ctx.font = `${10 * dpr}px system-ui, sans-serif`; ctx.fillStyle = "#55665e"; ctx.fillText(gg + "°", x, h - 6 * dpr); ctx.fillStyle = "#23352f"; }
+  }
+  ctx.restore();
+  // cumbres
+  const hits = [];
+  if (conRotulos) {
+    const puestos = [], sep = 15 * dpr, fs = 12 * dpr;
+    ctx.save(); ctx.textBaseline = "middle";
+    for (const v of SKY.picos) {
+      const dx = ((v.az - a0) % 360 + 360) % 360; if (dx > fov) continue;
+      const x = dx * ppd, y = Y(v.ang); if (y > h - pie) continue;
+      if (puestos.some(q => Math.abs(q - x) < sep)) continue;
+      puestos.push(x);
+      const sel = SKY.sel === v, yl = room - 6 * dpr;
+      ctx.strokeStyle = sel ? "#b2451c" : "rgba(35,53,47,.6)"; ctx.lineWidth = dpr * (sel ? 1.6 : 1);
+      ctx.beginPath(); ctx.moveTo(x, y - 3 * dpr); ctx.lineTo(x, yl); ctx.stroke();
+      ctx.fillStyle = sel ? "#b2451c" : "#23352f"; ctx.beginPath(); ctx.arc(x, y, 2.2 * dpr, 0, 7); ctx.fill();
+      ctx.translate(x, yl); ctx.rotate(-Math.PI / 4);
+      ctx.font = `${v.prin || sel ? 700 : 500} ${fs}px system-ui, sans-serif`;
+      const t1 = v.n, w1 = ctx.measureText(t1).width;
+      ctx.lineWidth = 3 * dpr; ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineJoin = "round";
+      ctx.strokeText(t1, 3 * dpr, 0); ctx.fillText(t1, 3 * dpr, 0);
+      ctx.font = `${10.5 * dpr}px system-ui, sans-serif`; ctx.fillStyle = "#55665e";
+      const t2 = fmt.format(v.e); ctx.strokeText(t2, 7 * dpr + w1, 0); ctx.fillText(t2, 7 * dpr + w1, 0);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      hits.push({ x, y, v });
+    }
+    ctx.restore();
+  }
+  return { hits, Y, ppd, a0, room };
+}
+function pintarSkyline() {
+  SKY.raf = 0; if (!SKY.on) return;
+  const cv = $("sk-cv"), dpr = Math.min(2, devicePixelRatio || 1), w = Math.max(10, Math.round(cv.clientWidth * dpr)), h = Math.max(10, Math.round(cv.clientHeight * dpr));
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  const r = dibujarSkyline(cv.getContext("2d"), w, h, SKY.az, SKY.fov, dpr, true);
+  SKY.hits = r.hits.map(o => ({ ...o, x: o.x / dpr, y: o.y / dpr })); SKY.vista = { ...r, dpr };
+  actualizarAbanico();
+}
+const pedirSkyline = () => { if (!SKY.raf) SKY.raf = requestAnimationFrame(pintarSkyline); };
+function actualizarAbanico() {   // en el mapa, el sector que muestra el panorama
+  if (!SKY.fan) {
+    SKY.fan = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: 0x3fb6d9, transparent: true, opacity: 0.28, depthTest: false, depthWrite: false, side: THREE.DoubleSide }));
+    SKY.fan.renderOrder = 50; eyeGroup.add(SKY.fan);
+  }
+  const rad = Math.min(18, Math.max(KM_W, KM_D) / 5), n = 40, pos = [0, 0.4, 0];
+  for (let i = 0; i <= n; i++) { const a = (SKY.az - SKY.fov / 2 + SKY.fov * i / n) * Math.PI / 180; pos.push(Math.sin(a) * rad, 0.4, -Math.cos(a) * rad); }
+  const idx = []; for (let i = 1; i <= n; i++) idx.push(0, i, i + 1);
+  const g = SKY.fan.geometry; g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeBoundingSphere();
+  SKY.fan.visible = SKY.on; needsRender = true;
+}
+function abrirSkyline(seguir) {
+  if (!mirador) return;
+  $("readout").textContent = "Calculando el horizonte…";
+  setTimeout(() => {
+    calcSkyline(mirador.mx, mirador.my, mirador.h);
+    SKY.on = true; SKY.sel = null; $("skyline").hidden = false;
+    if (matchMedia("(max-width: 720px)").matches) $("mirador").hidden = true;   // en el móvil, el panorama ocupa su sitio
+    $("sk-name").textContent = "Skyline · " + $("v-name").textContent;
+    // mirar hacia la cumbre más destacada a la vista, o hacia donde mira la cámara
+    const best = SKY.picos[0];
+    if (!seguir) SKY.az = best ? best.az : ((Math.atan2(ctl.target.x - camera.position.x, -(ctl.target.z - camera.position.z)) * 180 / Math.PI) + 360) % 360;
+    if (!seguir) SKY.fov = matchMedia("(max-width: 720px)").matches ? 70 : 110;
+    infoSkyline(null);
+    $("readout").textContent = `Skyline: ${fmt.format(SKY.picos.length)} cumbres con nombre a la vista`;
+    pedirSkyline();
+  }, 30);
+}
+function cerrarSkyline() { if (SKY.on && mirador) $("mirador").hidden = false; SKY.on = false; $("skyline").hidden = true; if (SKY.fan) SKY.fan.visible = false; needsRender = true; }
+function infoSkyline(v, az, dist) {
+  const el = $("sk-info");
+  if (v) {
+    el.innerHTML = `<b>${esc(v.n)}</b> ${fmt.format(v.e)} m · a ${fmt1.format(v.d / 1000)} km hacia el ${rumbo(v.az)} (${Math.round(v.az)}°) · ${v.ang >= 0 ? "+" : ""}${fmt1.format(v.ang)}° <button data-skgo="1">Ver en el mapa</button>`;
+  } else if (az != null) {
+    el.innerHTML = `Rumbo ${Math.round(az)}° (${rumbo(az)})` + (dist ? ` · relieve a ${fmt1.format(dist / 1000)} km` : " · cielo");
+  } else {
+    const cor = SKY.cut > 0.02 ? ` · el mapa acaba a menos de ${Math.round(MAX_D / 1000)} km en parte del horizonte` : "";
+    el.textContent = `${fmt.format(SKY.picos.length)} cumbres a la vista · arrastra para girar, rueda o pellizco para el zoom` + cor;
+  }
+}
+$("v-sky").onclick = () => abrirSkyline(false);
+$("sk-close").onclick = cerrarSkyline;
+document.querySelectorAll("[data-skx]").forEach(b => b.onclick = () => {
+  SKY.exag = +b.dataset.skx; document.querySelectorAll("[data-skx]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); pedirSkyline();
+});
+const zoomSky = (f) => { SKY.fov = Math.min(360, Math.max(8, SKY.fov * f)); pedirSkyline(); };
+$("sk-zin").onclick = () => zoomSky(1 / 1.4); $("sk-zout").onclick = () => zoomSky(1.4);
+$("sk-info").addEventListener("click", (e) => {
+  if (e.target.closest("[data-skgo]") && SKY.sel) { const p = SKY.sel.p; flyToPoint(p.xy[0], p.xy[1], 5); }
+});
+$("sk-png").onclick = () => {   // panorama completo de 360°, con rótulos, a 10 px por grado
+  const w = 3600, h = 560, cv = document.createElement("canvas"); cv.width = w; cv.height = h + 60;
+  const ctx = cv.getContext("2d");
+  const keep = SKY.sel; SKY.sel = null;
+  const tmp = document.createElement("canvas"); tmp.width = w; tmp.height = h;
+  dibujarSkyline(tmp.getContext("2d"), w, h, 180, 360, 1.6, true); SKY.sel = keep;
+  ctx.fillStyle = "#f4f1e8"; ctx.fillRect(0, 0, w, h + 60); ctx.drawImage(tmp, 0, 0);
+  ctx.fillStyle = "#23352f"; ctx.font = "700 22px Georgia, serif"; ctx.fillText($("sk-name").textContent.replace(/^Skyline · /, "Skyline desde ") + " · " + fmt.format(Math.round(mirador ? mirador.h : 0)) + " m", 16, h + 26);
+  ctx.font = "14px system-ui, sans-serif"; ctx.fillStyle = "#55665e";
+  ctx.fillText(`${Z.nombre || "León en relieve"} · MDT del IGN con curvatura y refracción · cumbres del Nomenclátor Geográfico (IGN) · relieve ×${SKY.exag}`, 16, h + 48);
+  cv.toBlob((b) => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "skyline-" + norm($("sk-name").textContent.replace(/^Skyline · /, "")).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".png"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }, "image/png");
+};
+{ // arrastrar para girar, rueda o pellizco para el zoom, tocar un nombre
+  const cv = $("sk-cv"), ptrs = new Map(); let ini = null, movido = false;
+  cv.addEventListener("pointerdown", (e) => { try { cv.setPointerCapture(e.pointerId); } catch (er) { } ptrs.set(e.pointerId, [e.clientX, e.clientY]); movido = false;
+    ini = ptrs.size === 2 ? { pinch: Math.abs([...ptrs.values()][0][0] - [...ptrs.values()][1][0]) || 1, fov: SKY.fov } : { x: e.clientX, az: SKY.az }; cv.classList.add("drag"); });
+  cv.addEventListener("pointermove", (e) => {
+    if (!ptrs.has(e.pointerId)) {   // ratón sin pulsar: qué hay debajo
+      if (e.pointerType === "mouse" && SKY.vista) { const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+        const hit = SKY.hits.find(o => Math.abs(o.x - x) < 7 && y < o.y + 8); if (hit) { cv.style.cursor = "pointer"; infoSkyline(hit.v); } else { cv.style.cursor = ""; infoTerreno(x, y); } }
+      return;
+    }
+    ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptrs.size === 2 && ini && ini.pinch) { const v = [...ptrs.values()], dd = Math.abs(v[0][0] - v[1][0]) || 1; SKY.fov = Math.min(360, Math.max(8, ini.fov * ini.pinch / dd)); movido = true; pedirSkyline(); return; }
+    if (ini && ini.x != null) { const dx = e.clientX - ini.x; if (Math.abs(dx) > 3) movido = true; SKY.az = ((ini.az - dx / (cv.clientWidth / SKY.fov)) % 360 + 360) % 360; pedirSkyline(); }
+  });
+  const fin = (e) => {
+    if (!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId); cv.classList.remove("drag");
+    if (ptrs.size === 1) { const [p] = [...ptrs.values()]; ini = { x: p[0], az: SKY.az }; return; }
+    ini = null;
+    if (!movido && e.type === "pointerup") {
+      const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      const hit = SKY.hits.filter(o => Math.abs(o.x - x) < 12 && y < o.y + 12).sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0];
+      SKY.sel = hit ? hit.v : null; if (hit) infoSkyline(hit.v); else infoTerreno(x, y); pedirSkyline();
+    }
+  };
+  cv.addEventListener("pointerup", fin); cv.addEventListener("pointercancel", fin);
+  cv.addEventListener("wheel", (e) => { e.preventDefault(); if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { SKY.az = ((SKY.az + e.deltaX / (cv.clientWidth / SKY.fov)) % 360 + 360) % 360; pedirSkyline(); } else zoomSky(Math.exp(e.deltaY * 0.0015)); }, { passive: false });
+  new ResizeObserver(() => SKY.on && pedirSkyline()).observe(cv);
+}
+function infoTerreno(x, y) {   // rumbo y distancia del relieve bajo el cursor
+  const v = SKY.vista; if (!v) return;
+  const az = ((v.a0 + x / (v.ppd / v.dpr)) % 360 + 360) % 360, r = Math.floor(az / 360 * SKY.NR) % SKY.NR, yy = y * v.dpr;
+  let dist = 0; for (let k = SKY.off[r]; k < SKY.off[r + 1]; k++) if (v.Y(SKY.A[k]) <= yy) { dist = SKY.D[k]; break; }
+  infoSkyline(null, az, dist);
+}
 $("mirador-btn").onclick = () => {
   setArmed(!miradorArmed);
   if (miradorArmed && matchMedia("(max-width: 720px)").matches) { $("panel").classList.add("collapsed"); $("toggle-panel").setAttribute("aria-expanded", "false"); }
