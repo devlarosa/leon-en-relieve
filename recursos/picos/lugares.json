@@ -1,0 +1,221 @@
+{
+ "nota": "Lugares de interés de los Picos de Europa escogidos a mano. scripts/lugares.py busca sus coordenadas: primero en el Nomenclátor Geográfico del IGN (ngbe), si no en Wikidata (wd); comprueba que el punto cae en el municipio indicado (mun). 'cerca' es la localidad que se usa como último recurso (posición aproximada).",
+ "categorias": {
+  "bosque": "Bosques y árboles",
+  "cascada": "Cascadas",
+  "cueva": "Cuevas y simas",
+  "lago": "Lagos",
+  "paisaje": "Gargantas, cumbres y miradores",
+  "patrimonio": "Santuarios, iglesias y monasterios",
+  "arqueo": "Arqueología y arte rupestre",
+  "etno": "Pueblos, majadas y minería"
+ },
+ "lugares": [
+  {
+   "n": "Lago Enol",
+   "cat": "lago",
+   "mun": "Cangas de Onís",
+   "cerca": "Covadonga",
+   "ngbe": "Lago de Enol",
+   "desc": "El mayor de los Lagos de Covadonga, de origen glaciar, a unos 1.070 m. En su fondo se venera una imagen de la Virgen."
+  },
+  {
+   "n": "Lago de la Ercina",
+   "cat": "lago",
+   "mun": "Cangas de Onís",
+   "cerca": "Covadonga",
+   "ngbe": "Lago de la Ercina",
+   "desc": "El segundo de los Lagos de Covadonga, más somero, con el macizo occidental (Cornión) al fondo."
+  },
+  {
+   "n": "Lagos de Lloroza",
+   "cat": "lago",
+   "mun": "Camaleño",
+   "cerca": "Espinama",
+   "ngbe": "Lagos de Lloroza",
+   "desc": "Lagunas de alta montaña junto a la llegada del teleférico de Fuente Dé, en el macizo central."
+  },
+  {
+   "n": "Garganta del Cares",
+   "cat": "paisaje",
+   "mun": "Posada de Valdeón",
+   "cerca": "Caín",
+   "desc": "El río Cares separa los macizos occidental y central por un desfiladero de más de 1.000 m de paredes; la senda entre Caín y Poncebos sigue el canal de la central hidroeléctrica. El punto marca Caín, su cabecera leonesa."
+  },
+  {
+   "n": "Picu Urriellu (Naranjo de Bulnes)",
+   "cat": "paisaje",
+   "mun": "Cabrales",
+   "cerca": "Bulnes",
+   "ngbe": "Picu Urriellu",
+   "desc": "La cumbre más famosa de los Picos (2.519 m), con su pared oeste de más de 500 m. La escalaron por primera vez Pedro Pidal y Gregorio Pérez «el Cainejo» en 1904."
+  },
+  {
+   "n": "Torre Cerredo",
+   "cat": "paisaje",
+   "mun": "Cabrales",
+   "cerca": "Bulnes",
+   "ngbe": "Torre Cerredo",
+   "desc": "La cumbre más alta de la cordillera Cantábrica (unos 2.650 m), en el macizo central."
+  },
+  {
+   "n": "Mirador de Ordiales",
+   "cat": "paisaje",
+   "mun": "Amieva",
+   "cerca": "Amieva",
+   "ngbe": "Mirador de Ordiales",
+   "desc": "Balcón sobre el valle de Angón, a más de 1.000 m de caída, donde descansan los restos de Pedro Pidal, impulsor del Parque Nacional de la Montaña de Covadonga (1918)."
+  },
+  {
+   "n": "Mirador del Cable",
+   "cat": "paisaje",
+   "mun": "Camaleño",
+   "cerca": "Fuente Dé",
+   "wd": "Teleférico de Fuente Dé",
+   "desc": "La estación superior del teleférico de Fuente Dé, a unos 1.830 m, tras salvar en pocos minutos un desnivel de más de 750 m."
+  },
+  {
+   "n": "Mirador del Tombo",
+   "cat": "paisaje",
+   "mun": "Posada de Valdeón",
+   "cerca": "Cordiñanes de Valdeón",
+   "wd": "Mirador del Tombo",
+   "desc": "Mirador sobre el valle de Valdeón y el macizo central, con la escultura de un rebeco."
+  },
+  {
+   "n": "Desfiladero de los Beyos",
+   "cat": "paisaje",
+   "mun": "Oseja de Sajambre",
+   "cerca": "Oseja de Sajambre",
+   "wd": "Desfiladero de los Beyos",
+   "desc": "El río Sella se abre paso entre Sajambre y Asturias por un estrecho desfiladero de calizas.",
+   "ngbe": "Desfiladero de los Beyos"
+  },
+  {
+   "n": "Puertos de Áliva",
+   "cat": "paisaje",
+   "mun": "Camaleño",
+   "cerca": "Espinama",
+   "ngbe": "Puertos de Áliva",
+   "desc": "Altas praderas de verano entre los macizos central y oriental, con el refugio y la ermita de la Santuca."
+  },
+  {
+   "n": "Hayedo de Vegabaño",
+   "cat": "bosque",
+   "mun": "Oseja de Sajambre",
+   "cerca": "Soto de Sajambre",
+   "ngbe": "Vegabaño",
+   "desc": "Vega de pastos rodeada de hayas y pinos en Sajambre, con su refugio, puerta de entrada al macizo occidental desde León."
+  },
+  {
+   "n": "Santa Cueva de Covadonga",
+   "cat": "patrimonio",
+   "mun": "Cangas de Onís",
+   "cerca": "Covadonga",
+   "wd": "Santa Cueva de Covadonga",
+   "desc": "La cueva donde la tradición sitúa la batalla de Covadonga (722) y la tumba de Pelayo, primer rey de Asturias."
+  },
+  {
+   "n": "Basílica de Covadonga",
+   "cat": "patrimonio",
+   "mun": "Cangas de Onís",
+   "cerca": "Covadonga",
+   "ngbe": "Santuario de Nuestra Señora de Covadonga",
+   "desc": "Basílica neorrománica de piedra rosada, construida entre 1877 y 1901."
+  },
+  {
+   "n": "Santa María de Lebeña",
+   "cat": "patrimonio",
+   "mun": "Cillorigo de Liébana",
+   "cerca": "Lebeña",
+   "wd": "Iglesia de Santa María de Lebeña",
+   "desc": "Iglesia prerrománica de principios del siglo X, con arcos de herradura, junto al desfiladero de la Hermida."
+  },
+  {
+   "n": "Monasterio de Santo Toribio de Liébana",
+   "cat": "patrimonio",
+   "mun": "Camaleño",
+   "cerca": "Potes",
+   "wd": "Monasterio de Santo Toribio de Liébana",
+   "desc": "Guarda el Lignum Crucis, el mayor fragmento conservado de la cruz de Cristo según la tradición; es meta del Año Jubilar Lebaniego. Aquí vivió el Beato de Liébana."
+  },
+  {
+   "n": "Puente romano de Cangas de Onís",
+   "cat": "patrimonio",
+   "mun": "Cangas de Onís",
+   "cerca": "Cangas de Onís",
+   "wd": "Puente romano de Cangas de Onís",
+   "desc": "Puente medieval de arco apuntado sobre el Sella, del que cuelga una copia de la Cruz de la Victoria; se le llama romano, pero es de la Edad Media."
+  },
+  {
+   "n": "Dolmen de Santa Cruz",
+   "cat": "arqueo",
+   "mun": "Cangas de Onís",
+   "cerca": "Cangas de Onís",
+   "wd": "Dolmen de Santa Cruz",
+   "desc": "Sepulcro megalítico bajo la capilla de Santa Cruz, levantada sobre él en el siglo VIII y reconstruida después."
+  },
+  {
+   "n": "Cueva del Buxu",
+   "cat": "arqueo",
+   "mun": "Cangas de Onís",
+   "cerca": "Cardes",
+   "wd": "Cueva del Buxu",
+   "desc": "Cueva con grabados y pinturas del Paleolítico superior, Patrimonio de la Humanidad dentro del arte rupestre del norte de España.",
+   "ngbe": "Cueva Prehistórica del Buxu"
+  },
+  {
+   "n": "Torca Urriellu",
+   "cat": "cueva",
+   "mun": "Cabrales",
+   "cerca": "Bulnes",
+   "ngbe": "Torca Urriellu",
+   "desc": "Una de las simas más profundas de los Picos, en el macizo central; Monumento Natural."
+  },
+  {
+   "n": "Cueva del Queso de Cabrales",
+   "cat": "etno",
+   "mun": "Cabrales",
+   "cerca": "Arenas",
+   "wd": "Cueva del Queso de Cabrales",
+   "desc": "En Arenas de Cabrales, una cueva-museo cuenta cómo se madura en cuevas naturales el queso azul de Cabrales."
+  },
+  {
+   "n": "Bulnes",
+   "cat": "etno",
+   "mun": "Cabrales",
+   "cerca": "Bulnes",
+   "desc": "Pueblo sin carretera al pie del Naranjo: se llega a pie desde Poncebos o por el funicular abierto en 2001."
+  },
+  {
+   "n": "Caín",
+   "cat": "etno",
+   "mun": "Posada de Valdeón",
+   "cerca": "Caín",
+   "desc": "La cabecera leonesa de la garganta del Cares, encajada entre paredes de caliza; de aquí era el Cainejo."
+  },
+  {
+   "n": "Sotres",
+   "cat": "etno",
+   "mun": "Cabrales",
+   "cerca": "Sotres",
+   "desc": "El pueblo más alto de Asturias (unos 1.050 m), entre los macizos central y oriental."
+  },
+  {
+   "n": "Minas de Buferrera",
+   "cat": "etno",
+   "mun": "Cangas de Onís",
+   "cerca": "Covadonga",
+   "ngbe": "Buferrera",
+   "desc": "Antiguas minas de hierro y manganeso junto a los Lagos de Covadonga; hoy hay un mirador y una senda por sus restos."
+  },
+  {
+   "n": "Minas de Áliva",
+   "cat": "etno",
+   "mun": "Camaleño",
+   "cerca": "Espinama",
+   "ngbe": "Minas de Áliva",
+   "desc": "Minas de zinc en los puertos de Áliva, explotadas desde el siglo XIX durante más de cien años."
+  }
+ ]
+}

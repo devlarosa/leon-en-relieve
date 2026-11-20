@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sitúa en el mapa los lugares de interés de recursos/lugares.json.
+"""Sitúa en el mapa los lugares de interés de recursos/<zona>/lugares.json (ZONA=leon por defecto).
 
 Para cada lugar busca coordenadas, por este orden:
   1. Nomenclátor Geográfico Básico de España (IGN, servicio WFS INSPIRE) por nombre
@@ -23,7 +23,9 @@ import numpy as np
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "scripts"))
-from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+from zona import ZONA, FICHA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+# caja de la zona para buscar en el Nomenclátor (con dos decimales si los tiene justos: «43.30», como siempre en León)
+BB = [f"{v:.2f}" if abs(v * 100 - round(v * 100)) < 1e-9 else f"{v}" for v in FICHA["bbox"]]
 sys.path.insert(0, str(RAIZ / "scripts"))
 from rios_red import latlon_a_utm30  # noqa: E402
 
@@ -55,8 +57,8 @@ def get(url, cache):
 
 def ngbe(texto, cache):
     F = ('<fes:Filter xmlns:fes="http://www.opengis.net/fes/2.0" xmlns:gn="http://inspire.ec.europa.eu/schemas/gn/4.0" xmlns:gml="http://www.opengis.net/gml/3.2"><fes:And>'
-         '<fes:BBOX><fes:ValueReference>gn:geometry</fes:ValueReference><gml:Envelope srsName="urn:ogc:def:crs:EPSG::4258"><gml:lowerCorner>41.95 -7.15</gml:lowerCorner>'
-         '<gml:upperCorner>43.30 -4.65</gml:upperCorner></gml:Envelope></fes:BBOX><fes:PropertyIsLike wildCard="*" singleChar="." escapeChar="!" matchCase="false">'
+         '<fes:BBOX><fes:ValueReference>gn:geometry</fes:ValueReference><gml:Envelope srsName="urn:ogc:def:crs:EPSG::4258">'
+         f'<gml:lowerCorner>{BB[0]} {BB[1]}</gml:lowerCorner><gml:upperCorner>{BB[2]} {BB[3]}</gml:upperCorner></gml:Envelope></fes:BBOX><fes:PropertyIsLike wildCard="*" singleChar="." escapeChar="!" matchCase="false">'
          '<fes:ValueReference>gn:name/gn:GeographicalName/gn:spelling/gn:SpellingOfName/gn:text</fes:ValueReference>'
          f'<fes:Literal>*{texto}*</fes:Literal></fes:PropertyIsLike></fes:And></fes:Filter>')
     q = urllib.parse.urlencode({"service": "WFS", "version": "2.0.0", "request": "GetFeature", "typeNames": "gn:NamedPlace", "count": "100", "filter": F})
@@ -157,7 +159,7 @@ def situar(l, cx, avisos):
 
 
 def main():
-    D = json.loads((RAIZ / "recursos" / "lugares.json").read_text(encoding="utf-8"))
+    D = json.loads((RAIZ / "recursos" / ZONA / "lugares.json").read_text(encoding="utf-8"))
     cx = Contexto()
     salida, avisos = [], []
     for l in D["lugares"]:

@@ -89,7 +89,7 @@ def descargar():
 
 def main():
     descargar()
-    H = json.loads((RAIZ / "recursos" / "historia.json").read_text(encoding="utf-8"))
+    H = json.loads((RAIZ / "recursos" / ZONA / "historia.json").read_text(encoding="utf-8"))
     cx = Contexto(); M = cx.M; L = cx.L; avisos = []
     prov = L["provincia"]
     en_prov = lambda x, y: dentro(x, y, prov)
