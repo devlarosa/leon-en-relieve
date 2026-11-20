@@ -32,8 +32,14 @@ pts <- do.call(rbind, lapply(c(L$entidades, L$capitales), function(e) data.frame
 pts <- pts[!duplicated(paste(pts$n, round(pts$x, -2), round(pts$y, -2))), ]
 pts_sf <- st_as_sf(pts, coords = c("x", "y"), crs = 25830)
 
+# cada anillo empieza en su vértice más al suroeste: los cálculos de GEOS no siempre devuelven el mismo punto
+# de arranque y, sin esto, el fichero de salida cambiaba de una ejecución a otra (aunque la forma fuera la misma)
+normalizar <- function(g) {
+  rota <- function(r) { m <- r[-nrow(r), , drop = FALSE]; k <- order(m[, 1], m[, 2])[1]; m <- m[c(k:nrow(m), seq_len(k - 1)), , drop = FALSE]; rbind(m, m[1, ]) }
+  st_multipolygon(lapply(st_cast(st_sfc(g, crs = 25830), "MULTIPOLYGON")[[1]], function(p) lapply(p, rota)))
+}
 anillos_visor <- function(g, tol) {
-  g <- st_simplify(st_sfc(g, crs = 25830), dTolerance = tol, preserveTopology = TRUE)
+  g <- st_simplify(st_sfc(normalizar(g), crs = 25830), dTolerance = tol, preserveTopology = TRUE)
   out <- list()
   for (p in st_cast(st_cast(g, "MULTIPOLYGON"), "POLYGON")) for (r in p) {
     if (nrow(r) < 4) next
