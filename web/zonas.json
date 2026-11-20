@@ -143,7 +143,8 @@
       "cobertura",
       "poblacion",
       "proteccion",
-      "incendios"
+      "incendios",
+      "clima"
     ],
     "procesado": {
       "picos": [

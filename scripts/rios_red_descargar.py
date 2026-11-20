@@ -28,7 +28,9 @@ from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «le
 OUT = RAIZ / "raw" / ZONA / "rios_red"
 API = "https://api-features.idee.es/collections"
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
-BBOX = "-7.15,41.95,-4.65,43.30"   # la misma caja que el resto de descargas del visor
+from zona import FICHA  # noqa: E402
+_b = FICHA["bbox"]                  # la misma caja que el resto de descargas de la zona (lat_min, lon_min, lat_max, lon_max)
+BBOX = f"{_b[1]},{_b[0]},{_b[3]},{_b[2]}"
 AFOROS = "https://www.miteco.gob.es/content/dam/miteco/es/agua/temas/evaluacion-de-los-recursos-hidricos/sistema-informacion-anuario-aforos/"
 AFOROS_ZIP = "Anuario-21-22-csv.zip"      # último anuario publicado; al salir uno nuevo, cambiar aquí el nombre
 CUENCAS_AFOROS = ("DUERO/", "MIÑO-SIL/", "CANTABRICO/")

@@ -116,8 +116,14 @@ def main():
     # relieve del visor (100 m) y altitud media de cada píxel de 1 km
     px = np.asarray(Image.open(WEB / "relieve.png").convert("RGB"), dtype=np.float64)
     H = (px[..., 0] * 65536 + px[..., 1] * 256 + px[..., 2]) / 10 - 10000
-    f = PASO // celda
-    H1 = H[: ny * f, : nx * f].reshape(ny, f, nx, f).mean(axis=(1, 3))
+    if PASO % celda == 0:              # celdas que caben justas en 1 km (León: 10 × 10 de 100 m)
+        f = PASO // celda
+        H1 = H[: ny * f, : nx * f].reshape(ny, f, nx, f).mean(axis=(1, 3))
+    else:                              # celdas de 30 m (Picos): cada una va al kilómetro donde cae su centro
+        cols = (((np.arange(H.shape[1]) + 0.5) * celda) // PASO).astype(int); rows = (((np.arange(H.shape[0]) + 0.5) * celda) // PASO).astype(int)
+        ok = (rows[:, None] < ny) & (cols[None, :] < nx)
+        k = (rows[:, None] * nx + cols[None, :])[ok]
+        H1 = (np.bincount(k, H[ok], ny * nx) / np.maximum(np.bincount(k, None, ny * nx), 1)).reshape(ny, nx)
 
     # máscara de la provincia a 1 km
     im = Image.new("L", (nx, ny), 0); dr = ImageDraw.Draw(im)
@@ -222,8 +228,11 @@ def main():
     print("Escrito", WEB / "clima.png", rgb.shape, "y clima.json")
 
     # comprobación en tres puntos conocidos
-    for nom, E, N in [("León", 290000, 4719000), ("Riaño", 330400, 4761000), ("Ponferrada", 202000, 4718000)]:
+    for nom, E, N in [("León", 290000, 4719000), ("Riaño", 330400, 4761000), ("Ponferrada", 202000, 4718000),
+                      ("Cangas de Onís", 329200, 4802300), ("Posada de Valdeón", 343350, 4784250), ("Sotres", 361000, 4789000)]:
         c, r = int((E - x0) / PASO), int((y1 - N) / PASO)
+        if not (0 <= c < nx and 0 <= r < ny):
+            continue
         vals = []
         for vid, *_ in VARS:
             v = next(x for x in salida["variables"] if x["id"] == vid)["rejillas"][12]
