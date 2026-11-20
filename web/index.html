@@ -3066,8 +3066,18 @@ $("sk-png").onclick = () => {   // panorama completo de 360°, con rótulos, a 1
   ctx.fillStyle = "#23352f"; ctx.font = "700 22px Georgia, serif"; ctx.fillText($("sk-name").textContent.replace(/^Skyline · /, "Skyline desde ") + " · " + fmt.format(Math.round(mirador ? mirador.h : 0)) + " m", 16, h + 26);
   ctx.font = "14px system-ui, sans-serif"; ctx.fillStyle = "#55665e";
   ctx.fillText(`${Z.nombre || "León en relieve"} · MDT del IGN con curvatura y refracción · cumbres del Nomenclátor Geográfico (IGN) · relieve ×${SKY.exag}`, 16, h + 48);
-  cv.toBlob((b) => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "skyline-" + norm($("sk-name").textContent.replace(/^Skyline · /, "")).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".png"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }, "image/png");
+  const nombre = "skyline-" + norm($("sk-name").textContent.replace(/^Skyline · /, "")).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".png";
+  cv.toBlob(async (b) => {
+    if (DESCARGAS) {   // dentro del visor de artefactos de claude.ai, la descarga pasa por su confirmación
+      try { await DESCARGAS.save({ filename: nombre, data: b }); }
+      catch (e) { if (e && e.code !== "declined") $("readout").textContent = "No se pudo descargar la imagen (" + (e.code || e.message) + ")"; }
+      return;
+    }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = nombre; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }, "image/png");
 };
+let DESCARGAS = null;
+try { if (window.claude && window.claude.use) window.claude.use("downloads").then(d => { DESCARGAS = d; }, () => { }); } catch (e) { }
 { // arrastrar para girar, rueda o pellizco para el zoom, tocar un nombre
   const cv = $("sk-cv"), ptrs = new Map(); let ini = null, movido = false;
   cv.addEventListener("pointerdown", (e) => { try { cv.setPointerCapture(e.pointerId); } catch (er) { } ptrs.set(e.pointerId, [e.clientX, e.clientY]); movido = false;
