@@ -19,7 +19,9 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ / "scripts"))
-from zona import ZONA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+from zona import ZONA, FICHA  # noqa: E402  (variable de entorno ZONA; por defecto «leon»)
+# caja de la zona (con dos decimales si los tiene justos, como siempre en León)
+_BB = [f"{v:.2f}" if abs(v * 100 - round(v * 100)) < 1e-9 else f"{v}" for v in FICHA["bbox"]]
 sys.path.insert(0, str(RAIZ / "scripts"))
 from lugares import Contexto, situar, norm, dentro  # noqa: E402
 from rios_red import simplificar  # noqa: E402
@@ -28,13 +30,13 @@ RAW = RAIZ / "raw" / ZONA / "historia"
 UA = "Mozilla/5.0 (compatible; leon3d-datos/1.0)"
 IGME = "https://mapas.igme.es/gis/rest/services/BasesDatos"
 QUERY_WD = """SELECT ?item ?itemLabel ?itemDescription ?tipoLabel ?c ?inicio ?fin ?art WHERE {
-  SERVICE wikibase:box { ?item wdt:P625 ?c . bd:serviceParam wikibase:cornerSouthWest "Point(-7.15 41.95)"^^geo:wktLiteral .
-    bd:serviceParam wikibase:cornerNorthEast "Point(-4.65 43.30)"^^geo:wktLiteral . }
+  SERVICE wikibase:box { ?item wdt:P625 ?c . bd:serviceParam wikibase:cornerSouthWest "Point(LO0 LA0)"^^geo:wktLiteral .
+    bd:serviceParam wikibase:cornerNorthEast "Point(LO1 LA1)"^^geo:wktLiteral . }
   ?item wdt:P31 ?tipo . ?tipo rdfs:label ?tl . FILTER(LANG(?tl) = "es")
   FILTER(REGEX(?tl, "castro|yacimiento|arqueol|romana|romano|campamento|dolmen|megal|monasterio|castillo|torre fortificada|muralla|mina|calzada|necrópolis|abadía|ciudad romana|Zona Arqueológica|villa romana", "i"))
   OPTIONAL { ?item wdt:P571 ?inicio . } OPTIONAL { ?item wdt:P576 ?fin . }
   OPTIONAL { ?art schema:about ?item ; schema:isPartOf <https://es.wikipedia.org/> . }
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". } }"""
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "es,en". } }""".replace("LO0", _BB[1]).replace("LA0", _BB[0]).replace("LO1", _BB[3]).replace("LA1", _BB[2])
 
 
 def get_json(url, data=None, intentos=6, pausa=5):
@@ -68,7 +70,8 @@ def descargar():
         if f.exists() and json.loads(f.read_text()):
             continue
         print("IGME", nombre, "…", flush=True)
-        vistos, feats, pend = set(), [], [(x, y, x + 40000, y + 45000) for x in range(164000, 360000, 40000) for y in range(4655000, 4790000, 45000)]
+        X0, Y0, X1, Y1 = FICHA["extension"]
+        vistos, feats, pend = set(), [], [(x, y, x + 40000, y + 45000) for x in range(X0, X1, 40000) for y in range(Y0, Y1, 45000)]
         while pend:
             x0, y0, x1, y1 = pend.pop()
             q = {"geometry": f"{x0},{y0},{x1},{y1}", "geometryType": "esriGeometryEnvelope", "inSR": 25830, "outSR": 25830,
@@ -107,10 +110,11 @@ def main():
         print(f"  {fuente:8} {s['n']:40} ← {como}")
     cx.guardar()
     pueblos = []
-    for p in H["pueblos"]:
+    for p in H.get("pueblos", []):
         xy = pueblo(p["cerca"])
         if xy:
             pueblos.append({"n": p["n"], "era": p["era"], "xy": [xy[0] + p["dx"], xy[1] + p["dy"]]})
+    H.setdefault("camino", {"n": "", "por": []})                # en León, el Camino de Santiago en el mapa histórico
     camino = [pueblo(n) for n in H["camino"]["por"]]
     if None in camino:
         avisos.append("Camino: no se encuentran " + ", ".join(n for n, xy in zip(H["camino"]["por"], camino) if xy is None))
@@ -165,8 +169,9 @@ def main():
         it = items.setdefault(q, {"n": b["itemLabel"]["value"], "d": b.get("itemDescription", {}).get("value", ""), "c": b["c"]["value"],
                                   "tipos": set(), "art": b.get("art", {}).get("value")})
         it["tipos"].add(b["tipoLabel"]["value"].lower())
-    era_de = [("hierro", ["castro", "dolmen"]), ("roma", ["romana", "romano", "ciudad romana", "calzada"]),
-              ("reino", ["monasterio", "castillo", "torre fortificada", "muralla", "abadía"]), ("mineria", ["mina"])]
+    # época de cada sitio de Wikidata según su tipo (la zona puede dar la suya en «wikidata_epocas» de su historia.json)
+    era_de = [tuple(x) for x in H.get("wikidata_epocas", [("hierro", ["castro", "dolmen"]), ("roma", ["romana", "romano", "ciudad romana", "calzada"]),
+              ("reino", ["monasterio", "castillo", "torre fortificada", "muralla", "abadía"]), ("mineria", ["mina"])])]
     extra = []
     for q, it in items.items():
         if re.match(r"^(Q\d+|Habitaci|Galer|Delimitaci)", it["n"]) or "mosaico" in it["n"].lower():
@@ -180,7 +185,7 @@ def main():
         era = next((e for e, ks in era_de if any(k in t for t in it["tipos"] for k in ks)), None)
         if not era or any(math.hypot(x - s["xy"][0], y - s["xy"][1]) < 1500 and norm(s["n"])[:6] == norm(it["n"])[:6] for s in sitios):
             continue
-        if era == "mineria" and not re.search(r"carb|hulla|antrac|pozo", (it["n"] + it["d"]).lower()):
+        if era == "mineria" and ZONA == "leon" and not re.search(r"carb|hulla|antrac|pozo", (it["n"] + it["d"]).lower()):
             era = "roma" if "roman" in (it["n"] + it["d"]).lower() else None
             if not era:
                 continue
@@ -189,7 +194,7 @@ def main():
 
     # población de los municipios mineros (censos, para la ficha de la época)
     mun = {m["n"]: m for m in L["municipios"]}
-    mineros = [{"n": n, "ph": mun[n]["ph"]} for n in H["mineros"] if n in mun and mun[n].get("ph")]
+    mineros = [{"n": n, "ph": mun[n]["ph"]} for n in H.get("mineros", []) if n in mun and mun[n].get("ph")]
 
     out = {"fuente": "Selección divulgativa de sitios (posiciones del IGN, Wikidata o su pueblo); calzadas romanas: Itiner-e 2024 (CC BY 4.0); "
                      "oro y carbón: IGME-CSIC (BDMIN e inventario de escombreras de 1989); más sitios: Wikidata",

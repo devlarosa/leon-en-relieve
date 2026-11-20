@@ -1,0 +1,231 @@
+{
+ "nota": "Mapa histórico de los Picos de Europa: selección divulgativa. Cada sitio se sitúa con el Nomenclátor del IGN (ngbe), Wikidata (wd) o su pueblo (cerca); «aprox» marca fechas o lugares aproximados.",
+ "epocas": [
+  {
+   "id": "prehistoria",
+   "n": "Cazadores y pastores",
+   "sub": "Paleolítico – Edad del Hierro",
+   "ini": -20000,
+   "fin": -20,
+   "color": "#8d6e4b",
+   "txt": "Mucho antes de los pueblos, cazadores del Paleolítico pintaron y grabaron las cuevas del Sella. Después llegaron los primeros pastores, que levantaron dólmenes, y en la Edad del Hierro los astures y los cántabros, que resistieron a Roma en estas montañas hasta el año 19 a. C."
+  },
+  {
+   "id": "asturias",
+   "n": "De Covadonga al Reino de León",
+   "sub": "718 – 1100",
+   "ini": 718,
+   "fin": 1100,
+   "color": "#7a2a6f",
+   "txt": "Según la tradición, en Covadonga empezó la resistencia de Pelayo frente a los musulmanes (722), y Cangas de Onís fue la primera corte del Reino de Asturias. Con el reino se levantan iglesias y monasterios, como Santa María de Lebeña o Santo Toribio de Liébana, donde el Beato escribió su comentario al Apocalipsis."
+  },
+  {
+   "id": "minas",
+   "n": "Minas y canales",
+   "sub": "desde 1850",
+   "ini": 1850,
+   "fin": 1917,
+   "color": "#3b3b45",
+   "txt": "En el siglo XIX las compañías mineras subieron a los puertos a buscar zinc, plomo, hierro y manganeso: Áliva, Ándara o Buferrera, junto a los Lagos. A comienzos del siglo XX se excava el canal del Cares para la central de Camarmeña, y su senda de mantenimiento es hoy la ruta más famosa de los Picos."
+  },
+  {
+   "id": "parque",
+   "n": "El primer parque nacional",
+   "sub": "1918 – hoy",
+   "ini": 1918,
+   "fin": 2026,
+   "color": "#1f7a4a",
+   "txt": "En 1904 Pedro Pidal y el Cainejo escalan por primera vez el Naranjo de Bulnes. Pidal impulsa la ley de parques nacionales y en 1918 nace el de la Montaña de Covadonga, el primero de España, que en 1995 se amplía a los tres macizos como Parque Nacional de los Picos de Europa."
+  }
+ ],
+ "wikidata_epocas": [
+  [
+   "prehistoria",
+   [
+    "castro",
+    "dolmen",
+    "yacimiento",
+    "arqueol",
+    "megal"
+   ]
+  ],
+  [
+   "asturias",
+   [
+    "monasterio",
+    "castillo",
+    "torre fortificada",
+    "abadía",
+    "muralla"
+   ]
+  ],
+  [
+   "minas",
+   [
+    "mina"
+   ]
+  ]
+ ],
+ "sitios": [
+  {
+   "n": "Cueva del Buxu",
+   "era": "prehistoria",
+   "ini": -20000,
+   "fin": -20,
+   "mun": "Cangas de Onís",
+   "ngbe": "Cueva Prehistórica del Buxu",
+   "cerca": "Cardes",
+   "fecha": "Paleolítico superior",
+   "aprox": true,
+   "desc": "Grabados y pinturas de caballos, ciervos y cabras del Paleolítico superior; Patrimonio de la Humanidad."
+  },
+  {
+   "n": "Dolmen de Santa Cruz",
+   "era": "prehistoria",
+   "ini": -4000,
+   "fin": -20,
+   "mun": "Cangas de Onís",
+   "wd": "Dolmen de Santa Cruz",
+   "cerca": "Cangas de Onís",
+   "fecha": "Neolítico",
+   "aprox": true,
+   "desc": "Sepulcro megalítico de los primeros pastores; en el año 737 se levantó encima la capilla de Santa Cruz."
+  },
+  {
+   "n": "Covadonga",
+   "era": "asturias",
+   "ini": 722,
+   "fin": 2026,
+   "mun": "Cangas de Onís",
+   "wd": "Santa Cueva de Covadonga",
+   "cerca": "Covadonga",
+   "fecha": "722, según la tradición",
+   "desc": "La cueva donde la tradición sitúa la batalla de Covadonga y la tumba de Pelayo, primer rey de Asturias."
+  },
+  {
+   "n": "Cangas de Onís, primera corte",
+   "era": "asturias",
+   "ini": 718,
+   "fin": 774,
+   "mun": "Cangas de Onís",
+   "cerca": "Cangas de Onís",
+   "fecha": "hasta 774",
+   "aprox": true,
+   "desc": "La primera corte del Reino de Asturias, hasta que se trasladó a Pravia."
+  },
+  {
+   "n": "Santo Toribio de Liébana",
+   "era": "asturias",
+   "ini": 776,
+   "fin": 2026,
+   "mun": "Camaleño",
+   "wd": "Monasterio de Santo Toribio de Liébana",
+   "cerca": "Potes",
+   "fecha": "s. VIII",
+   "aprox": true,
+   "desc": "Monasterio donde el Beato de Liébana escribió su comentario al Apocalipsis (hacia 776); guarda el Lignum Crucis."
+  },
+  {
+   "n": "Santa María de Lebeña",
+   "era": "asturias",
+   "ini": 925,
+   "fin": 2026,
+   "mun": "Cillorigo de Liébana",
+   "wd": "Iglesia de Santa María de Lebeña",
+   "cerca": "Lebeña",
+   "fecha": "principios del s. X",
+   "aprox": true,
+   "desc": "Iglesia prerrománica con arcos de herradura, junto al desfiladero de la Hermida."
+  },
+  {
+   "n": "Minas de Áliva",
+   "era": "minas",
+   "ini": 1850,
+   "fin": 1989,
+   "mun": "Camaleño",
+   "ngbe": "Puertos de Áliva",
+   "cerca": "Espinama",
+   "fecha": "s. XIX – 1989",
+   "aprox": true,
+   "desc": "Minas de zinc en los puertos de Áliva, en activo durante más de un siglo; su cierre en 1989 terminó con la minería en los Picos."
+  },
+  {
+   "n": "Minas de Buferrera",
+   "era": "minas",
+   "ini": 1868,
+   "fin": 1979,
+   "mun": "Cangas de Onís",
+   "ngbe": "Buferrera",
+   "cerca": "Covadonga",
+   "fecha": "1868 – 1979",
+   "aprox": true,
+   "desc": "Minas de hierro y manganeso junto a los Lagos de Covadonga; el mineral bajaba por un cable aéreo."
+  },
+  {
+   "n": "Canal y central del Cares",
+   "era": "minas",
+   "ini": 1916,
+   "fin": 2026,
+   "mun": "Cabrales",
+   "ngbe": "Poncebos",
+   "cerca": "Poncebos",
+   "fecha": "1916 – 1921",
+   "aprox": true,
+   "desc": "El canal excavado en la roca de la garganta lleva el agua del Cares a la central de Camarmeña; la senda de su mantenimiento es la Ruta del Cares."
+  },
+  {
+   "n": "Primera ascensión al Naranjo",
+   "era": "parque",
+   "ini": 1904,
+   "fin": 2026,
+   "mun": "Cabrales",
+   "ngbe": "Picu Urriellu",
+   "cerca": "Bulnes",
+   "fecha": "5 de agosto de 1904",
+   "desc": "Pedro Pidal y Gregorio Pérez, «el Cainejo», alcanzan por primera vez la cima del Picu Urriellu."
+  },
+  {
+   "n": "Parque Nacional de la Montaña de Covadonga",
+   "era": "parque",
+   "ini": 1918,
+   "fin": 1995,
+   "mun": "Cangas de Onís",
+   "ngbe": "Lago de Enol",
+   "cerca": "Covadonga",
+   "fecha": "22 de julio de 1918",
+   "desc": "El primer parque nacional de España, en el macizo occidental (Cornión)."
+  },
+  {
+   "n": "Teleférico de Fuente Dé",
+   "era": "parque",
+   "ini": 1966,
+   "fin": 2026,
+   "mun": "Camaleño",
+   "wd": "Teleférico de Fuente Dé",
+   "cerca": "Fuente Dé",
+   "fecha": "1966",
+   "desc": "Sube en pocos minutos más de 750 m de pared hasta el mirador del Cable."
+  },
+  {
+   "n": "Parque Nacional de los Picos de Europa",
+   "era": "parque",
+   "ini": 1995,
+   "fin": 2026,
+   "mun": "Posada de Valdeón",
+   "cerca": "Posada de Valdeón",
+   "fecha": "1995",
+   "aprox": true,
+   "desc": "El parque se amplía a los tres macizos y a las tres comunidades: Asturias, Cantabria y Castilla y León."
+  },
+  {
+   "n": "Funicular de Bulnes",
+   "era": "parque",
+   "ini": 2001,
+   "fin": 2026,
+   "mun": "Cabrales",
+   "cerca": "Bulnes",
+   "fecha": "2001",
+   "desc": "Un funicular por dentro de la montaña une Poncebos con Bulnes, que hasta entonces solo se alcanzaba a pie."
+  }
+ ]
+}

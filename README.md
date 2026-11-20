@@ -20,9 +20,9 @@ El mismo visor sirve para varias zonas. Cada una tiene su ficha en `web/zonas.js
 | Zona | Qué abarca | Celda | Capas |
 |---|---|---|---|
 | `leon` (por defecto) | La provincia de León (196 × 135 km) | 100 m | todas |
-| `picos` | Los 11 municipios con territorio en el Parque Nacional de los Picos de Europa (Asturias, Cantabria y León) y su entorno (64 × 47 km) | 30 m | relieve, ~1.300 cumbres, pueblos, ríos, población, cubierta del suelo |
+| `picos` | Los 11 municipios con territorio en el Parque Nacional de los Picos de Europa (Asturias, Cantabria y León) y su entorno (64 × 47 km) | 30 m | todas; en lugar del Camino de Santiago, rutas de montaña, refugios, majadas y cables |
 
-Las pestañas cuyas capas no tiene una zona no aparecen. Para Picos están pendientes protección (Parque Nacional, Red Natura, biosfera), rutas y refugios, clima, geología e historia.
+Las pestañas cuyas capas no tiene una zona no aparecen («datos» en su ficha). En Picos, la protección sale de las capas nacionales del MITECO (Espacios Naturales Protegidos y Red Natura 2000; no hay BIC, porque no existe una capa abierta común a las tres comunidades), y las rutas, de `scripts/rutas.py`: la red de carreteras, pistas y sendas del IGN, sus cables y los refugios y majadas del Nomenclátor. Cada ruta va por el camino más corto de esa red; las que darían un rodeo absurdo (la Ruta del Cares, Poncebos–Bulnes) no se dibujan, porque la red del IGN no tiene esas sendas. Los lugares de interés y el mapa histórico de cada zona se escogen a mano en `recursos/<zona>/`.
 
 ## Fuentes
 
@@ -85,7 +85,7 @@ Quien publique los datos procesados (por ejemplo, el visor con `web/data/`) debe
 
 Requisitos: `bash`, `curl`, `python3` con `numpy`, `scipy` y `Pillow`, y R con los paquetes `sf`, `terra`, `dplyr` y `jsonlite`. Todas las fuentes se descargan sin registro.
 
-Todos los scripts trabajan con la zona de la variable `ZONA` (por defecto `leon`): leen de `raw/<zona>/` y escriben en `web/data/<zona>/`. Para Picos, por ejemplo: `ZONA=picos scripts/descargar_datos.sh`, `ZONA=picos Rscript R/10_preparar_web.R`… Los parámetros que cambian de una zona a otra (cuántas cumbres principales, umbrales de ríos y lagos, simplificación, comarcas o provincias) están en el apartado `procesado` de su ficha. De momento las capas temáticas (clima, ríos con caudales, geología, lugares, historia, Camino, protección e incendios) solo están preparadas para León.
+Todos los scripts trabajan con la zona de la variable `ZONA` (por defecto `leon`): leen de `raw/<zona>/` y escriben en `web/data/<zona>/`. Para Picos, por ejemplo: `ZONA=picos scripts/descargar_datos.sh`, `ZONA=picos Rscript R/10_preparar_web.R`… Los parámetros que cambian de una zona a otra (cuántas cumbres principales, umbrales de ríos y lagos, simplificación, comarcas o provincias, fuentes de protección) están en el apartado `procesado` de su ficha. En Picos, el Camino de Santiago se sustituye por `ZONA=picos python3 scripts/rutas.py` (rutas de la ficha, refugios, majadas y cables), y el clima de AEMET y las calzadas de Itiner-e se reutilizan de `raw/leon/` con un enlace.
 
 ```bash
 scripts/descargar_datos.sh        # descarga todo en raw/<zona>/ (León: unos 300 MB; se puede relanzar); incluye R/03_admin.R

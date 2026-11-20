@@ -3931,10 +3931,12 @@ async function cargarHistoria() {
   $("hb-eras").innerHTML = E.map((e, k) => `<button data-k="${k}" style="background:${e.color}" title="${esc(e.n)} (${esc(e.sub)})">${esc(e.n)}</button>`).join("");
   $("hist-eras").innerHTML = E.map((e, k) => `<button data-k="${k}" class="hist-era"><i style="background:${e.color}"></i><span><b>${esc(e.n)}</b><small>${esc(e.sub)}</small></span></button>`).join("");
   $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(J.fuente) + "</li>");
-  HIST.listo = true; setAnio(-300);
+  HIST.listo = true; setAnio(ZID === "leon" ? -300 : Math.round((E[0].ini + E[0].fin) / 2));
+  $("hist-guia").hidden = ZID !== "leon";   // la visita guiada está escrita para León
   return true;
 }
-const irEra = (k) => { const e = HIST.J.epocas[k]; setAnio(e.id === "reino" ? 910 : e.id === "mineria" ? 1950 : e.id === "roma" ? 50 : -300); };
+// cada época se abre en un año escogido (las de León) o en su mitad
+const irEra = (k) => { const e = HIST.J.epocas[k]; setAnio({ reino: 910, mineria: 1950, roma: 50, hierro: -300 }[e.id] ?? Math.round((e.ini + e.fin) / 2)); };
 $("hb-eras").addEventListener("click", (ev) => { const b = ev.target.closest("[data-k]"); if (b) irEra(+b.dataset.k); });
 $("hist-eras").addEventListener("click", (ev) => { const b = ev.target.closest("[data-k]"); if (b) irEra(+b.dataset.k); });
 $("hist-t").addEventListener("input", (ev) => setAnio(anioDeT(+ev.target.value), true));
@@ -4803,7 +4805,8 @@ const PASOS_TUT = [
       cerrarPanel(); tweenTo(HOME, 700); await espera(900, tk);
       const pto = { mx: 95000, my: 42000 }; tour.objetivo = pto; await clic(pto, tk, () => lanzarGota(pto.mx, pto.my)); tour.objetivo = $("hcard"); await espera(5000, tk);
     } },
-  { t: "Historia", x: "En Historia el mapa se vuelve un pergamino antiguo. Mueve la línea del tiempo y verás aparecer castros, ciudades romanas, monasterios del Reino de León y las minas del siglo XX. Toca un lugar para leer su historia.",
+  { t: "Historia", x: ZID === "leon" ? "En Historia el mapa se vuelve un pergamino antiguo. Mueve la línea del tiempo y verás aparecer castros, ciudades romanas, monasterios del Reino de León y las minas del siglo XX. Toca un lugar para leer su historia."
+      : "En Historia el mapa se vuelve un pergamino antiguo. Mueve la línea del tiempo y verás aparecer los lugares de cada época. Toca uno para leer su historia.",
     f: async (tk) => {
       if (!$("hcard").hidden || gota) closeHcard(); abrirPanel(); await clic($("tab-historia"), tk); await espera(1500, tk);
       if (!HIST.listo) return;
@@ -4897,7 +4900,8 @@ $("tour-pausa").onclick = () => { tour.pausa = !tour.pausa; $("tour-pausa").text
 // pasos del tutorial de pestañas que esta zona no tiene: fuera
 const PASO_DATO = { "Geología": "geologia", "El clima": "clima", "Historia": "historia", "Visita guiada por la historia": "historia", "El Camino de Santiago": "camino",
   "Recorrer la etapa": "camino", "Figuras de protección": "proteccion", "Grandes incendios": "incendios", "Ríos y afluentes": "rios", "¿Adónde va esta gota?": "rios" };
-const pasosTutorial = () => PASOS_TUT.filter(p => !PASO_DATO[p.t] || (hay(PASO_DATO[p.t]) && !(PASO_DATO[p.t] === "camino" && Z.camino)));
+const pasosTutorial = () => PASOS_TUT.filter(p => !PASO_DATO[p.t] || (hay(PASO_DATO[p.t]) && !(PASO_DATO[p.t] === "camino" && Z.camino)
+  && !(p.t === "Visita guiada por la historia" && ZID !== "leon")));
 for (const id of ["tour-abrir", "tour-abrir-2", "tour-abrir-3", "tour-invita-ver"]) $(id).onclick = () => empezarTour(pasosTutorial());
 $("tour-invita-no").onclick = () => { $("tour-invita").hidden = true; try { localStorage.setItem("leon3d-tour", "visto"); } catch (e) { /* sin almacenamiento */ } };
 addEventListener("keydown", (e) => {          // durante el tutorial, el teclado lo maneja él
