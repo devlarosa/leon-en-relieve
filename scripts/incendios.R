@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
-# Grandes incendios de la provincia de León -> web/data/incendios.json
+# Grandes incendios de la zona (ZONA=leon por defecto) -> web/data/<zona>/incendios.json
 # Entrada: raw/incendios/effis_ba.json (scripts/descargar_incendios.sh). Necesita los paquetes sf y jsonlite.
 # EFFIS (Copernicus) cartografía con satélite los incendios de unas 30 ha o más. Para cada uno se guarda:
-# fechas, municipio de origen según EFFIS, superficie total y dentro de León, cubierta quemada (CORINE),
+# fechas, municipio de origen según EFFIS, superficie total y dentro de la zona, cubierta quemada (CORINE),
 # porcentaje en Red Natura 2000, los pueblos (Nomenclátor del IGN) que quedan dentro del perímetro y el
 # perímetro recortado a la provincia, en las coordenadas del visor. Los pueblos son los que quedan dentro del
 # perímetro o a menos de 300 m de él (los cascos que se salvaron quedan como huecos del perímetro).
@@ -71,6 +71,6 @@ out <- list(fuente = "EFFIS, Sistema Europeo de Información sobre Incendios For
 f <- file.path(RAIZ, "web", "data", ZONA, "incendios.json")
 writeLines(toJSON(out, auto_unbox = TRUE, digits = NA), f, useBytes = TRUE)
 cat(sprintf("%d incendios (%s) -> %s (%.2f MB)\n", length(fuegos), paste(range(anios), collapse = "–"), f, file.size(f) / 1e6))
-for (s in resumen) cat(sprintf("  %d: %3d incendios, %7.0f ha en León, %d de más de 500 ha\n", s$anio, s$n, s$ha, s$gif))
+for (s in resumen) cat(sprintf("  %d: %3d incendios, %7.0f ha en la zona, %d de más de 500 ha\n", s$anio, s$n, s$ha, s$gif))
 for (fu in head(Filter(function(f) f$anio >= 2025, fuegos), 12))
-  cat(sprintf("  %s  %-24s %6d ha (%6d en León)  %d pueblos: %s\n", fu$ini, fu$mun, fu$ha, fu$haLeon, length(fu$locs), paste(head(fu$locs, 6), collapse = ", ")))
+  cat(sprintf("  %s  %-24s %6d ha (%6d en la zona)  %d pueblos: %s\n", fu$ini, fu$mun, fu$ha, fu$haLeon, length(fu$locs), paste(head(fu$locs, 6), collapse = ", ")))

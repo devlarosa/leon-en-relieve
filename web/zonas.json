@@ -141,7 +141,9 @@
     "datos": [
       "cumbres",
       "cobertura",
-      "poblacion"
+      "poblacion",
+      "proteccion",
+      "incendios"
     ],
     "procesado": {
       "picos": [
@@ -184,7 +186,8 @@
         "24106": "Sajambre",
         "24116": "Valdeón"
       },
-      "_nota": "Valores por defecto (los de León) en R/10_preparar_web.R: picos [150, 2500], puertos «^Puerto», rios [4, 30], aguas [150000, 20000, 15], 3 clases de carretera, simplificar [carreteras 20, municipios 18, comarcas 25], comarcas agrarias del MAPA"
+      "_nota": "Valores por defecto (los de León) en R/10_preparar_web.R: picos [150, 2500], puertos «^Puerto», rios [4, 30], aguas [150000, 20000, 15], 3 clases de carretera, simplificar [carreteras 20, municipios 18, comarcas 25], comarcas agrarias del MAPA",
+      "proteccion": "nacional"
     },
     "bbox": [
       43.0336,

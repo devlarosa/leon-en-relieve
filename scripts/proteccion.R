@@ -1,10 +1,12 @@
 #!/usr/bin/env Rscript
-# Figuras de protección de la provincia de León -> web/data/proteccion.json
-# Entrada: raw/proteccion/ (scripts/descargar_proteccion.sh). Necesita los paquetes sf y jsonlite.
-#  - espacios: Red de Espacios Naturales de Castilla y León (Junta), con el Parque Nacional de Picos de Europa
-#  - natura:   Red Natura 2000 (ZEC y ZEPA, Junta de Castilla y León)
-#  - biosfera: Reservas de la Biosfera (MITECO-OAPN), con su zonificación (núcleo, tampón, transición)
-#  - bic:      Bienes de Interés Cultural inmuebles (Junta de Castilla y León)
+# Figuras de protección de la zona -> web/data/<zona>/proteccion.json
+# Entrada: raw/<zona>/proteccion/ (scripts/descargar_proteccion.sh). Necesita los paquetes sf y jsonlite.
+# Dos juegos de fuentes, según «procesado.proteccion» de la ficha de la zona:
+#  «cyl» (León, por defecto): Red de Espacios Naturales y Red Natura 2000 de la Junta de Castilla y León,
+#        con sus fichas (patrimonionatural.org), y los Bienes de Interés Cultural inmuebles de la Junta
+#  «nacional» (zonas de varias comunidades, como Picos): Espacios Naturales Protegidos y Red Natura 2000 del
+#        MITECO (Banco de Datos de la Naturaleza); sin BIC (no hay una capa abierta común a Asturias y Cantabria)
+#  En las dos: Reservas de la Biosfera (MITECO-OAPN), con su zonificación (núcleo, tampón, transición)
 # Las geometrías se recortan a la provincia, se simplifican y se pasan a las coordenadas del visor
 # (metros desde x0 hacia el este y desde y1 hacia el sur, como en leon.json).
 suppressMessages({ library(sf); library(jsonlite) })
@@ -24,6 +26,7 @@ anillos <- lapply(L$provincia, function(r) {
 prov <- st_make_valid(st_sfc(st_multipolygon(lapply(anillos, function(a) list(a))), crs = 25830))
 
 leer <- function(f) st_make_valid(st_zm(st_transform(st_read(file.path(RAW, f), quiet = TRUE), 25830)))
+FUENTES <- if (is.null(FICHA$procesado$proteccion)) "cyl" else FICHA$procesado$proteccion
 # solo lo que tiene en la provincia al menos 1 km² o el 2 % de su superficie (descarta las vecinas que solo rozan el límite)
 en_leon <- function(x) {
   x <- x[lengths(st_intersects(x, prov)) > 0, ]
@@ -75,6 +78,7 @@ bonito <- function(s) {
   sub("_0*([0-9]+)$", " (n.º \\1)", s)                   # «Hórreo Caldevilla_05» -> «Hórreo Caldevilla (n.º 5)»
 }
 
+if (FUENTES == "cyl") {
 # ---- espacios naturales (REN)
 ren <- en_leon(leer("en_cyl_ren_limites_gpkg/en_cyl_ren_limites.gpkg"))
 espacios <- lapply(seq_len(nrow(ren)), function(i) { r <- ren[i, ]; list(
@@ -93,6 +97,28 @@ for (tipo in c("ZEC", "ZEPA")) {
     c = rotulo(st_geometry(x)[[i]]), g = anillos_visor(st_geometry(x)[[i]], 40))
 }
 
+} else {
+# ---- espacios naturales y Red Natura 2000 (MITECO): para zonas de varias comunidades
+FIG <- c("Parque Nacional" = "PNAC", "Parque Natural" = "PNAT", "Parque Regional" = "PREG", "Monumento Natural" = "MNAT",
+         "Reserva Natural" = "RNAT", "Paisaje Protegido" = "PPRT", "Reserva Natural Parcial" = "RNAT", "Paraje Natural" = "PPRT")
+enp <- leer("enp2025/Enp2025_p.json")
+enp <- enp[!grepl("Natura 2000", enp$ODESIGNATE), ]           # la Red Natura va aparte, con sus propios límites
+enp <- en_leon(enp)
+espacios <- lapply(seq_len(nrow(enp)), function(i) { r <- enp[i, ]; fig <- unname(FIG[r$ODESIGNATE]); if (is.na(fig)) fig <- "OTRO"
+  list(id = r$SITE_CODE_, n = r$SITE_NAME, fig = fig, figN = paste0(substr(r$ODESIGNATE, 1, 1), tolower(substring(r$ODESIGNATE, 2))),
+       ha = round(r$Sup_ha), haLeon = r$ha_leon, c = rotulo(st_geometry(r)[[1]]), g = anillos_visor(st_geometry(r)[[1]], 25)) })
+n2k <- en_leon(leer("n2000_2025/n2000_spatial_es_pibal_proy_end25.geojson"))   # TIPO: A = ZEPA, B = ZEC, C = las dos
+natura <- list()
+for (tipo in c("ZEC", "ZEPA")) {
+  x <- n2k[n2k$TIPO %in% if (tipo == "ZEC") c("B", "C") else c("A", "C"), ]
+  for (i in seq_len(nrow(x))) natura[[length(natura) + 1]] <- list(
+    id = x$site_code[i], tipo = tipo, n = x$SITE_NAME[i], ha = round(x$HECTAREAS[i]), haLeon = x$ha_leon[i],
+    url = paste0("https://natura2000.eea.europa.eu/Natura2000/SDF.aspx?site=", x$site_code[i]),
+    c = rotulo(st_geometry(x)[[i]]), g = anillos_visor(st_geometry(x)[[i]], 40))
+}
+
+}
+
 # ---- Reservas de la Biosfera (límites y zonificación)
 mab <- en_leon(leer("mab_limites/MAB_LIMITE_PyB_EPSG25830.geojson"))
 zon <- leer("mab_zonif/MAB_ZONIFICACION_PyB_EPSG25830.geojson")
@@ -108,7 +134,9 @@ biosfera <- lapply(seq_len(nrow(mab)), function(i) { r <- mab[i, ]
   list(id = r$SITE_MAB, n = r$MAB_NAME, fecha = fecha(r$MAB_DECLAR), ampl = if (is.na(r$MAB_AMPLIA)) NULL else as.character(r$MAB_AMPLIA),
        gestor = r$MAB_EG, ha = r$ha_tot, haLeon = r$ha_leon, c = rotulo(st_geometry(r)[[1]]), g = anillos_visor(st_geometry(r)[[1]], 40), zonas = zonas) })
 
-# ---- Bienes de Interés Cultural (inmuebles)
+# ---- Bienes de Interés Cultural (inmuebles; solo con las fuentes de Castilla y León)
+bic <- list()
+if (FUENTES == "cyl") {
 b <- leer("pacu_cyl_bic_inmu_gpkg/pacu_cyl_bic_inmu.gpkg")
 b <- b[lengths(st_intersects(b, prov)) > 0, ]
 AREA <- c("CONJUNTO HISTÓRICO", "ZONA ARQUEOLÓGICA", "SITIO HISTÓRICO", "PAISAJE CULTURAL", "CONJUNTO ETNOLÓGICO", "CONJUNTO INDUSTRIAL", "JARDÍN HISTÓRICO")
@@ -119,16 +147,20 @@ bic <- lapply(seq_len(nrow(b)), function(i) { g <- st_geometry(b)[[i]]; cat_ <- 
   if (cat_ %in% AREA && a > 2e4) { x$ha <- round(a / 1e4, 1); x$g <- anillos_visor(g, 10) }
   x })
 bic <- bic[order(vapply(bic, function(x) x$n, ""))]
+}
 
 out <- list(
-  fuente = paste("Junta de Castilla y León: Red de Espacios Naturales, Red Natura 2000 (ZEC y ZEPA) y Bienes de Interés Cultural inmuebles",
-                 "(datos abiertos, IDECyL); MITECO-OAPN: Reservas de la Biosfera (límites y zonificación)"),
+  fuente = if (FUENTES == "cyl") paste("Junta de Castilla y León: Red de Espacios Naturales, Red Natura 2000 (ZEC y ZEPA) y Bienes de Interés Cultural inmuebles",
+                 "(datos abiertos, IDECyL); MITECO-OAPN: Reservas de la Biosfera (límites y zonificación)")
+           else "MITECO, Banco de Datos de la Naturaleza: Espacios Naturales Protegidos 2025, Red Natura 2000 (diciembre de 2025) y Reservas de la Biosfera (OAPN, límites y zonificación)",
+  notaEspacios = if (FUENTES == "cyl") "Red de Espacios Naturales de Castilla y León: parques, monumentos naturales y su zona periférica. Incluye el Parque Nacional de Picos de Europa."
+                 else "Espacios Naturales Protegidos del inventario nacional (MITECO): el Parque Nacional y los parques, reservas y monumentos naturales de cada comunidad.",
   espacios = espacios, natura = natura, biosfera = biosfera, bic = bic)
 f <- file.path(RAIZ, "web", "data", ZONA, "proteccion.json")
 writeLines(toJSON(out, auto_unbox = TRUE, digits = NA, null = "null", na = "null"), f, useBytes = TRUE)
 cat(sprintf("%d espacios naturales, %d de Red Natura (%d ZEC, %d ZEPA), %d reservas de la biosfera, %d BIC -> %s (%.2f MB)\n",
             length(espacios), length(natura), sum(vapply(natura, function(x) x$tipo == "ZEC", TRUE)), sum(vapply(natura, function(x) x$tipo == "ZEPA", TRUE)),
             length(biosfera), length(bic), f, file.size(f) / 1e6))
-for (e in espacios) cat(sprintf("  %-22s %-45s %7s ha en León\n", e$figN, e$n, format(e$haLeon, big.mark = ".", decimal.mark = ",")))
-for (r in biosfera) cat(sprintf("  Reserva de la Biosfera %-36s %7s ha en León (%d zonas)\n", r$n, format(r$haLeon, big.mark = ".", decimal.mark = ","), length(r$zonas)))
+for (e in espacios) cat(sprintf("  %-22s %-45s %7s ha en la zona\n", e$figN, e$n, format(e$haLeon, big.mark = ".", decimal.mark = ",")))
+for (r in biosfera) cat(sprintf("  Reserva de la Biosfera %-36s %7s ha en la zona (%d zonas)\n", r$n, format(r$haLeon, big.mark = ".", decimal.mark = ","), length(r$zonas)))
 print(table(vapply(bic, function(x) x$cat, "")))

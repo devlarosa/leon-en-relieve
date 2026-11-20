@@ -710,14 +710,14 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
       </div>
       <div class="lista-st" id="pr-lista"><p class="spark-note">Cargando…</p></div>
     </div>
-    <div><p class="group-title">Bienes de Interés Cultural</p><div class="layers">
+    <div id="bic-box"><p class="group-title">Bienes de Interés Cultural</p><div class="layers">
       <label class="layer"><input type="checkbox" id="l-bic" checked><span class="sw"></span><span class="name">Bienes de Interés Cultural<span class="note">Inmuebles declarados · Junta de Castilla y León</span></span></label>
     </div>
       <div class="chips leg" id="bic-cats"></div>
       <div class="field" style="padding: 4px 6px"><input id="bic-buscar" type="search" placeholder="Buscar: castillo, iglesia, Astorga…" autocomplete="off" aria-label="Buscar un Bien de Interés Cultural"></div>
       <div class="lista-st" id="bic-lista"></div>
     </div>
-    <p class="spark-note" style="padding: 0 6px">Toca el mapa para ver qué figuras protegen ese punto. Datos de la Junta de Castilla y León (Red de Espacios Naturales, Red Natura 2000 y BIC) y del MITECO (Reservas de la Biosfera).</p>
+    <p class="spark-note" style="padding: 0 6px">Toca el mapa para ver qué figuras protegen ese punto. <span id="pr-fuente">Datos de la Junta de Castilla y León (Red de Espacios Naturales, Red Natura 2000 y BIC) y del MITECO (Reservas de la Biosfera).</span></p>
   </section>
   <section class="cat" id="cat-incendios" role="tabpanel" aria-labelledby="tab-incendios" hidden>
     <div><p class="group-title">Superficie quemada en <span class="z-lugar">la provincia</span>, por año</p>
@@ -4036,7 +4036,8 @@ function fuegoVisible(f) {
   return true;
 }
 function fuegoActivo(f) { if (!INC.anio || INC.dia == null) return false; const d0 = diaDe(f.ini, f.anio), d1 = diaDe(f.fin || f.ini, f.anio); return INC.dia >= d0 && INC.dia <= d1; }
-function nombreFuego(f) { return f.mun + (f.prov && f.prov !== "León" ? ` (${f.prov})` : ""); }
+// la provincia, solo si el incendio empezó en un municipio de fuera de la zona («Uña de Quintana (Zamora)»)
+function nombreFuego(f) { return f.mun + (f.prov && !data.municipios.some(m => m.n === f.mun) ? ` (${f.prov})` : ""); }
 function dibujarIncendios() {
   const J = INC.J, sel = INC.sel;
   ov.save(); ov.lineJoin = "round";
@@ -4215,7 +4216,8 @@ function showProt(it, volar) {
   let h = `<h2>${esc(o.n)}</h2><p class="cap"><span class="ic" style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${it.color};margin-right:6px;vertical-align:-1px"></span>${esc(it.tipo === "natura" ? (o.tipo === "ZEC" ? "Zona Especial de Conservación (ZEC)" : "Zona de Especial Protección para las Aves (ZEPA)") : it.sub)}</p><dl>`;
   if (o.fecha) h += `<dt>${it.tipo === "biosfera" ? "Declarada por la UNESCO" : "Declaración"}</dt><dd>${fmtFecha(o.fecha)}${o.ampl ? ` <small>(ampliada en ${esc(o.ampl)})</small>` : ""}</dd>`;
   if (o.estado && o.estado !== "Declarado") h += `<dt>Estado</dt><dd>${esc(o.estado)}</dd>`;
-  h += `<dt>Superficie</dt><dd>${fmtHa(o.ha)}${o.haLeon < o.ha * 0.98 ? `<br><small>${fmtHa(o.haLeon)} en ${Z.lugar}</small>` : ""}</dd>`;
+  h += o.ha < 1 ? `<dt>Superficie</dt><dd>Elemento puntual (cueva o sima)</dd>`
+    : `<dt>Superficie</dt><dd>${fmtHa(o.ha)}${o.haLeon < o.ha * 0.98 ? `<br><small>${fmtHa(o.haLeon)} en ${Z.lugar}</small>` : ""}</dd>`;
   if (o.zonas && o.zonas.length) h += `<dt>Zonas en León</dt><dd>${o.zonas.map(z => `<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${COLOR_ZONA[z.z]};margin-right:4px"></span>${esc(z.z)}: ${fmtHa(z.ha)}`).join("<br>")}</dd>`;
   if (o.gestor) h += `<dt>Gestión</dt><dd>${esc(o.gestor)}</dd>`;
   if (o.porn) h += `<dt>Plan de ordenación (PORN)</dt><dd>${esc(o.porn)}</dd>`;
@@ -4270,7 +4272,7 @@ function notaProt() { $("pr-nota").textContent = NOTA_PROT[PROT.modo]; $("pr-zon
 function listaProt() {
   if (!PROT.J) return;
   const its = itemsProt();
-  $("pr-lista").innerHTML = its.length ? its.slice().sort((a, b) => (b.o.haLeon || 0) - (a.o.haLeon || 0)).map(it => `<button data-pi="${its.indexOf(it)}" aria-pressed="${PROT.sel && PROT.sel.o === it.o}"><span><span class="ic" style="background:${it.color};border-radius:3px"></span>${esc(it.n)}</span><small>${it.tipo === "espacio" ? esc(it.sub) + " · " : ""}${fmt.format(Math.round(it.o.haLeon / 100))} km²</small></button>`).join("") : "";
+  $("pr-lista").innerHTML = its.length ? its.slice().sort((a, b) => (b.o.haLeon || 0) - (a.o.haLeon || 0)).map(it => `<button data-pi="${its.indexOf(it)}" aria-pressed="${PROT.sel && PROT.sel.o === it.o}"><span><span class="ic" style="background:${it.color};border-radius:3px"></span>${esc(it.n)}</span><small>${it.tipo === "espacio" ? esc(it.sub) + " · " : ""}${it.o.ha < 1 ? "puntual" : fmt.format(Math.max(1, Math.round(it.o.haLeon / 100))) + " km²"}</small></button>`).join("") : "";
 }
 function listaBic() {
   const J = PROT.J, q = norm(PROT.busca.trim()), cuenta = {};
@@ -4323,6 +4325,9 @@ async function cargarProteccion() {
     labels.sort((a, b) => b.prio - a.prio);
     PROT.cats = new Set(J.bic.map(b => b.cat).filter(c => !BIC_OFF.has(c)));
     $("src-list").insertAdjacentHTML("beforeend", "<li>" + esc(J.fuente) + "</li>");
+    if (J.notaEspacios) NOTA_PROT.espacios = J.notaEspacios;
+    $("pr-fuente").textContent = J.fuente + ".";
+    $("bic-box").hidden = !J.bic.length;
     PROT.listo = true; notaProt(); listaProt(); listaBic();
     return true;
   })();

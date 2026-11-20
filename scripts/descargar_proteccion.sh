@@ -27,15 +27,26 @@ if [ ! -s cadena.pem ]; then
   cat /etc/ssl/certs/ca-certificates.crt ov_r36.pem > cadena.pem
 fi
 
+M=https://www.miteco.gob.es/content/dam/miteco/es/biodiversidad/servicios/banco-datos-naturaleza
+FUENTES=$(python3 -c "import json; print(json.load(open('$RAIZ/web/zonas.json'))['${ZONA:-leon}'].get('procesado', {}).get('proteccion', 'cyl'))")
+if [ "$FUENTES" = "nacional" ]; then
+  # zonas de varias comunidades: capas nacionales del MITECO (sin BIC)
+  echo "MITECO (Espacios Naturales Protegidos y Red Natura 2000)"
+  baja "$M/enp/Enp2025_geojson.zip" enp2025.zip
+  for i in 1 2 3 4 5; do   # el servidor corta a veces la descarga de la Red Natura: se reanuda
+    curl -sfL -C - --max-time 900 -o n2000_2025.zip "$M/3-rn2000/n2000_2025_GeoJson.zip" || true
+    unzip -tq n2000_2025.zip > /dev/null 2>&1 && break
+  done
+else
 J=https://opendata.jcyl.es/ficheros/carto
 echo "Junta de Castilla y León"
 baja "$J/medioambiente/espaciosnaturales/en_cyl_ren_limites_gpkg.zip" en_cyl_ren_limites_gpkg.zip --cacert cadena.pem
 baja "$J/medioambiente/espaciosnaturales/en_cyl_rednatura2000_zec_gpkg.zip" en_cyl_rednatura2000_zec_gpkg.zip --cacert cadena.pem
 baja "$J/medioambiente/espaciosnaturales/en_cyl_rednatura2000_zepa_gpkg.zip" en_cyl_rednatura2000_zepa_gpkg.zip --cacert cadena.pem
 baja "$J/cultura/patrimoniocultural/pacu_cyl_bic_inmu_gpkg.zip" pacu_cyl_bic_inmu_gpkg.zip --cacert cadena.pem
+fi
 
-M=https://www.miteco.gob.es/content/dam/miteco/es/biodiversidad/servicios/banco-datos-naturaleza
-echo "MITECO"
+echo "MITECO (Reservas de la Biosfera)"
 baja "$M/mab/Mab_Limites_OAPN_GeoJson.zip" mab_limites.zip
 baja "$M/mab/Mab_Zonif_OAPN_GeoJson.zip" mab_zonif.zip
 
