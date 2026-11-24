@@ -29,7 +29,7 @@ def descargar(cod):
     dest = os.path.join(RAW, "edificios", cod + ".zip")
     if os.path.exists(dest): return dest
     os.makedirs(os.path.dirname(dest), exist_ok=True)
-    feed = urllib.request.urlopen(ATOM.format(p=cod[:2]), timeout=60).read().decode("utf-8", "replace")
+    feed = urllib.request.urlopen(ATOM.format(p=cod[:2]), timeout=60).read().decode("latin-1")   # el feed viene en Latin-1 (CABAÑAS RARAS)
     m = re.search(r'href="([^"]*/%s-[^"]*\.zip)"' % cod, feed)
     if not m: raise SystemExit("El Catastro no publica el municipio " + cod)
     url = urllib.parse.quote(m.group(1), safe=":/")
@@ -101,8 +101,19 @@ def convertir(cod):
     out = os.path.join(DATA, "edificios", cod + ".bin")
     with open(out, "wb") as f: f.write(b.getvalue())
     print(f"{cod}: {len(partes)} partes de edificio, {len(edif)} edificios, {b.tell() / 1e6:.2f} MB -> {out}")
+    return {"c": cod, "partes": len(partes), "bb": [round(ox), round(oy), round(max(xs)), round(max(ys))], "kb": round(b.tell() / 1024)}
 
 if __name__ == "__main__":
     cods = sys.argv[1:] or list((FICHA.get("edificios") or {}).get("municipios", {}))
     if not cods: raise SystemExit(f"La ficha de {ZONA} no tiene «edificios.municipios»")
-    for c in cods: convertir(c)
+    ruta = os.path.join(DATA, "edificios", "indice.json")
+    indice = {}
+    if os.path.exists(ruta): indice = {m["c"]: m for m in json.load(open(ruta))["municipios"]}
+    nombres = (FICHA.get("edificios") or {}).get("municipios", {})
+    for c in cods:
+        m = convertir(c); m["n"] = nombres.get(c, c); indice[c] = m
+    # índice para el visor: la caja de cada municipio (metros del visor) para cargarlo solo al acercarse
+    indice = {c: m for c, m in indice.items() if c in nombres or not nombres}
+    with open(ruta, "w") as f:
+        json.dump({"fuente": "Dirección General del Catastro · INSPIRE Buildings", "municipios": sorted(indice.values(), key=lambda m: m["c"])}, f, ensure_ascii=False)
+    print(len(indice), "municipios en", ruta)

@@ -72,16 +72,34 @@
       -4.65
     ],
     "edificios": {
-      "nota": "Prueba de concepto: el área urbana de León",
+      "nota": "Áreas urbanas de León y Ponferrada, y algunos pueblos",
       "municipios": {
         "24900": "León",
         "24145": "San Andrés del Rabanedo",
-        "24226": "Villaquilambre"
-      },
-      "centro": [
-        285500,
-        4720500
-      ]
+        "24226": "Villaquilambre",
+        "24166": "Sariegos",
+        "24192": "Valverde de la Virgen",
+        "24107": "Onzonilla",
+        "24231": "Villaturiel",
+        "24165": "Santovenia de la Valdoncina",
+        "24178": "Valdefresno",
+        "24063": "Cuadros",
+        "24078": "Garrafe de Torío",
+        "24067": "Chozas de Abajo",
+        "24205": "Vegas del Condado",
+        "24118": "Ponferrada",
+        "24036": "Camponaraya",
+        "24028": "Cabañas Raras",
+        "24066": "Cubillos del Sil",
+        "24040": "Carracedelo",
+        "24102": "Molinaseca",
+        "24122": "Priaranza del Bierzo",
+        "24059": "Congosto",
+        "24007": "Arganza",
+        "24031": "Cacabelos",
+        "24029": "Cabreros del Río",
+        "24134": "Riego de la Vega"
+      }
     }
   },
   "picos": {
