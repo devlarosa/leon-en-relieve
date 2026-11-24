@@ -48,6 +48,38 @@ def descargar(cod):
     os.replace(dest + ".tmp", dest)
     return dest
 
+# El Catastro publica cada municipio en su huso UTM: los del oeste de León (el Bierzo, Astorga…) vienen en el 29
+# (EPSG:25829) y el mapa está en el 30 (EPSG:25830). Paso de huso por latitud y longitud (GRS80, series de Krüger
+# truncadas: error muy por debajo del metro a menos de 5° del meridiano central).
+_A, _F, _K0 = 6378137.0, 1 / 298.257222101, 0.9996
+_E2 = _F * (2 - _F); _EP2 = _E2 / (1 - _E2)
+def _tm_inv(E, N, lon0):
+    import math
+    e2 = _E2; x = E - 500000; m = N / _K0
+    mu = m / (_A * (1 - e2 / 4 - 3 * e2 ** 2 / 64 - 5 * e2 ** 3 / 256))
+    e1 = (1 - math.sqrt(1 - e2)) / (1 + math.sqrt(1 - e2))
+    p1 = (mu + (3 * e1 / 2 - 27 * e1 ** 3 / 32) * math.sin(2 * mu) + (21 * e1 ** 2 / 16 - 55 * e1 ** 4 / 32) * math.sin(4 * mu)
+          + (151 * e1 ** 3 / 96) * math.sin(6 * mu) + (1097 * e1 ** 4 / 512) * math.sin(8 * mu))
+    C1 = _EP2 * math.cos(p1) ** 2; T1 = math.tan(p1) ** 2; N1 = _A / math.sqrt(1 - e2 * math.sin(p1) ** 2)
+    R1 = _A * (1 - e2) / (1 - e2 * math.sin(p1) ** 2) ** 1.5; D = x / (N1 * _K0)
+    lat = p1 - (N1 * math.tan(p1) / R1) * (D ** 2 / 2 - (5 + 3 * T1 + 10 * C1 - 4 * C1 ** 2 - 9 * _EP2) * D ** 4 / 24
+                                           + (61 + 90 * T1 + 298 * C1 + 45 * T1 ** 2 - 252 * _EP2 - 3 * C1 ** 2) * D ** 6 / 720)
+    lon = lon0 + (D - (1 + 2 * T1 + C1) * D ** 3 / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 ** 2 + 8 * _EP2 + 24 * T1 ** 2) * D ** 5 / 120) / math.cos(p1)
+    return lat, lon
+def _tm_fwd(lat, lon, lon0):
+    import math
+    e2 = _E2; N = _A / math.sqrt(1 - e2 * math.sin(lat) ** 2); T = math.tan(lat) ** 2; C = _EP2 * math.cos(lat) ** 2
+    A = math.cos(lat) * (lon - lon0)
+    M = _A * ((1 - e2 / 4 - 3 * e2 ** 2 / 64 - 5 * e2 ** 3 / 256) * lat - (3 * e2 / 8 + 3 * e2 ** 2 / 32 + 45 * e2 ** 3 / 1024) * math.sin(2 * lat)
+              + (15 * e2 ** 2 / 256 + 45 * e2 ** 3 / 1024) * math.sin(4 * lat) - (35 * e2 ** 3 / 3072) * math.sin(6 * lat))
+    E = 500000 + _K0 * N * (A + (1 - T + C) * A ** 3 / 6 + (5 - 18 * T + T ** 2 + 72 * C - 58 * _EP2) * A ** 5 / 120)
+    Nn = _K0 * (M + N * math.tan(lat) * (A ** 2 / 2 + (5 - T + 9 * C + 4 * C ** 2) * A ** 4 / 24 + (61 - 58 * T + T ** 2 + 600 * C - 330 * _EP2) * A ** 6 / 720))
+    return E, Nn
+def huso29a30(E, N):
+    import math
+    lat, lon = _tm_inv(E, N, math.radians(-9))
+    return _tm_fwd(lat, lon, math.radians(-3))
+
 def dp(pts, tol):
     """Douglas-Peucker sobre un anillo abierto (lista de (x, y))."""
     if len(pts) < 4: return pts
@@ -68,6 +100,7 @@ def area(r):
     return abs(sum(r[i][0] * r[i - 1][1] - r[i - 1][0] * r[i][1] for i in range(len(r)))) / 2
 
 RE_FEAT = re.compile(r"<bu-ext2d:(Building|BuildingPart) gml:id=\"ES\.SDGC\.BU\.([^\"]+)\">(.*?)</bu-ext2d:\1>", re.S)
+RE_SRS = re.compile(r'srsName="urn:ogc:def:crs:EPSG::(\d+)"')
 RE_RING = re.compile(r"<gml:(exterior|interior)>.*?<gml:posList[^>]*>([^<]+)</gml:posList>", re.S)
 
 def convertir(cod):
@@ -81,7 +114,10 @@ def convertir(cod):
         anio = re.search(r"<bu-core2d:beginning>(\d{4})", t)
         edif[m.group(2)] = (USOS.get(uso.group(1), 0) if uso else 0, int(anio.group(1)) if anio else 0)
     partes = []
-    for m in RE_FEAT.finditer(z.read(nombre(".buildingpart.gml")).decode("utf-8")):
+    gml = z.read(nombre(".buildingpart.gml")).decode("utf-8")
+    srs = RE_SRS.search(gml).group(1)
+    if srs not in ("25829", "25830"): raise SystemExit(f"{cod}: sistema de referencia no previsto (EPSG:{srs})")
+    for m in RE_FEAT.finditer(gml):
         t = m.group(3)
         pl = re.search(r"<bu-ext2d:numberOfFloorsAboveGround>(\d+)<", t)
         pl = int(pl.group(1)) if pl else 0
@@ -89,7 +125,9 @@ def convertir(cod):
         anillos = []
         for k, (tipo, txt) in enumerate(RE_RING.findall(t)):
             v = list(map(float, txt.split()))
-            r = [(v[i] - X0, Y1 - v[i + 1]) for i in range(0, len(v) - 2, 2)]   # sin el punto de cierre
+            xy = [(v[i], v[i + 1]) for i in range(0, len(v) - 2, 2)]           # sin el punto de cierre
+            if srs == "25829": xy = [huso29a30(x, y) for x, y in xy]
+            r = [(x - X0, Y1 - y) for x, y in xy]
             r = dp(r, TOL)
             if len(r) >= 3 and area(r) >= (MIN_AREA if tipo == "exterior" else 2.0): anillos.append((tipo, r))
         if not anillos or anillos[0][0] != "exterior": continue
