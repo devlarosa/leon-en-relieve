@@ -70,7 +70,19 @@
       -7.15,
       43.3,
       -4.65
-    ]
+    ],
+    "edificios": {
+      "nota": "Prueba de concepto: el área urbana de León",
+      "municipios": {
+        "24900": "León",
+        "24145": "San Andrés del Rabanedo",
+        "24226": "Villaquilambre"
+      },
+      "centro": [
+        285500,
+        4720500
+      ]
+    }
   },
   "picos": {
     "nombre": "Picos en relieve",

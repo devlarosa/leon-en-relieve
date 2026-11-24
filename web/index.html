@@ -595,6 +595,8 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
       <details class="src" id="lug-box" style="padding: 0 6px 4px"><summary>Ver la lista de lugares</summary><div class="lista-st" id="lug-list" style="margin-top:6px"></div></details>
       <label class="layer"><input type="checkbox" id="l-comcolor"><span class="sw"></span><span class="name"><span id="z-com-col">Colorear todas las comarcas</span><span class="note" id="z-com-col-n">Cada comarca agraria de un color</span></span></label>
       <div class="chips leg" id="com-leg" hidden></div>
+      <label class="layer" id="l-edif-row" hidden><input type="checkbox" id="l-edif" checked><span class="sw"></span><span class="name">Edificios en 3D<span class="note">Catastro · prueba en el área urbana de León: acércate a la ciudad</span></span><span class="key" style="background:#bd5e3d"></span></label>
+      <label class="layer"><input type="checkbox" id="l-maq"><span class="sw"></span><span class="name">Efecto maqueta<span class="note">Desenfoque tilt-shift: el mapa parece una miniatura</span></span></label>
       <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
       <label class="layer"><input type="checkbox" id="l-pob" checked><span class="sw"></span><span class="name">Poblaciones</span><span class="key" style="background:#e9b44c"></span></label>
       <label class="layer"><input type="checkbox" id="l-entorno"><span class="sw"></span><span class="name" id="z-entorno">Provincias vecinas</span></label>
@@ -1167,7 +1169,9 @@ let CUMBRES = [];     // todas las cumbres con nombre del IGN (scripts/cumbres.R
 const INC = { on: false, listo: false, cargando: null, J: null, anio: 2025, dia: null, sel: null, play: null };
 // figuras de protección (scripts/proteccion.R): modo = qué espacios se dibujan; sel = el elegido; cats = categorías de BIC visibles
 const PROT = { on: false, listo: false, cargando: null, J: null, modo: "espacios", sel: null, cats: new Set(), busca: "" };
-const layers = { incgif: false, bic: true, przon: false, camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+// edificios del Catastro en 3D (prueba): se definen aquí porque los árboles y las casas preguntan por ellos al colocarse
+const EDIF = { ficha: Z.edificios || null, cargando: null, listo: false, mallas: [], vis: false, occ: null, sel: null };
+const layers = { incgif: false, bic: true, przon: false, camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, edif: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
@@ -1217,7 +1221,7 @@ function drawOverlay() {
       ov.strokeStyle = "#3fa9c9"; ov.lineWidth = w; ov.stroke();
     }
   }
-  if (layers.carr) {
+  if (layers.carr && !EDIF.vis) {   // entre los edificios, las carreteras a escala de provincia sobran
     const style = { 1: ["#fff3dc", 7.5, "#d9653b", 4.4], 2: ["#fff3dc", 5.6, "#e6a23c", 3.0], 3: ["rgba(90, 70, 50, 0.55)", 3.0, "#fbf0d2", 1.7] };
     for (const pass of [0, 1]) for (const c of [...data.carreteras].sort((a, b) => b.c - a.c)) {
       const st = style[c.c];
@@ -1323,7 +1327,7 @@ camera.position.set(-30, 120, 150);
 // Arrastrar = agarrar el mapa; rueda = zoom hacia el cursor; derecho o Ctrl/Mayús + arrastrar = girar e inclinar;
 // dos dedos = pellizco, giro e inclinación; teclado: flechas/WASD, +/−, Q/E, R/F, N, 0, Esc, ?
 const ctl = { target: new THREE.Vector3(0, 2, 4), dist: 1, theta: 0, phi: 1, tw: null, zoomQ: null };
-const PHI_MIN = 0.02, PHI_MAX = 1.38, DIST_MIN = 1.5, DIST_MAX = 360;
+const PHI_MIN = 0.02, PHI_MAX = 1.38, DIST_MIN = Z.edificios ? 0.35 : 1.5, DIST_MAX = 360;
 const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
 function syncFromCamera() {
   const v = camera.position.clone().sub(ctl.target);
@@ -2082,7 +2086,7 @@ function placeTrees() {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3();
   for (const tg of treeGroups) {
     if (!tg.mesh) continue;
-    tg.list.forEach((t, k) => { ps.set(sx(t[0]), heightAt(t[0], t[1]) * ZS() - 0.04, sz(t[1])); sc.setScalar(t[2] * MK); m.compose(ps, q, sc); tg.mesh.setMatrixAt(k, m); });
+    tg.list.forEach((t, k) => { ps.set(sx(t[0]), heightAt(t[0], t[1]) * ZS() - 0.04, sz(t[1])); sc.setScalar(edifOcupa(t[0], t[1]) ? 0 : t[2] * MK); m.compose(ps, q, sc); tg.mesh.setMatrixAt(k, m); });
     tg.mesh.instanceMatrix.needsUpdate = true;
   }
 }
@@ -2356,7 +2360,7 @@ function placeTowns() {
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
   for (const [k, im] of Object.entries(townMeshes)) {
     SETS[k].forEach((it, i) => {
-      ps.set(sx(it[0]), heightAt(it[0], it[1]) * ZS() + it[2], sz(it[1])); q.setFromAxisAngle(up, it[6]); sc.set(it[3], it[4], it[5]);
+      ps.set(sx(it[0]), heightAt(it[0], it[1]) * ZS() + it[2], sz(it[1])); q.setFromAxisAngle(up, it[6]); if (edifOcupa(it[0], it[1])) sc.set(0, 0, 0); else sc.set(it[3], it[4], it[5]);
       m4.compose(ps, q, sc); im.setMatrixAt(i, m4);
     });
     im.instanceMatrix.needsUpdate = true;
@@ -2574,7 +2578,7 @@ function buildFavMarkers() {
     g.add(beam, gem, ring); f.group = g; f.gem = gem; favGroup.add(g);
   }
 }
-function placeFavs() { for (const f of favs) f.group.position.set(sx(f.mx), heightAt(f.mx, f.my) * ZS(), sz(f.my)); }
+function placeFavs() { for (const f of favs) { f.group.position.set(sx(f.mx), heightAt(f.mx, f.my) * ZS(), sz(f.my)); f.group.visible = !edifOcupa(f.mx, f.my); } }
 function renderFavList() {
   $("favs-box").hidden = !favs.length; $("l-fav-row").hidden = !favs.length;
   $("favs-n").textContent = favs.length ? "(" + favs.length + ")" : "";
@@ -3307,6 +3311,8 @@ renderer.domElement.addEventListener("pointerup", (e) => {
   const tNow = performance.now();
   if (lastTap && tNow - lastTap.t < 330 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 14) { lastTap = null; zoomAt(e.clientX, e.clientY, 0.45); return; }
   lastTap = { t: tNow, x: e.clientX, y: e.clientY };
+  const pe = !gotaArmed && !miradorArmed && !mirador ? pickEdificio(e.clientX, e.clientY) : null;
+  if (pe) { showEdificio(pe); return; }
   const p = pickTerrain(e.clientX, e.clientY);
   if (gotaArmed) { if (p) lanzarGota(p.mx, p.my); return; }
   if (miradorArmed || mirador) { if (p) { setArmed(true); openMirador(p.mx, p.my, null, 0); } return; }
@@ -3643,7 +3649,7 @@ document.querySelector(".cats").addEventListener("keydown", (e) => {   // flecha
 });
 $("l-enfoque").addEventListener("change", () => setEnfoque(!$("hcard").hidden ? "agua" : CAT_ENFOQUE[catAct]));
 function showHcard(html, kind, ref) {
-  if (!["geo", "lig", "loc", "punto", "lugar", "hist", "etapa", "alb", "prot", "protp", "bic", "fuego", "fuegop"].includes(kind)) modoAgua(true);
+  if (!["edif", "geo", "lig", "loc", "punto", "lugar", "hist", "etapa", "alb", "prot", "protp", "bic", "fuego", "fuegop"].includes(kind)) modoAgua(true);
   $("info").hidden = true; $("mirador").hidden = true; selected = null; updateMunState();
   $("hcard-body").innerHTML = html; $("hcard").hidden = false; $("hcard").scrollTop = 0; hcardKind = kind; hcardRef = ref;
 }
@@ -4846,7 +4852,7 @@ $("play").onclick = () => {
 $("hist-box").hidden = !ANIOS.length || !provSeries[0];
 if (ANIOS.length) updateHistPanel();
 bind("l-sierras", "sierras"); bind("l-valles", "valles"); bind("l-puertos", "puertos");
-bind("l-carr", "carr", drawOverlay); bind("l-comarcas", "comarcas", drawOverlay);
+bind("l-carr", "carr", drawOverlay); bind("l-edif", "edif", () => actualizarEdificios()); $("l-maq").addEventListener("change", (e) => { MAQ.on = e.target.checked; needsRender = true; }); $("l-edif-row").hidden = !Z.edificios; bind("l-comarcas", "comarcas", drawOverlay);
 bind("l-fav", "fav", () => { favGroup.visible = layers.fav; });
 bind("l-entorno", "entorno", () => { U.uEntorno.value = layers.entorno || aspAnt ? 1 : 0; setTreeCount(); });
 bind("l-arboles", "arboles", () => { treeMesh.visible = layers.arboles && morph < 0.5 && !aspAnt; });
@@ -4855,7 +4861,7 @@ let exagTimer = null;
 $("exag").addEventListener("input", (e) => {
   exag = +e.target.value; U.uExag.value = exag / 1000;
   $("exag-o").textContent = "×" + String(exag).replace(".", ",");
-  placeTrees(); placeFavs(); placeMe(); placeTowns(); placeMonuments(); rebuildOutlines(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
+  placeTrees(); placeFavs(); placeMe(); placeTowns(); placeMonuments(); reconstruirEdificios(); rebuildOutlines(); if (mirador) eyeGroup.position.y = Math.max(heightAt(mirador.mx, mirador.my), mirador.h) * ZS();
   clearTimeout(exagTimer); exagTimer = setTimeout(() => { buildNormals(); nrmTex.needsUpdate = true; }, 120);
 });
 $("hora").addEventListener("input", (e) => { hour = +e.target.value; updateSky(); });
@@ -4937,6 +4943,183 @@ function measureFps(rawDt, now) {
 // cualquier control del panel fuerza un redibujado
 for (const ev of ["input", "change", "click"]) document.addEventListener(ev, () => { needsRender = true; }, true);
 
+// ---------------------------------------------------------------- edificios del Catastro en 3D (prueba de concepto)
+// scripts/edificios.py convierte las huellas INSPIRE del Catastro (con su n.º de plantas) en un binario por municipio.
+// Se descargan solo al acercarse y se extruyen aquí: paredes claras y tejado según el uso, con la luz de la escena.
+const EDIF_DIST = 14, EDIF_RADIO = 16000;   // km de cámara por debajo de los que se ven; m alrededor del centro
+const USO_N = ["Sin dato de uso", "Residencial", "Agrario", "Industrial", "Oficinas", "Comercio", "Servicios públicos"];
+const USO_TEJ = [[.70, .40, .30], [.74, .37, .24], [.62, .48, .32], [.56, .58, .60], [.60, .62, .66], [.66, .60, .52], [.62, .52, .42]];
+const USO_PAR = [[.86, .84, .79], [.90, .87, .81], [.84, .79, .69], [.78, .79, .78], [.84, .86, .88], [.90, .88, .84], [.89, .86, .79]];
+function leerEdificios(buf) {
+  const dv = new DataView(buf); if (String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3)) !== "EDF1") throw new Error("formato");
+  const n = dv.getUint32(4, true), ox = dv.getFloat32(8, true), oy = dv.getFloat32(12, true), paso = dv.getFloat32(16, true), partes = [];
+  let o = 20;
+  for (let i = 0; i < n; i++) {
+    const pl = dv.getUint8(o), uso = dv.getUint8(o + 1), anio = dv.getUint16(o + 2, true), nr = dv.getUint8(o + 4); o += 5;
+    const rings = [];
+    for (let k = 0; k < nr; k++) {
+      const nv = dv.getUint16(o, true); o += 2; const r = new Float64Array(nv * 2);
+      for (let j = 0; j < nv; j++) { r[2 * j] = ox + dv.getUint16(o, true) * paso; r[2 * j + 1] = oy + dv.getUint16(o + 2, true) * paso; o += 4; }
+      rings.push(r);
+    }
+    partes.push({ pl, uso, anio, rings });
+  }
+  return partes;
+}
+function mallaEdificios(partes) {
+  // primero se cuentan los vértices para reservar los arrays de una vez
+  let nv = 0, ni = 0;
+  for (const p of partes) { let tot = 0; for (const r of p.rings) { const k = r.length / 2; nv += 4 * k; ni += 6 * k; tot += k; } nv += tot; ni += 3 * (tot + 2 * (p.rings.length - 1)); }
+  const P = new Float32Array(nv * 3), Nn = new Int8Array(nv * 3), C = new Uint8Array(nv * 3), I = new Uint32Array(ni), triParte = new Uint32Array(ni / 3);
+  let v = 0, ii = 0;
+  const zs = ZS();
+  const vert = (x, y, z, nx, ny, nz, c) => { P[v * 3] = x; P[v * 3 + 1] = y; P[v * 3 + 2] = z; Nn[v * 3] = nx * 127; Nn[v * 3 + 1] = ny * 127; Nn[v * 3 + 2] = nz * 127; C[v * 3] = c[0] * 255; C[v * 3 + 1] = c[1] * 255; C[v * 3 + 2] = c[2] * 255; return v++; };
+  partes.forEach((p, ip) => {
+    const ext = p.rings[0]; let hmin = Infinity;
+    for (let j = 0; j < ext.length; j += 2) hmin = Math.min(hmin, heightAt(ext[j], ext[j + 1]));
+    p.hb = hmin;
+    const y0 = hmin * zs - 0.004, y1 = hmin * zs + (p.pl * 3 + 0.6) / 1000;
+    const h = ((ip + 1) * 2654435761 >>> 0) / 4294967296, f = 0.9 + 0.2 * h, f2 = 0.95 + 0.1 * ((h * 7.31) % 1);
+    const viejo = p.anio && p.anio < 1950 ? 0.88 : 1;
+    const tej = USO_TEJ[p.uso].map(c => Math.min(1, c * f * viejo)), par = USO_PAR[p.uso].map(c => Math.min(1, c * f2));
+    const t0 = ii;
+    p.rings.forEach((r, k) => {   // paredes, con la normal hacia fuera (en los patios, hacia el patio)
+      const n = r.length / 2; let A = 0;
+      for (let j = 0; j < n; j++) { const b = (j + 1) % n; A += r[2 * j] * r[2 * b + 1] - r[2 * b] * r[2 * j + 1]; }
+      const sg = (A > 0 ? 1 : -1) * (k === 0 ? 1 : -1);
+      for (let j = 0; j < n; j++) {
+        const b = (j + 1) % n, ax = sx(r[2 * j]), az = sz(r[2 * j + 1]), bx = sx(r[2 * b]), bz = sz(r[2 * b + 1]);
+        const dx = bx - ax, dz = bz - az, L = Math.hypot(dx, dz) || 1, nx = sg * dz / L, nz = -sg * dx / L;
+        const a0 = vert(ax, y0, az, nx, 0, nz, par), b0 = vert(bx, y0, bz, nx, 0, nz, par), b1 = vert(bx, y1, bz, nx, 0, nz, par), a1 = vert(ax, y1, az, nx, 0, nz, par);
+        if (-dz * nx + dx * nz > 0) { I[ii++] = a0; I[ii++] = b0; I[ii++] = b1; I[ii++] = a0; I[ii++] = b1; I[ii++] = a1; }
+        else { I[ii++] = a0; I[ii++] = b1; I[ii++] = b0; I[ii++] = a0; I[ii++] = a1; I[ii++] = b1; }
+      }
+    });
+    // tejado plano: triangulación con patios
+    const v2 = (r) => { const a = []; for (let j = 0; j < r.length; j += 2) a.push(new THREE.Vector2(r[j], r[j + 1])); return a; };
+    const cont = v2(ext), holes = p.rings.slice(1).map(v2);
+    let tris = []; try { tris = THREE.ShapeUtils.triangulateShape(cont, holes); } catch (e) { }
+    const pts = cont.concat(...holes), base = v;
+    for (const q of pts) vert(sx(q.x), y1, sz(q.y), 0, 1, 0, tej);
+    for (const t of tris) {
+      const A = pts[t[0]], B = pts[t[1]], Cc = pts[t[2]];
+      const up = (B.y - A.y) * (Cc.x - A.x) - (B.x - A.x) * (Cc.y - A.y);   // componente vertical de la normal (z de escena = y del mapa)
+      if (ii + 3 > I.length) break;
+      if (up > 0) { I[ii++] = base + t[0]; I[ii++] = base + t[1]; I[ii++] = base + t[2]; } else { I[ii++] = base + t[0]; I[ii++] = base + t[2]; I[ii++] = base + t[1]; }
+    }
+    triParte.fill(ip, t0 / 3, ii / 3);
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(P.subarray(0, v * 3), 3));
+  g.setAttribute("normal", new THREE.BufferAttribute(Nn.subarray(0, v * 3), 3, true));
+  g.setAttribute("tint", new THREE.BufferAttribute(C.subarray(0, v * 3), 3, true));
+  g.setIndex(new THREE.BufferAttribute(I.subarray(0, ii), 1));
+  g.computeBoundingSphere();
+  const m = new THREE.Mesh(g, toonMat("vcol")); m.userData = { partes, triParte: triParte.subarray(0, ii / 3) };
+  return m;
+}
+const edifGroup = new THREE.Group(); edifGroup.visible = false; scene.add(edifGroup);
+function cargarEdificios() {
+  if (EDIF.cargando || !EDIF.ficha) return EDIF.cargando;
+  $("readout").textContent = "Cargando edificios del Catastro…";
+  EDIF.cargando = (async () => {
+    const occ = new Set();
+    for (const cod of Object.keys(EDIF.ficha.municipios)) {
+      try {
+        const buf = await fetch(DATA + "edificios/" + cod + ".bin").then(r => { if (!r.ok) throw new Error(cod); return r.arrayBuffer(); });
+        const partes = leerEdificios(buf), m = mallaEdificios(partes);
+        for (const p of partes) occ.add(((p.rings[0][0] / 100) | 0) + "," + ((p.rings[0][1] / 100) | 0));
+        edifGroup.add(m); EDIF.mallas.push(m);
+      } catch (e) { console.warn("edificios", cod, e); }
+      await new Promise(r => setTimeout(r, 0));
+    }
+    EDIF.occ = occ; EDIF.listo = true; EDIF.vis = false; actualizarEdificios();
+    const n = EDIF.mallas.reduce((s, m) => s + m.userData.partes.length, 0);
+    $("readout").textContent = `${fmt.format(n)} edificios del Catastro · toca uno para ver su ficha`;
+  })();
+  return EDIF.cargando;
+}
+// ¿hay edificios reales en esta celda de 100 m (o junto a ella)? ahí sobran las casas simbólicas y los árboles
+function edifOcupa(mx, my) {
+  if (!EDIF.vis || !EDIF.occ) return false;
+  const x = (mx / 100) | 0, y = (my / 100) | 0;
+  for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) if (EDIF.occ.has((x + i) + "," + (y + j))) return true;
+  return false;
+}
+function edifCerca() {
+  if (!EDIF.ficha || !layers.edif || aspAnt) return false;
+  const c = EDIF.ficha.centro, cx = c[0] - M.x0, cy = M.y1 - c[1];
+  const tx = (controls.target.x + KM_W / 2) * 1000, ty = (controls.target.z + KM_D / 2) * 1000;
+  return ctl.dist < EDIF_DIST && Math.hypot(tx - cx, ty - cy) < EDIF_RADIO;
+}
+function actualizarEdificios() {
+  const cerca = edifCerca();
+  if (cerca && !EDIF.listo) { cargarEdificios(); return; }
+  const vis = cerca && EDIF.listo;
+  if (vis === EDIF.vis) return;
+  EDIF.vis = vis; edifGroup.visible = vis;
+  for (const mo of MONS) mo.group.visible = !(vis && edifOcupa(mo.xy[0], mo.xy[1]));   // los monumentos simbólicos, a otra escala, sobran
+  placeTowns(); placeTrees(); placeFavs(); drawOverlay(); needsRender = true;
+}
+function reconstruirEdificios() {
+  if (!EDIF.listo) return;
+  for (const m of EDIF.mallas) { const nm = mallaEdificios(m.userData.partes); m.geometry.dispose(); m.geometry = nm.geometry; m.userData = nm.userData; }
+  needsRender = true;
+}
+function pickEdificio(clientX, clientY) {
+  if (!EDIF.vis) return null;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.intersectObjects(EDIF.mallas, false)[0];
+  if (!hit) return null;
+  return hit.object.userData.partes[hit.object.userData.triParte[hit.faceIndex]];
+}
+function showEdificio(p) {
+  let cx = 0, cy = 0; const e = p.rings[0], n = e.length / 2;
+  for (let j = 0; j < e.length; j += 2) { cx += e[j]; cy += e[j + 1]; }
+  cx /= n; cy /= n;
+  let A = 0; for (let j = 0; j < n; j++) { const b = (j + 1) % n; A += e[2 * j] * e[2 * b + 1] - e[2 * b] * e[2 * j + 1]; }
+  const m = inProv(cx, cy) ? munAt(cx, cy) : null;
+  const html = `<h2>${p.pl === 1 ? "Edificio de una planta" : "Edificio de " + p.pl + " plantas"}</h2><p class="cap">${esc(USO_N[p.uso])}${m ? " · " + esc(m.n) : ""}</p>
+    <dl><dt>Altura aproximada</dt><dd>${fmt.format(Math.round(p.pl * 3 + 0.6))} m</dd><dt>Planta</dt><dd>${fmt.format(Math.round(Math.abs(A) / 2))} m²</dd>
+    ${p.anio ? `<dt>Construido en</dt><dd>${p.anio}</dd>` : ""}<dt>Cota del suelo</dt><dd>${fmt.format(Math.round(p.hb))} m</dd></dl>
+    <p class="hint">Dirección General del Catastro (INSPIRE, edificios). La altura se estima a 3 m por planta sobre rasante.</p>`;
+  showHcard(html, "edif", -1);
+}
+
+// ---------------------------------------------------------------- efecto maqueta (tilt-shift)
+// La escena se dibuja en una textura y se desenfoca arriba y abajo, con algo más de color: el mapa parece una miniatura.
+const MAQ = { on: false, rt: null, mat: null, escena: null, cam: null };
+function renderFrame() {
+  if (!MAQ.on) { renderer.render(scene, camera); return; }
+  const w = renderer.domElement.width, h = renderer.domElement.height;
+  if (!MAQ.rt) {
+    MAQ.rt = new THREE.WebGLRenderTarget(w, h, { samples: 4 });
+    MAQ.mat = new THREE.ShaderMaterial({
+      uniforms: { tD: { value: MAQ.rt.texture }, uRes: { value: new THREE.Vector2(w, h) }, uFoco: { value: 0.45 }, uBanda: { value: 0.1 }, uMax: { value: 10 } },
+      vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+      fragmentShader: `uniform sampler2D tD; uniform vec2 uRes; uniform float uFoco, uBanda, uMax; varying vec2 vUv;
+        void main() {
+          float d = max(0.0, abs(vUv.y - uFoco) - uBanda) / (1.0 - uBanda), r = uMax * smoothstep(0.0, 0.55, d);
+          vec3 acc = vec3(0.0);
+          for (int i = 0; i < 24; i++) { float fi = float(i), rr = sqrt((fi + 0.5) / 24.0) * r, a = fi * 2.39996; acc += texture2D(tD, vUv + vec2(cos(a), sin(a)) * rr / uRes).rgb; }
+          vec3 c = acc / 24.0;
+          float l = dot(c, vec3(0.299, 0.587, 0.114)); c = mix(vec3(l), c, 1.22); c = (c - 0.5) * 1.06 + 0.5;
+          vec2 q = vUv - 0.5; c *= 1.0 - dot(q, q) * 0.3;
+          gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+        }`,
+      depthTest: false, depthWrite: false
+    });
+    const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), MAQ.mat); quad.frustumCulled = false;
+    MAQ.escena = new THREE.Scene(); MAQ.escena.add(quad); MAQ.cam = new THREE.Camera();
+  }
+  if (MAQ.rt.width !== w || MAQ.rt.height !== h) { MAQ.rt.setSize(w, h); MAQ.mat.uniforms.uRes.value.set(w, h); }
+  MAQ.mat.uniforms.uMax.value = 9 * renderer.getPixelRatio();
+  renderer.setRenderTarget(MAQ.rt); renderer.render(scene, camera);
+  renderer.setRenderTarget(null); renderer.render(MAQ.escena, MAQ.cam);
+}
+
 // ---------------------------------------------------------------- bucle
 let last = performance.now(), hoverTick = 0;
 function frame(now) {
@@ -4960,13 +5143,13 @@ function frame(now) {
   if (CAM.rec) stepRecorrido(now);
   if (!reduceMotion && eyeGroup.visible) { eyeGroup.userData.gem.rotation.y += dt * 1.2; }
   if (!reduceMotion) favs.forEach((f, i) => { f.gem.rotation.y += dt * 1.2; f.gem.position.y = 2.25 + Math.sin(now / 650 + i) * 0.12; });
-  if ((hoverTick = (hoverTick + 1) % (liteMode ? 6 : 3)) === 0) doHover();
+  if ((hoverTick = (hoverTick + 1) % (liteMode ? 6 : 3)) === 0) { doHover(); if (EDIF.ficha) actualizarEdificios(); }
   // en modo ligero solo se redibuja si la cámara se mueve o algo cambia (y, como mínimo, una vez por segundo)
   const e0 = camera.matrixWorld.elements, sig = e0[12].toFixed(4) + e0[13].toFixed(4) + e0[14].toFixed(4) + e0[8].toFixed(4) + e0[10].toFixed(4);
   const moving = sig !== lastSig || fly || ctl.tw || ctl.zoomQ || keys.size || playTimer;
   adaptRes(rawDt, now, moving);
   if (outlineGroup.children.length) { const dd = camera.position.distanceTo(controls.target); for (const m of ribbonMats) m.uniforms.uW.value = dd * m.userData.k; }
-  if (!liteMode || moving || needsRender || now - lastRender > 1000) { renderer.render(scene, camera); lastRender = now; }
+  if (!liteMode || moving || needsRender || now - lastRender > 1000) { renderFrame(); lastRender = now; }
   if (moving || needsRender || now - lastLabels > 500) { updateLabels(); lastLabels = now; }   // rótulos solo si algo cambia
   needsRender = false;
   lastSig = sig;
