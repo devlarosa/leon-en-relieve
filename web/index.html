@@ -595,7 +595,7 @@ body.antiguo #panel:not(.collapsed) ~ #rosa { left: 300px; }
       <details class="src" id="lug-box" style="padding: 0 6px 4px"><summary>Ver la lista de lugares</summary><div class="lista-st" id="lug-list" style="margin-top:6px"></div></details>
       <label class="layer"><input type="checkbox" id="l-comcolor"><span class="sw"></span><span class="name"><span id="z-com-col">Colorear todas las comarcas</span><span class="note" id="z-com-col-n">Cada comarca agraria de un color</span></span></label>
       <div class="chips leg" id="com-leg" hidden></div>
-      <label class="layer" id="l-edif-row" hidden><input type="checkbox" id="l-edif" checked><span class="sw"></span><span class="name">Edificios en 3D<span class="note">Catastro · prueba en el área urbana de León: acércate a la ciudad</span></span><span class="key" style="background:#bd5e3d"></span></label>
+      <label class="layer" id="l-edif-row" hidden><input type="checkbox" id="l-edif"><span class="sw"></span><span class="name">Edificios en 3D<span class="note">Catastro, toda la provincia: aparecen al acercarte a un pueblo. Hace el mapa más pesado</span></span><span class="key" style="background:#bd5e3d"></span></label>
       <label class="layer"><input type="checkbox" id="l-maq"><span class="sw"></span><span class="name">Efecto maqueta<span class="note">Desenfoque tilt-shift: el mapa parece una miniatura</span></span></label>
       <label class="layer"><input type="checkbox" id="l-carr" checked><span class="sw"></span><span class="name">Carreteras</span><span class="key" style="background:#d9653b"></span></label>
       <label class="layer"><input type="checkbox" id="l-pob" checked><span class="sw"></span><span class="name">Poblaciones</span><span class="key" style="background:#e9b44c"></span></label>
@@ -1171,7 +1171,7 @@ const INC = { on: false, listo: false, cargando: null, J: null, anio: 2025, dia:
 const PROT = { on: false, listo: false, cargando: null, J: null, modo: "espacios", sel: null, cats: new Set(), busca: "" };
 // edificios del Catastro en 3D (prueba): se definen aquí porque los árboles y las casas preguntan por ellos al colocarse
 const EDIF = { ficha: Z.edificios || null, indice: null, pidiendo: null, trabajando: false, vis: false, occ: new Map() };
-const layers = { incgif: false, bic: true, przon: false, camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, edif: true, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
+const layers = { incgif: false, bic: true, przon: false, camfoco: true, alb: true, lugares: true, lig: true, comcolor: false, cucolor: false, caudal: true, est: true, cuenca: true, cob: false, pueblos: true, mon: true, hist: false, sierras: true, valles: true, puertos: true, fav: true, comarcas: false, carr: true, edif: false, mun: true, rios: true, aguas: true, pob: true, picos: true, entorno: false, arboles: true, nubes: false };
 let climaHook = null;   // el clima sigue al mes de la escena
 let riosHook = null;    // y el grosor de los ríos
 let RIO = null;         // red de ríos (data/rios.json), se carga después del mapa
@@ -5038,6 +5038,7 @@ async function cargarMunicipio(mu) {
     $("readout").textContent = "Cargando edificios de " + mu.n + "…";
     const buf = await fetch(DATA + "edificios/" + mu.c + ".bin").then(r => { if (!r.ok) throw new Error(mu.c); return r.arrayBuffer(); });
     const partes = leerEdificios(buf), grupos = new Map();
+    if (partes.length) { const e = partes[0].rings[0], m = inProv(e[0], e[1]) ? munAt(e[0], e[1]) : null; if (m) mu.n = m.n; }   // el nombre con tildes
     for (const p of partes) {
       const e = p.rings[0], k = ((e[0] / EDIF_TESELA) | 0) + "," + ((e[1] / EDIF_TESELA) | 0);
       if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(p);
@@ -5077,12 +5078,12 @@ function actualizarEdificios() {
   const tx = (controls.target.x + KM_W / 2) * 1000, ty = (controls.target.z + KM_D / 2) * 1000;
   const activo = layers.edif && !aspAnt, cerca = activo && ctl.dist < (EDIF.vis ? EDIF_OCULTAR : EDIF_VER);
   if (cerca && !EDIF.indice) { edifIndice(); return; }
-  if (!EDIF.indice) return;
+  if (!EDIF.indice || (!activo && !EDIF.vis && !EDIF.indice.some(mu => mu.estado === 2))) return;
   let hay = false;
   for (const mu of EDIF.indice) {
     const d = distCaja(tx, ty, mu.bb);
     if (cerca && d < EDIF_CERCA) { if (mu.estado === 0 && !EDIF.trabajando) cargarMunicipio(mu); if (mu.estado === 2) hay = true; }
-    else if (mu.estado === 2 && d > EDIF_SOLTAR) soltarMunicipio(mu);
+    else if (mu.estado === 2 && (d > EDIF_SOLTAR || !activo)) soltarMunicipio(mu);   // lejos, o capa apagada: fuera de la memoria
   }
   const vis = cerca && hay;
   // solo las teselas cercanas: con la cámara a 2 km no hace falta dibujar la otra punta del área metropolitana

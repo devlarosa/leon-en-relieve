@@ -25,12 +25,21 @@ PASO = 0.5          # m por unidad: rango de 32 km con uint16, de sobra para un 
 TOL = 0.35          # simplificación (Douglas-Peucker), m
 MIN_AREA = 6.0      # m²: se descartan casetas diminutas
 
+FEEDS = {}
+def feed(prov):
+    if prov not in FEEDS:   # el feed viene en Latin-1 (CABAÑAS RARAS)
+        FEEDS[prov] = urllib.request.urlopen(ATOM.format(p=prov), timeout=60).read().decode("latin-1")
+    return FEEDS[prov]
+
+def todos(prov):
+    """Todos los municipios que publica el Catastro en la provincia: {código: nombre}."""
+    return dict(re.findall(r'<title>\s*(%s\d{3})-([^<]+?) buildings</title>' % prov, feed(prov)))
+
 def descargar(cod):
     dest = os.path.join(RAW, "edificios", cod + ".zip")
     if os.path.exists(dest): return dest
     os.makedirs(os.path.dirname(dest), exist_ok=True)
-    feed = urllib.request.urlopen(ATOM.format(p=cod[:2]), timeout=60).read().decode("latin-1")   # el feed viene en Latin-1 (CABAÑAS RARAS)
-    m = re.search(r'href="([^"]*/%s-[^"]*\.zip)"' % cod, feed)
+    m = re.search(r'href="([^"]*/%s-[^"]*\.zip)"' % cod, feed(cod[:2]))
     if not m: raise SystemExit("El Catastro no publica el municipio " + cod)
     url = urllib.parse.quote(m.group(1), safe=":/")
     print("descargando", m.group(1))
@@ -104,14 +113,21 @@ def convertir(cod):
     return {"c": cod, "partes": len(partes), "bb": [round(ox), round(oy), round(max(xs)), round(max(ys))], "kb": round(b.tell() / 1024)}
 
 if __name__ == "__main__":
-    cods = sys.argv[1:] or list((FICHA.get("edificios") or {}).get("municipios", {}))
-    if not cods: raise SystemExit(f"La ficha de {ZONA} no tiene «edificios.municipios»")
+    fe = FICHA.get("edificios") or {}
+    nombres = dict(fe.get("municipios", {}))
+    if fe.get("todos"):   # toda la zona: los municipios que publica el Catastro en sus provincias
+        from zona import PROVINCIAS
+        for prov in PROVINCIAS:
+            for c, n in todos(prov).items(): nombres.setdefault(c, n.title())
+    cods = sys.argv[1:] or sorted(nombres)
+    if not cods: raise SystemExit(f"La ficha de {ZONA} no tiene «edificios»")
     ruta = os.path.join(DATA, "edificios", "indice.json")
     indice = {}
     if os.path.exists(ruta): indice = {m["c"]: m for m in json.load(open(ruta))["municipios"]}
-    nombres = (FICHA.get("edificios") or {}).get("municipios", {})
     for c in cods:
-        m = convertir(c); m["n"] = nombres.get(c, c); indice[c] = m
+        try: m = convertir(c)
+        except (SystemExit, Exception) as e: print("  ", c, "omitido:", e); continue
+        m["n"] = nombres.get(c, c); indice[c] = m
     # índice para el visor: la caja de cada municipio (metros del visor) para cargarlo solo al acercarse
     indice = {c: m for c, m in indice.items() if c in nombres or not nombres}
     with open(ruta, "w") as f:

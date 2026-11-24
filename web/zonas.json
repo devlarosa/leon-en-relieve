@@ -72,7 +72,7 @@
       -4.65
     ],
     "edificios": {
-      "nota": "Áreas urbanas de León y Ponferrada, y algunos pueblos",
+      "nota": "Toda la provincia; capa apagada por defecto",
       "municipios": {
         "24900": "León",
         "24145": "San Andrés del Rabanedo",
@@ -99,7 +99,8 @@
         "24031": "Cacabelos",
         "24029": "Cabreros del Río",
         "24134": "Riego de la Vega"
-      }
+      },
+      "todos": true
     }
   },
   "picos": {
