@@ -1,0 +1,16 @@
+# Visor «León en relieve» en Docker (desde servidor/):   docker compose up -d --build   ->  http://<máquina>:8800
+# - ../web se monta con escritura (los destacados de cada zona se guardan en web/data/<zona>/).
+# - Usuario y contraseña siguen fuera del repo: ~/.config/leon3d-visor/acceso.json.
+#   Para cambiarlos:  docker compose run --rm leon3d-visor python3 servidor.py --acceso USUARIO CONTRASEÑA
+# - Tras cambiar servidor.py o app/:  docker compose up -d --build   (sustituye a reiniciar leon3d-visor.service)
+services:
+  leon3d-visor:
+    build: .
+    image: leon3d-visor:local
+    container_name: leon3d-visor
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ../web:/srv/leon3d/web
+      - ${HOME}/.config/leon3d-visor:/config
